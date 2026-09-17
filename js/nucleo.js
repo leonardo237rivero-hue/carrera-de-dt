@@ -19,6 +19,7 @@ const $=s=>document.querySelector(s);
 let S={},tmp={};
 function nuevo(){return{pant:"portada",nombre:"",arq:null,sistemaPref:null,estiloPref:null,
  club:null,division:3,temporada:1,plantel:[],presupuesto:0,esSeleccion:false,ofertaSel:false,ofertaHecha:false,compe:"",
+ duelo:null, rep:{ofensivo:0,conservador:0,plantel:0,directiva:0,prensa:0,resultado:0},etiqueta:null,repUsadas:[],
  vars:{res:50,dir:50,hin:50,ves:50},pool:[],decs:[],decIdx:0,cartas:[],
  formacion:null,estilo:null,calc:null,hist:[],puntos:0,usadas:[],tomadas:[],despidos:0,fijos:[],titulos:[],clubHincha:null,
  timer:null,estadio:1,exClub:null,rng:mul32(hashS("x"+Math.random()))};}
@@ -105,3 +106,7 @@ function mejorFormacion(plantel){
   });
   return mej.f;
 }
+
+// cuántas temporadas dura la carrera según el modo elegido
+function tempTotal(){ return (S && S.temporadasTotal) ? S.temporadasTotal : TEMPORADAS; }
+

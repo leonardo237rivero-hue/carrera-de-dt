@@ -1,6 +1,6 @@
 # Carrera de DT — Game Design Document
 
-**Versión:** 3.0 (prototipo jugable)
+**Versión:** 4.0 (prototipo jugable, publicado en GitHub Pages)
 **Estado:** prototipo HTML funcional, balanceado y verificado por simulación
 
 ---
@@ -283,3 +283,146 @@ Simulaciones headless sobre el motor real:
 - **Licencias.** Los nombres de clubes son de bajo riesgo; los escudos son marcas registradas. Para un portfolio no suele pasar nada; si el juego monetiza o escala, los clubes pueden reclamar.
 - **Scope creep.** Este proyecto es la puerta de entrada liviana; el simulador táctico pesado va aparte, en Unreal.
 - **Curva de entrada.** La grilla de sectores es el corazón del juego y también lo más difícil de comunicar en los primeros diez segundos.
+
+---
+
+## 10. Lo que se sumó en la versión 4
+
+**Identidad de los clubes.** 27 clubes tienen ídolo cargado. Al llegar a uno de
+ellos, un periodista te pregunta qué pensás de él, con cinco respuestas posibles:
+la correcta, la relativizadora, la provocadora, la aduladora y la que deja en
+claro que no tenés idea de dónde viniste a trabajar. Las opciones provocadoras
+son opiniones futbolísticas, nunca acusaciones personales sobre gente real.
+
+**Reputación acumulada.** Tus decisiones te ganan una etiqueta — bilardista,
+lírico, formador, político, mediático, resultadista — que aparece en la cabecera.
+Siete situaciones de prensa sólo existen si te ganaste la etiqueta
+correspondiente: la prensa deja de preguntar al azar.
+
+**El perfil cambia las consecuencias.** La misma decisión no pesa igual según
+quién la toma. El Formador tiene espalda ante la directiva cuando lo hace por el
+plantel; el Ganador exprime los resultados pero paga caro cada choque; el Bombero
+aguanta el desgaste institucional pero nunca enamora a la tribuna.
+
+**Política con la prensa.** Tres posturas, ninguna correcta: puertas abiertas
+(menos presión, pero el rival te lee), lo justo y necesario, o persiana baja
+(el plantel trabaja tranquilo, la tribuna te castiga). Afecta el rendimiento
+entre ×0,985 y ×1,015.
+
+**Persuasión en el mercado.** Cada tanto aparece un jugador mejor que tu plantel
+que duda. La plata no alcanza: hay una pista sobre qué le importa — la familia,
+las copas, los minutos, ser ídolo, el proyecto — y un solo intento para darle el
+argumento correcto.
+
+**El once visual.** Cancha con los titulares en su posición y banco al costado.
+Tocás un suplente, tocás al titular que sale, y se cambian.
+
+**El azar disfrazado de genialidad.** Cuando el resultado se define por la tirada
+y no por el planteo, la prensa igual te atribuye o te saca el mérito. El juego te
+muestra el titular y debajo lo que pasó de verdad, y cierra con la frase que
+sostiene toda la matemática del juego: el resultado de una decisión no prueba
+que la decisión haya sido buena.
+
+**Récords históricos.** Seis marcas a batir: títulos, puntos, temporadas sin bajar
+de mitad de tabla, temporadas en un mismo club, ascensos y terminar con el
+vestuario intacto.
+
+**Modos de duración.** Exprés de 3 temporadas, Normal de 6, Carrera larga de 10.
+
+### Balance verificado de la versión 4
+
+| Modo | Score con planteo óptimo | Score con planteo malo | Gana el que lee bien |
+|---|---|---|---|
+| Exprés (3) | 60,9 | 12,2 | 100% |
+| Normal (6) | 51,1 | 9,7 | 100% |
+| Largo (10) | 38,0 | 8,4 | 99% |
+
+En modo normal: 1,05 títulos por carrera, 1,39 récords rotos y el azar disfraza
+un resultado 0,64 veces por carrera.
+
+---
+
+## 11. Versión 4.1 — modo duelo, formativas y balance del vestuario
+
+**Modo duelo terminado.** Desde la portada se entra con un código. Verificado que
+dos DT con el mismo código reciben idénticas ofertas de club, situaciones, cartas
+de mercado, ruletas y tiradas de azar — el bug estaba en que las ofertas se
+generaban antes de sembrar la semilla, y quedó arreglado. Los dos tienen que
+elegir el mismo modo de duración para que los puntajes sean comparables.
+
+**14 situaciones propias de formativas.** El pool base estaba escrito para
+planteles profesionales. Dirigiendo juveniles los problemas son otros: el padre
+que grita indicaciones desde el alambrado, el zaguero que creció once centímetros
+y perdió coordinación, el coordinador que te pide poner siempre a los más grandes
+por el ranking del club, el representante que aparece en el predio a ofrecerse
+por chicos de quince, las cuatro materias bajas del goleador.
+
+**Pasada de balance sobre el Vestuario.** El eje estaba en +45 neto: como la
+cohesión multiplica todo el rendimiento, quien elegía siempre "lo humano"
+acumulaba una ventaja que nunca pagaba. La regla aplicada: si una opción sube el
+Vestuario y no cuesta nada en ningún otro eje, deja de ser gratis. Quedó en +13.
+
+**Etiquetas para todos.** Antes el 35% de las carreras terminaba sin etiqueta.
+Se bajaron los umbrales y se agregó una regla de respaldo: si ninguna marca
+destaca pero ya hay recorrido, te etiquetan por lo que más hiciste. En el fútbol
+nadie se queda sin apodo.
+
+### Contenido escrito
+
+| Fuente | Situaciones |
+|---|---|
+| Pool base | 60 |
+| Formativas | 14 |
+| Por reputación | 7 |
+| Ídolos de club | 27 |
+| **Total** | **108** |
+
+### Balance 4.1
+
+| Modo | Planteo óptimo | Planteo malo | Gana el que lee bien |
+|---|---|---|---|
+| Exprés (3) | 60,5 | 11,2 | 100% |
+| Normal (6) | 49,1 | 8,7 | 100% |
+| Largo (10) | 35,9 | 7,1 | 99% |
+
+Reparto de etiquetas en modo normal: formador 40%, lírico 26%, político 20%,
+mediático 10%, resultadista 4%, bilardista 1%.
+
+---
+
+## 12. Versión 5 — el juego en tres idiomas
+
+Traducido completo a **portugués** e **inglés**. El español sigue siendo el original.
+
+**Qué está traducido**
+
+| | Contenido |
+|---|---|
+| Interfaz | 100 claves de texto: títulos, botones, etiquetas, ayudas |
+| Situaciones del pool base | 60 situaciones, 177 opciones |
+| Situaciones de formativas | 14 situaciones |
+| Situaciones por reputación | 7 situaciones |
+| Pregunta del ídolo | 27 clubes, con su frase propia por idioma |
+| Arquetipos de DT | 3, con ventajas y costos |
+| Políticas de prensa | 3, con pros y contras |
+| Modos de duración | 3 |
+| Roles de cancha | 14 puestos |
+| Categorías | Séptima/Quinta/Sub-19/Primera, adaptadas a cada país |
+| Estilos, fits, récords, etiquetas, cierres de temporada | todos |
+
+**Cómo se elige el idioma**
+
+1. Selector en la portada con las tres opciones.
+2. Se recuerda entre partidas.
+3. Si no hay nada guardado, se toma el del navegador.
+4. **Al firmar con un club de otro país, el juego ofrece cambiar al idioma de esa liga.** Si agarrás Flamengo te pregunta si querés jugar en portugués; si agarrás Arsenal, en inglés. Se acepta o se sigue como estabas.
+
+**Detalles de localización**, no traducción literal:
+
+- Las categorías formativas cambian de nombre según el país: Séptima/Quinta/Sub-19 en español, Sub-15/Sub-17/Sub-20 en portugués, U-15/U-17/U-20 en inglés.
+- Las motivaciones de los jugadores se adaptan: en español y portugués el argumento es jugar la Libertadores, en inglés es jugar en Europa.
+- Los puestos usan el vocabulario de cada fútbol: enganche / meia-armador / playmaker; lateral / lateral / full-back.
+- Las etiquetas de reputación se adaptan: "bilardista" no existe fuera del Río de la Plata, así que en portugués es "resultadista raiz" y en inglés "a pragmatist".
+
+**Lo que falta**, y es trabajo de alguien con el oído puesto en cada país: el portugués y el inglés están correctos pero son más neutros que el español. El registro rioplatense del original —"te quieren hacer la cama", "el pibe se agrandó"— tiene equivalentes en cada fútbol que un nativo encontraría mejor que una traducción. Los archivos están separados por idioma justamente para que eso se pueda pulir sin tocar el juego.
+

@@ -86,7 +86,7 @@ function cabecera(){
     return `<div class="hstat"><b>${Math.round(v)}</b><span>${n}</span>
       <div class="hbar"><i style="width:${pc}%;background:${col}"></i></div></div>`;};
   c.innerHTML=`<div class="hrow">${escudo(S.club,30)}
-    <div class="hinfo"><b>${S.club.n}</b><span>${S.esSeleccion?"Selección":DIVISIONES[S.division].n}${S.compe?" · "+S.compe:""} · T${Math.min(S.temporada,TEMPORADAS)}/${TEMPORADAS}</span></div></div>
+    <div class="hinfo"><b>${S.club.n}</b>${S.etiqueta?`<div class="hetiq">${tEtiq(S.etiqueta,"n")}</div>`:""}<span>${S.esSeleccion?"Selección":DIVISIONES[S.division].n}${S.compe?" · "+S.compe:""} · T${Math.min(S.temporada,tempTotal())}/${tempTotal()}</span></div></div>
     <div class="hstats">
       ${med(S.vars.dir,"Directiva")}${med(S.vars.hin,"Hinchada")}
       ${med(S.vars.ves,"Vestuario")}${med(S.presupuesto,"Plata",120)}
@@ -112,18 +112,61 @@ function panelPlantel(){
   const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((a,b)=>b.rt-a.rt);
   const a=atributosDe(once);
   return `<details class="panel-plantel">
-    <summary>Ver mi plantel — ${f} · ${ATRIBUTOS.map((n,i)=>n[0]+a[i]).join(" ")}</summary>
+    <summary>${T("verPlantel")} — ${f} · ${ATRIBUTOS.map((n,i)=>n[0]+a[i]).join(" ")}</summary>
     <div class="pp-cuerpo">
       ${cancha(once,{mostrarNombre:true,alto:280,ancho:400})}
-      <h4 class="disp" style="font-size:16px;margin:12px 0 4px">Titulares</h4>
-      <table><tr><th>Puesto</th><th>Jugador</th><th style="text-align:right">Nivel</th></tr>
-      ${once.map(o=>`<tr><td>${ROL[o.rol].n}</td>
+      <h4 class="disp" style="font-size:16px;margin:12px 0 4px">${T("titulares")}</h4>
+      <table><tr><th>${T("puesto")}</th><th>${T("jugador")}</th><th style="text-align:right">Nivel</th></tr>
+      ${once.map(o=>`<tr><td>${tRol(o.rol)}</td>
         <td>${o.jug.nom}${o.fuera?' <span style="color:var(--ambar)">fuera de puesto</span>':''}</td>
         <td style="text-align:right"><b>${o.rt}</b></td></tr>`).join("")}</table>
-      <h4 class="disp" style="font-size:16px;margin:12px 0 4px">Banco</h4>
-      <table><tr><th>Puesto</th><th>Jugador</th><th style="text-align:right">Nivel</th></tr>
-      ${banco.map(j=>`<tr><td>${PUESTO_LARGO[j.g]}</td><td>${j.nom} · ${j.ed} años</td>
+      <h4 class="disp" style="font-size:16px;margin:12px 0 4px">${T("banco")}</h4>
+      <table><tr><th>${T("puesto")}</th><th>${T("jugador")}</th><th style="text-align:right">Nivel</th></tr>
+      ${banco.map(j=>`<tr><td>${tGrupo(j.g)}</td><td>${j.nom} · ${j.ed} años</td>
         <td style="text-align:right">${j.rt}</td></tr>`).join("")}</table>
+    </div></details>`;
+}
+
+/* ==========================================================
+   TABLERO — el estado general del ciclo, siempre a mano
+   Responde al reclamo del playtest: "los datos están, pero
+   repartidos por todos lados y no los encuentro cuando los necesito".
+   ========================================================== */
+function tablero(){
+  if(!S.club) return "";
+  const f=S.formacion||S.sistemaPref;
+  const once=armarOnce(S.plantel,f,S.fijos||[]);
+  const a=atributosDe(once);
+  const fuera=once.filter(o=>o.fuera).length;
+  const edades=once.map(o=>o.jug.ed);
+  const edadProm=Math.round(edades.reduce((x,y)=>x+y,0)/edades.length);
+  const nivelOnce=Math.round(once.reduce((x,o)=>x+o.rt,0)/once.length);
+  const umbral=S.arq.id==="ganador"?26:S.arq.id==="bombero"?12:18;
+  const riesgo=S.vars.dir-umbral;
+  const objetivo = S.division<3 ? "Subir de categoría"
+    : S.club.niv>=5 ? "Salir campeón" : S.club.niv>=3 ? "Pelear arriba" : "Mantener la categoría";
+  return `<details class="tablero">
+    <summary>${T("tablero")}</summary>
+    <div class="tab-cuerpo">
+      <div class="tab-grid">
+        <div><span>Objetivo</span><b>${objetivo}</b></div>
+        <div><span>Once titular</span><b>${nivelOnce}</b></div>
+        <div><span>Edad promedio</span><b>${edadProm} años</b></div>
+        <div><span>Plantel</span><b>${S.plantel.length} jugadores</b></div>
+        <div><span>Estadio</span><b>nivel ${S.estadio} de 5</b></div>
+        <div><span>Títulos</span><b>${S.titulos.length}</b></div>
+      </div>
+      ${barras(a)}
+      <div class="tab-alertas">
+        ${riesgo<8?`<div class="alerta mal">La directiva está a ${Math.max(0,Math.round(riesgo))} puntos de echarte.</div>`:""}
+        ${S.vars.ves<35?`<div class="alerta mal">El vestuario está roto: te castiga el rendimiento.</div>`:""}
+        ${S.vars.hin<30?`<div class="alerta mal">La tribuna te soltó la mano.</div>`:""}
+        ${fuera?`<div class="alerta">${fuera} jugador${fuera>1?"es":""} fuera de puesto con ${f}.</div>`:""}
+        ${S.presupuesto<10?`<div class="alerta">Casi sin presupuesto para el próximo mercado.</div>`:""}
+        ${edadProm>30?`<div class="alerta">Plantel viejo: van a empezar a bajar de nivel.</div>`:""}
+        ${riesgo>=8&&S.vars.ves>=35&&S.vars.hin>=30&&!fuera?`<div class="alerta ok">${T("todoEnOrden")}.</div>`:""}
+      </div>
+      ${S.etiqueta?`<p class="mini">Te dicen <b style="color:var(--ambar)">${S.etiqueta.n}</b>. ${S.etiqueta.desc}</p>`:""}
     </div></details>`;
 }
 

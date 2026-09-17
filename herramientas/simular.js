@@ -2,7 +2,9 @@
 // Uso:  node herramientas/simular.js
 const fs=require('fs'), path=require('path');
 const raiz=path.join(__dirname,'..');
-const orden=['tactica','decisiones','datos','nucleo','ui','juego'];
+const orden=['tactica','decisiones','datos',
+  'i18n/core','i18n/textos','i18n/datos-i18n','i18n/pool-pt','i18n/pool-en','i18n/pool-extra','i18n/aplicar',
+  'nucleo','ui','juego'];
 let js=orden.map(f=>fs.readFileSync(path.join(raiz,'js',f+'.js'),'utf8')).join('\n')
   .replace(/\nportada\(\);\n/,'\n');
 
@@ -11,7 +13,7 @@ const stub={style:{},classList:{add:()=>{},remove:()=>{}},querySelectorAll:()=>[
 global.window={matchMedia:()=>({matches:true}),scrollTo:()=>{}};
 global.document={querySelector:()=>null,querySelectorAll:()=>[],getElementById:()=>null,
   createElement:()=>stub,body:{appendChild:()=>{},removeChild:()=>{}}};
-global.navigator={};
+global.navigator={language:'es'};
 global.setInterval=()=>0; global.clearInterval=()=>{}; global.setTimeout=(f)=>{f();return 0};
 
 eval(js + `
@@ -47,3 +49,5 @@ FORMACIONES.forEach(f=>{
 });
 console.log('  brecha entre el mejor y el peor sistema: '+(mej.v-peo.v).toFixed(1)+' puntos');
 `);
+
+// ---- carreras completas: verificar dificultad y reputación ----

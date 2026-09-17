@@ -139,3 +139,196 @@ const ARQ=[
   ef:["Toda tu defensa arranca +7","La Directiva te banca hasta el fondo (te echan recién en 12)"],
   co:"La hinchada nunca se enamora del todo (-6 de arranque)",pres:-2,vest:2,dir:12,hin:-6,plantel:0}
 ];
+
+/* ==========================================================
+   CÓMO EL PERFIL DEL DT CAMBIA LAS CONSECUENCIAS
+   Una misma decisión no pesa igual según quién la toma.
+   Un formador tiene espalda para negarse a la directiva;
+   un ganador convierte mejor los riesgos en resultado.
+   ========================================================== */
+const SESGO_PERFIL={
+ formador:{
+   // la directiva le perdona los desplantes cuando lo hace por el plantel
+   ajustar(d,o){
+     const [ ,res,dir,hin,ves]=o;
+     if(dir<0 && ves>0) return {dir:dir*0.5, nota:"Tu fama de formador te da espalda: la directiva lo traga a medias."};
+     if(ves>0) return {ves:ves*1.4, nota:"El vestuario te cree más que a cualquiera."};
+     if(ves<0) return {ves:ves*1.4, nota:"Justo vos, que te vendiste como formador. El grupo lo siente el doble."};
+     return {};
+   }},
+ ganador:{
+   ajustar(d,o){
+     const [ ,res,dir,hin,ves]=o;
+     if(res>0) return {res:res*1.5, nota:"Tu obsesión por ganar exprime cada punto."};
+     if(dir<0) return {dir:dir*1.4, nota:"Te contrataron para ganar, no para discutir. La directiva anota."};
+     return {};
+   }},
+ bombero:{
+   ajustar(d,o){
+     const [ ,res,dir,hin,ves]=o;
+     if(dir<0) return {dir:dir*0.5, nota:"Te bancan porque saben para qué te trajeron."};
+     if(hin>0) return {hin:hin*0.6, nota:"La tribuna aplaude, pero con vos nunca se enamora del todo."};
+     return {};
+   }}
+};
+
+/* ==========================================================
+   REPUTACIÓN — el juego recuerda cómo venís dirigiendo
+   ========================================================== */
+const ETIQUETAS=[
+ {id:"bilardista", n:"bilardista",
+  desc:"Especula, cierra y espera. Mientras gana, nadie dice nada.",
+  test:r=>r.conservador>=3 && r.conservador>r.ofensivo},
+ {id:"lirico", n:"lírico",
+  desc:"Sale a jugar siempre, aunque el resultado no acompañe.",
+  test:r=>r.ofensivo>=3 && r.ofensivo>r.conservador},
+ {id:"formador", n:"formador",
+  desc:"Le da lugar a los pibes y cuida el grupo por encima del resultado.",
+  test:r=>r.plantel>=5},
+ {id:"politico", n:"político",
+  desc:"Nunca se pelea con nadie arriba. Siempre queda bien parado.",
+  test:r=>r.directiva>=5},
+ {id:"mediatico", n:"mediático",
+  desc:"Vive del micrófono. Cada conferencia es un episodio.",
+  test:r=>r.prensa>=3},
+ {id:"resultadista", n:"resultadista",
+  desc:"Lo único que mira es la tabla.",
+  test:r=>r.resultado>=5}
+];
+function etiquetaDe(rep){
+  const m=ETIQUETAS.filter(e=>e.test(rep));
+  if(m.length) return m[0];
+  // si ninguna marca destaca pero ya hay recorrido, igual te etiquetan
+  // por lo que más hiciste: en el fútbol nadie se queda sin apodo
+  const total=rep.ofensivo+rep.conservador+rep.plantel+rep.directiva+rep.prensa+rep.resultado;
+  if(total<6) return null;
+  const ejes=[["conservador",rep.conservador],["ofensivo",rep.ofensivo],["plantel",rep.plantel],
+              ["directiva",rep.directiva],["prensa",rep.prensa],["resultado",rep.resultado]];
+  ejes.sort((a,b)=>b[1]-a[1]);
+  const mapa={conservador:"bilardista",ofensivo:"lirico",plantel:"formador",
+              directiva:"politico",prensa:"mediatico",resultado:"resultadista"};
+  return ETIQUETAS.find(e=>e.id===mapa[ejes[0][0]])||null;
+}
+
+
+/* ==========================================================
+   ÍDOLOS DE CADA CLUB
+   La pregunta del periodista sobre el ídolo mide si el DT sabe
+   dónde está parado. Sólo aparece en clubes con ídolo cargado.
+   Nota: las opciones provocadoras son opiniones futbolísticas,
+   nunca acusaciones personales sobre gente real.
+   ========================================================== */
+const IDOLOS={
+ "Peñarol":{n:"Fernando Morena",q:"el goleador más grande de la historia del club",era:"los setenta"},
+ "Nacional":{n:"Atilio García",q:"el máximo goleador histórico del club",era:"los cuarenta"},
+ "Boca Juniors":{n:"Juan Román Riquelme",q:"el último ídolo absoluto de la Bombonera",era:"los dos mil"},
+ "River Plate":{n:"Ángel Labruna",q:"el máximo goleador e ídolo eterno del club",era:"La Máquina"},
+ "Independiente":{n:"Ricardo Bochini",q:"el Bocha, el ídolo máximo del Rojo",era:"los setenta y ochenta"},
+ "Racing Club":{n:"Diego Milito",q:"el capitán que rompió la sequía",era:"los dos mil diez"},
+ "Flamengo":{n:"Zico",q:"el mayor ídolo de la historia del club",era:"los ochenta"},
+ "Palmeiras":{n:"Ademir da Guia",q:"el Divino, símbolo del club",era:"los setenta"},
+ "Corinthians":{n:"Sócrates",q:"el capitán de la Democracia Corinthiana",era:"los ochenta"},
+ "Botafogo":{n:"Garrincha",q:"el mayor ídolo que pasó por el club",era:"los cincuenta y sesenta"},
+ "Cruzeiro":{n:"Tostão",q:"el símbolo del club",era:"los sesenta"},
+ "Vasco da Gama":{n:"Roberto Dinamite",q:"el máximo goleador histórico del club",era:"los setenta y ochenta"},
+ "Grêmio":{n:"Renato Portaluppi",q:"ídolo como jugador y como entrenador",era:"los ochenta"},
+ "Internacional":{n:"Falcão",q:"el Rei de Roma, ídolo del club",era:"los setenta"},
+ "Barcelona":{n:"Lionel Messi",q:"el máximo goleador de la historia del club",era:"los dos mil"},
+ "Real Madrid":{n:"Alfredo Di Stéfano",q:"la Saeta Rubia, el que construyó al club",era:"los cincuenta"},
+ "Atlético de Madrid":{n:"Luis Aragonés",q:"ídolo como jugador y entrenador del club",era:"los sesenta y setenta"},
+ "Manchester United":{n:"Bobby Charlton",q:"símbolo del club y sobreviviente de Múnich",era:"los sesenta"},
+ "Liverpool FC":{n:"Steven Gerrard",q:"el capitán de Estambul",era:"los dos mil"},
+ "Arsenal":{n:"Thierry Henry",q:"el máximo goleador histórico del club",era:"los Invencibles"},
+ "Manchester City":{n:"Sergio Agüero",q:"el máximo goleador histórico del club",era:"los dos mil diez"},
+ "Milan":{n:"Paolo Maldini",q:"el capitán eterno del club",era:"los noventa"},
+ "Inter":{n:"Javier Zanetti",q:"el capitán del Triplete",era:"los dos mil"},
+ "Juventus":{n:"Alessandro Del Piero",q:"el capitán y máximo goleador del club",era:"los dos mil"},
+ "Napoli":{n:"Diego Maradona",q:"el que le dio al sur los únicos scudettos",era:"los ochenta"},
+ "Roma":{n:"Francesco Totti",q:"el Capitano, ídolo de una sola camiseta",era:"los dos mil"},
+ "Bayern München":{n:"Franz Beckenbauer",q:"el Kaiser, símbolo del club",era:"los setenta"}
+};
+
+// arma la situación del ídolo para el club donde estés
+function situacionIdolo(club){
+  const i=IDOLOS[club.n];
+  if(!i) return null;
+  return ["Prensa",
+    `Primera conferencia en ${club.n}. Un periodista veterano te mira fijo y te pregunta qué pensás de ${i.n}.`,
+    [
+     [`Decís que es ${i.q}`, 0, 1, 2, 1,
+      "Sabés dónde estás parado. La respuesta correcta, sin exagerar."],
+     [`Decís que fue un gran jugador de ${i.era} pero que el fútbol de hoy es otra cosa`, 0, 0, -2, 0,
+      "Técnicamente cierto y socialmente carísimo. A los ídolos no se los relativiza en su casa."],
+     [`Decís que está sobrevalorado por la nostalgia`, 0, -2, -3, -1,
+      "Te peleaste con la historia del club en tu primer día. Mal negocio."],
+     [`Decís que es el mejor de todos los tiempos, arriba de cualquiera`, 0, 0, 1, -1,
+      "La tribuna aplaude, pero se nota que estás comprando barato."],
+     [`Preguntás quién es`, 0, -3, -3, -2,
+      "Quedaste como alguien que no tiene idea de dónde vino a trabajar."]
+    ]];
+}
+
+/* ==========================================================
+   PERSUASIÓN — convencer a un jugador que duda
+   Cada futbolista valora algo distinto. Convencerlo es leer
+   al personaje, no elegir siempre la opción con más plata.
+   ========================================================== */
+const MOTIVACIONES=[
+ {id:"plata",     n:"la plata",        pista:"Su representante ya llamó tres veces preguntando por el contrato."},
+ {id:"familia",   n:"la familia",      pista:"Tiene dos hijos chicos y viene de tres mudanzas en cuatro años."},
+ {id:"copas",     n:"jugar la copa",   pista:"Nunca jugó una copa internacional y ya tiene treinta."},
+ {id:"minutos",   n:"jugar siempre",   pista:"Viene de dos temporadas mirando desde el banco."},
+ {id:"idolo",     n:"ser ídolo",       pista:"Se crió acá a la vuelta y hay fotos de él de pibe con la camiseta."},
+ {id:"proyecto",  n:"el proyecto",     pista:"En la charla pregunta más por cómo va a jugar el equipo que por el sueldo."}
+];
+const ARGUMENTOS=[
+ {id:"plata",    txt:"Le ofrecés ser el mejor pago del plantel"},
+ {id:"familia",  txt:"Le hablás de la tranquilidad para vivir con la familia"},
+ {id:"copas",    txt:"Le prometés que va a jugar la copa internacional"},
+ {id:"minutos",  txt:"Le garantizás que va a ser titular"},
+ {id:"idolo",    txt:"Le decís que acá puede terminar siendo ídolo"},
+ {id:"proyecto", txt:"Le explicás el proyecto y cómo lo pensaste a él adentro"}
+];
+
+/* ==========================================================
+   POLÍTICA CON LA PRENSA — un eje, dos extremos, ninguno correcto
+   ========================================================== */
+const POLITICAS_PRENSA=[
+ {id:"abierto", n:"Puertas abiertas",
+  desc:"Dejás entrar a los periodistas, generás vínculo, contestás todo.",
+  pro:"Menos presión cuando pierdas · te llegan los rumores del mercado antes",
+  contra:"Se filtra cómo trabajás: el rival te lee mejor",
+  hin:4, dir:4, ves:-4, mult:0.985, filtra:true},
+ {id:"neutro", n:"Lo justo y necesario",
+  desc:"Conferencias, nada más. Ni amigo ni enemigo.",
+  pro:"Nadie se enoja",
+  contra:"Nadie te banca tampoco",
+  hin:0, dir:0, ves:0, mult:1, filtra:false},
+ {id:"cerrado", n:"Persiana baja",
+  desc:"Entrenamientos cerrados y lo mínimo indispensable con la prensa.",
+  pro:"Nadie sabe cómo vas a jugar · el plantel trabaja tranquilo",
+  contra:"Cada mala racha se te vuelve polémica y la tribuna lo escucha",
+  hin:-6, dir:-4, ves:8, mult:1.015, filtra:false}
+];
+
+/* ==========================================================
+   RÉCORDS HISTÓRICOS DE ENTRENADORES
+   Marcas a batir. Le dan objetivos a la carrera más allá del título.
+   ========================================================== */
+const RECORDS=[
+ {id:"titulos",   n:"Más títulos en una carrera",      marca:6,  duenio:"Óscar Tabárez (histórico)",  mide:s=>s.titulos.length},
+ {id:"puntos",    n:"Más puntos de carrera",           marca:52, duenio:"Carlos Bianchi (histórico)", mide:s=>s.puntos},
+ {id:"invicto",   n:"Más temporadas sin bajar de mitad de tabla", marca:5, duenio:"Luiz Felipe Scolari (histórico)",
+  mide:s=>s.hist.filter(h=>h.pts>=4).length},
+ {id:"unclub",    n:"Más temporadas en un mismo club",  marca:5,  duenio:"Alex Ferguson (histórico)",
+  mide:s=>{const c={};s.hist.forEach(h=>{if(h.club&&h.club!=="—")c[h.club]=(c[h.club]||0)+1;});
+           return Object.values(c).reduce((a,b)=>Math.max(a,b),0);}},
+ {id:"ascensos",  n:"Más ascensos de categoría",        marca:3,  duenio:"—",
+  mide:s=>s.ascensos||0},
+ {id:"vestuario", n:"Terminar con el vestuario intacto", marca:90, duenio:"Marcelo Bielsa (histórico)",
+  mide:s=>Math.round(s.vars.ves)}
+];
+function recordsLogrados(S){
+  return RECORDS.map(r=>({...r, valor:r.mide(S), roto:r.mide(S)>=r.marca}));
+}
+

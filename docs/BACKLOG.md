@@ -1,5 +1,13 @@
 # Carrera de DT — Backlog priorizado v4
 
+> **Estado al cerrar la tanda 3-5.** Ya están implementados: todos los bugs de
+> la sección 0, la prioridad alta completa (1.1 a 1.6), y de la prioridad media
+> 2.1 identidad de clubes, 2.2 reputación, 2.3 política con la prensa,
+> 2.4 persuasión, 2.6 récords y 2.7 modos de duración. Más el azar disfrazado
+> de genialidad de la sección 7.
+> **Queda pendiente sólo 2.5**, las decisiones tácticas dentro del partido,
+> que es la más cara y la que más se pisa con el simulador de Unreal.
+
 Consolidación de las ideas de diseño de Leo más los dos playtests. Ordenado por impacto contra costo, no por orden de aparición.
 
 **Nota sobre el nombre:** los apuntes dicen "Copero 2". Copero es el juego de otro. Conviene no bautizar el proyecto con el nombre del competidor ni en los documentos internos, porque después se pega.
