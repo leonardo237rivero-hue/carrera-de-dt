@@ -267,3 +267,18 @@ Y en `mi-prueba.js` ya tenés disponibles todas las funciones del juego: `genera
 - [ ] Sumar situaciones específicas de formativas (hoy el pool es mayormente de Primera).
 - [ ] Endurecer el eje Vestuario en el pool: hoy suma +45 neto, se infla solo.
 - [ ] Armar la pantalla de sala del modo duelo.
+
+---
+
+## v6 — archivos nuevos
+| Archivo | Qué tiene |
+|---|---|
+| `js/club.js` | Fichas de club (CLUB_INFO), clásicos, tema de colores, trofeos, presentación, idioma del vestuario, prensa |
+| `js/idea.js` | Pantalla "Quién sos" exprés y "Tu idea de juego" (automatismos) |
+| `js/momentos.js` | Las tres fases del partido: rasgos de cada sistema, ventaja por opción, formas en la cancha y animación |
+| `js/temporada.js` | Motor de temporada: liga, copas, partido (Poisson), forma, cansancio, lesiones, cierre y lectura del plan |
+| `herramientas/carga.js` | Carga todo el juego en Node para testear |
+| `herramientas/pruebas.js` | Carreras completas "DT que sabe" contra "DT al azar" |
+
+Para verificar balance: `node herramientas/simular.js`.
+Constantes para tocar: `K_PARTIDO` y `LAMBDA_BASE` (temporada.js), `escalaRivales()` (dificultad), `planContra` (peso del plan), `nivelBaseDe` (nucleo.js).

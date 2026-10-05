@@ -30,7 +30,7 @@ function nuevo(){return{pant:"portada",nombre:"",arq:null,sistemaPref:null,estil
 // el nivel de una categoria formativa esta MUY por debajo de primera
 function nivelBaseDe(niv,div){
   const porDiv=[-26,-18,-10,0][div];
-  return 36 + niv*7 + porDiv;
+  return 43 + niv*5.5 + porDiv; // v6: brecha entre niveles más realista
 }
 function edadPara(div){
   const d=DIVISIONES[div];
@@ -41,7 +41,7 @@ function edadPara(div){
 }
 function nuevoJugador(g,base,div,edad,pais){
   const P=poolNombres(pais||(S.club?S.club.p:"Uruguay"));
-  return {nom:R.el(P.n)+" "+R.el(P.a),g,rt:clamp(Math.round(base+R.e(-7,7)),20,94),
+  return {nom:R.el(P.n)+" "+R.el(P.a),g,rt:clamp(Math.round(base+R.e(-7,7)),30,94),
           ed:edad||edadPara(div===undefined?3:div)};
 }
 // cada plantel tiene un perfil: fuerte en una linea, flojo en otra.
@@ -51,7 +51,7 @@ function generarPlantel(base,div,perfil,pais){
   const sesgo = perfil || (()=>{
     const s={POR:0,DEF:0,MED:0,ATA:0};
     const gs=R.mz(["DEF","MED","ATA"]);
-    s[gs[0]]=R.e(7,13); s[gs[1]]=R.e(-3,3); s[gs[2]]=R.e(-13,-7);
+    s[gs[0]]=R.e(6,11); s[gs[1]]=R.e(-3,3); s[gs[2]]=R.e(-11,-6);
     s.POR=R.e(-4,4);
     return s;
   })();

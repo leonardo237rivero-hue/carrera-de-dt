@@ -3,10 +3,24 @@
 El juego busca cada escudo en esta carpeta. Si el archivo esta, lo usa.
 Si no esta, dibuja un escudo generado con los colores del club y no se rompe nada.
 
+## Donde van
+En esta misma carpeta: `escudos/`, al lado de `index.html`.
+En GitHub: entrás al repo, abrís la carpeta `escudos`, "Add file" > "Upload files",
+arrastrás los PNG y "Commit changes". En un minuto aparecen en el juego.
+
+    carrera-de-dt/
+      index.html
+      escudos/
+        penarol.png
+        nacional.png
+        seleccion-uruguay.png
+        ...
+
 ## Como usarlo
 1. Consegui el PNG del escudo (fondo transparente, cuadrado, 128x128 o mas).
-2. Guardalo en esta carpeta con EXACTAMENTE el nombre que figura abajo.
-3. Recarga el juego. No hay que tocar codigo.
+2. Guardalo en esta carpeta con EXACTAMENTE el nombre que figura abajo (minusculas, sin tildes, guiones).
+3. Las selecciones llevan el prefijo `seleccion-` (ej. `seleccion-uruguay.png`).
+4. Recarga el juego. No hay que tocar codigo. Si falta alguno, se dibuja uno con los colores del club.
 
 ## Nota legal
 Los escudos de los clubes son marcas registradas. Usarlos sin licencia es un riesgo

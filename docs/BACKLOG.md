@@ -174,3 +174,14 @@ La del azar disfrazado de genialidad: vas perdiendo 1-0, minuto 87, hacés un ca
 Es la mejor forma de decir algo que el juego ya sostiene en su matemática pero nunca dice en voz alta: **el resultado de una decisión no prueba que la decisión haya sido buena**. Y funciona igual de bien al revés, cuando hacés todo bien y perdés.
 
 Es barata de implementar y le da al juego una voz propia que ni Copero ni 7a0 tienen.
+
+---
+
+## v6 — hecho
+Los diez puntos del playtest de v5 (ver BITACORA, sección v6).
+
+## Pendiente después de v6
+- Traducir las pantallas que no se tocaron en v6: duelo, mercado, persuasión y los rótulos de las decisiones.
+- Cambiar el plan (momentos) en la parada de mitad de temporada, con costo de automatismos.
+- Estadísticas del rival: goleadores rivales y su forma visibles antes del clásico.
+- Guardar partida (hoy una carrera se juega de corrido).

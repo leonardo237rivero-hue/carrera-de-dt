@@ -87,6 +87,7 @@ const SELECCIONES=[
  {n:"Chile",p:"Chile",niv:3,c:["#C8102E","#1A4FA0"]},{n:"Paraguay",p:"Paraguay",niv:3,c:["#C8102E","#1A4FA0"]},
  {n:"Perú",p:"Perú",niv:3,c:["#FFFFFF","#C8102E"]},{n:"Ecuador",p:"Ecuador",niv:3,c:["#F5C518","#1A4FA0"]},
  {n:"México",p:"México",niv:4,c:["#0B6B3A","#C8102E"]},{n:"España",p:"España",niv:5,c:["#C8102E","#F5C518"]}];
+SELECCIONES.forEach(s=>s.sel=true); // escudos: escudos/seleccion-<pais>.png
 
 // divisiones: nombre, tope de edad, nombre de la competencia juvenil
 const DIVISIONES=[
@@ -243,7 +244,7 @@ const IDOLOS={
  "Milan":{n:"Paolo Maldini",q:"el capitán eterno del club",era:"los noventa"},
  "Inter":{n:"Javier Zanetti",q:"el capitán del Triplete",era:"los dos mil"},
  "Juventus":{n:"Alessandro Del Piero",q:"el capitán y máximo goleador del club",era:"los dos mil"},
- "Napoli":{n:"Diego Maradona",q:"el que le dio al sur los únicos scudettos",era:"los ochenta"},
+ "Napoli":{n:"Diego Maradona",q:"el que le dio al sur sus primeros scudettos",era:"los ochenta"},
  "Roma":{n:"Francesco Totti",q:"el Capitano, ídolo de una sola camiseta",era:"los dos mil"},
  "Bayern München":{n:"Franz Beckenbauer",q:"el Kaiser, símbolo del club",era:"los setenta"}
 };
@@ -316,7 +317,7 @@ const POLITICAS_PRENSA=[
    Marcas a batir. Le dan objetivos a la carrera más allá del título.
    ========================================================== */
 const RECORDS=[
- {id:"titulos",   n:"Más títulos en una carrera",      marca:6,  duenio:"Óscar Tabárez (histórico)",  mide:s=>s.titulos.length},
+ {id:"titulos",   n:"Más títulos en una carrera",      marca:8,  duenio:"Óscar Tabárez (histórico)",  mide:s=>s.titulos.length},
  {id:"puntos",    n:"Más puntos de carrera",           marca:52, duenio:"Carlos Bianchi (histórico)", mide:s=>s.puntos},
  {id:"invicto",   n:"Más temporadas sin bajar de mitad de tabla", marca:5, duenio:"Luiz Felipe Scolari (histórico)",
   mide:s=>s.hist.filter(h=>h.pts>=4).length},

@@ -6,12 +6,14 @@
    ========================================================== */
 function cambiarIdioma(id){ setIdioma(id); portada(); }
 function portada(){
-  S=nuevo();
+  S=nuevo(); aplicarTema();
   const demo=armarOnce(generarPlantel(70,3,null,"Uruguay"),"4-3-3",[]);
   $("#s-portada").innerHTML=`
     <div style="margin:26px 0 18px">
       <h2 class="disp" style="font-size:46px">${T("titulo")}</h2>
-      <p class="mini" style="margin-top:6px">Seis temporadas. Vos elegís cómo para el equipo.</p>
+      <p class="mini" style="margin-top:6px">${t3("Vos elegís cómo juega el equipo. El resto lo decide la cancha.",
+        "Você escolhe como o time joga. O resto, o campo decide.",
+        "You decide how the team plays. The pitch decides the rest.")}</p>
     </div>
     ${cancha(demo,{mostrarRating:false,alto:300,ancho:420})}
     <div class="idiomas">${IDIOMAS.map(x=>`
@@ -20,8 +22,9 @@ function portada(){
       <button class="btn" onclick="identidad()">${T("empezar")}</button>
       <button class="btn sec" onclick="abrirDuelo()">${T("duelo")}</button>
     </div>
-    <p class="mini" style="margin-top:12px">En el duelo los dos DT reciben las mismas
-    situaciones, las mismas cartas y el mismo azar. Sólo cambia lo que cada uno decide.</p>`;
+    <p class="mini" style="margin-top:12px">${t3("En el duelo los dos DT reciben las mismas situaciones, las mismas cartas y el mismo azar. Sólo cambia lo que cada uno decide.",
+      "No duelo os dois técnicos recebem as mesmas situações, as mesmas cartas e a mesma sorte. Só muda o que cada um decide.",
+      "In a duel both coaches get the same situations, the same cards and the same luck. Only their decisions differ.")}</p>`;
   ir("portada");
 }
 
@@ -75,157 +78,53 @@ function empezarDuelo(){
   if(!c) return;
   const g=c; identidad(); S.duelo=g;
 }
-function identidad(){
-  tmp={arq:null,sis:null,est:null,pre:"neutro",modo:"normal",hincha:"Peñarol"};
-  pintarIdentidad(); ir("identidad");
-}
-function pintarIdentidad(){
-  const listo=tmp.arq&&tmp.sis&&tmp.est&&tmp.pre;
-  $("#s-identidad").innerHTML=`
-    <h2 class="disp">${T("quienSos")}</h2>
-    <div style="margin:14px 0"><label for="nom">Tu apellido</label>
-      <input type="text" id="nom" maxlength="24" placeholder="Cómo te van a nombrar" value="${S.nombre}"></div>
-
-    <h3 class="disp">${T("tuPerfil")}</h3>
-    ${ARQ.map(a=>`<button class="card ${tmp.arq===a.id?'sel':''}" onclick="setArq('${a.id}')">
-      <b>${nArq(a)}</b><div class="sub">${dArq(a)}</div>
-      <div class="efecto">${efArq(a).join(" · ")}</div>
-      <div class="costo">${coArq(a)}</div></button>`).join("")}
-
-    <div style="margin:14px 0"><label for="hincha">De qué club sos hincha</label>
-      <select id="hincha" onchange="setHincha(this.value)" style="font:inherit;font-size:15px;padding:11px;
-        background:var(--panel);border:1.5px solid var(--borde);color:var(--texto);border-radius:3px;width:100%;max-width:320px">
-        ${PAISES.map(pa=>`<optgroup label="${pa}">${LIGAS[pa].clubes.map(c=>
-          `<option value="${c.n}" ${tmp.hincha===c.n?'selected':''}>${c.n}</option>`).join("")}</optgroup>`).join("")}
-      </select>
-      <p class="mini" style="margin-top:5px">Si algún día te vienen a buscar, vas a saber qué se siente.</p></div>
-
-    <h3 class="disp">${T("tuSistema")}</h3>
-    <p class="mini">Cuando lo uses vas a rendir un poco mejor. Cuando uses otro, un poco peor. No te obliga: te define.</p>
-    <div class="grid3">${FORMACIONES.map(f=>`
-      <button class="card ${tmp.sis===f?'sel':''}" style="margin:0" onclick="setSis('${f}')">
-        <b>${f}</b>${cancha(ONCE[f].map(s=>({rol:s[0],x:s[1],y:s[2],jug:{nom:""},rt:"",fuera:false})),
-          {alto:150,ancho:200,rMin:8,mostrarRating:false})}</button>`).join("")}</div>
-
-    <h3 class="disp">${T("duracion")}</h3>
-    <div class="grid3">${MODOS.map(m=>`
-      <button class="card ${tmp.modo===m.id?'sel':''}" style="margin:0" onclick="setModo('${m.id}')">
-        <b>${tModo(m,"n")}</b><div class="sub">${tModo(m,"desc")}</div></button>`).join("")}</div>
-
-    <h3 class="disp">${T("relacionPrensa")}</h3>
-    <p class="mini">No hay una correcta. Elegís qué te conviene perder.</p>
-    ${POLITICAS_PRENSA.map(x=>`
-      <button class="card ${tmp.pre===x.id?'sel':''}" onclick="setPre('${x.id}')">
-        <b>${tPrensa(x,"n")}</b><div class="sub">${tPrensa(x,"desc")}</div>
-        <div class="efecto">${tPrensa(x,"pro")}</div>
-        ${x.contra?`<div class="costo">${tPrensa(x,"contra")}</div>`:""}</button>`).join("")}
-
-    <h3 class="disp">${T("tuModelo")}</h3>
-    <div class="grid3">${ESTILOS.map(e=>`
-      <button class="card ${tmp.est===e?'sel':''}" style="margin:0" onclick="setEst('${e}')">
-        <b>${ESTILO_LBL[e]}</b>${tmp.sis?`<div class="sub">Con ${tmp.sis}: ${FIT_LBL[FIT[e][tmp.sis]]}</div>`:""}
-      </button>`).join("")}</div>
-
-    <div class="acciones">
-      <button class="btn" onclick="verOfertas()" ${listo?'':'disabled'}>${T("buscarClub")}</button>
-      <button class="btn sec" onclick="portada()">${T("volver")}</button></div>`;
-}
-function setArq(id){S.nombre=$("#nom").value;tmp.arq=id;pintarIdentidad();}
-function setHincha(v){tmp.hincha=v;}
-function setSis(f){S.nombre=$("#nom").value;tmp.sis=f;pintarIdentidad();}
-function setEst(e){S.nombre=$("#nom").value;tmp.est=e;pintarIdentidad();}
-function setPre(x){S.nombre=$("#nom").value;tmp.pre=x;pintarIdentidad();}
-function setModo(x){S.nombre=$("#nom").value;tmp.modo=x;pintarIdentidad();}
-
 /* ==========================================================
-   MERCADO DE ENTRENADORES
+   MERCADO DE ENTRENADORES — quién te quiere
    ========================================================== */
 function verOfertas(){
-  S.nombre=($("#nom").value||"").trim()||"El DT";
-  S.arq=ARQ.find(a=>a.id===tmp.arq);
-  S.sistemaPref=tmp.sis; S.estiloPref=tmp.est;
-  S.prensa=POLITICAS_PRENSA.find(x=>x.id===tmp.pre)||POLITICAS_PRENSA[1];
-  S.modo=MODOS.find(x=>x.id===tmp.modo)||MODOS[1];
-  S.temporadasTotal=S.modo.temporadas;
-  const hs=$("#hincha"); if(hs) tmp.hincha=hs.value;
-  S.clubHincha=CLUBES.find(c=>c.n===tmp.hincha)||null;
   // en duelo la semilla manda desde el principio: hasta las ofertas son iguales
   S.rng = S.duelo ? mul32(hashS(S.duelo)) : mul32(hashS("libre"+Math.random()));
   const mez=R.mz(CLUBES);
   const grande=mez.find(c=>c.niv>=5), medio=mez.find(c=>c.niv===3||c.niv===4), chico=mez.find(c=>c.niv<=2);
   S.ofertas=[
-    {club:grande,div:0,txt:"Club grande, pero entrás por las formativas. Si salís campeón subís dos categorías de una."},
-    {club:medio,div:3,txt:"Primera división de entrada. Plantel correcto, exigencia media."},
-    {club:chico,div:3,txt:"Primera de un club chico. Poca plata, pero nadie te va a pedir salir campeón."}
+    {club:grande,div:0,txt:{es:"Techo altísimo, pero entrás por las formativas. Si salís campeón, subís de golpe.",
+      pt:"Teto altíssimo, mas você entra pela base. Se for campeão, sobe de uma vez.",en:"Sky-high ceiling, but you start in the academy. Win the title and you jump up."}},
+    {club:medio,div:3,txt:{es:"Primera división de entrada. Plantel correcto, exigencia media.",
+      pt:"Primeira divisão de cara. Elenco correto, cobrança média.",en:"First team from day one. Decent squad, moderate demands."}},
+    {club:chico,div:3,txt:{es:"Primera de un club chico. Poca plata, pero nadie te pide salir campeón.",
+      pt:"Primeira de um clube pequeno. Pouco dinheiro, mas ninguém pede título.",en:"First team at a small club. Little money, but nobody demands a title."}}
   ];
   $("#s-ofertas").innerHTML=`
     <h2 class="disp">${T("quienTeQuiere")}</h2>
-    <p>Tres ofertas sobre la mesa. Un club grande te da techo pero te hace empezar de abajo;
-    un club chico te da el primer equipo ya.</p>
+    <p class="mini">${t3("Tres ofertas sobre la mesa. Elegí dónde arranca tu carrera.","Três propostas na mesa. Escolha onde começa sua carreira.","Three offers on the table. Pick where your career starts.")}</p>
     ${S.ofertas.map((o,i)=>`
-      <button class="card" onclick="firmar(${i})">
-        <div style="display:flex;gap:12px;align-items:center">${escudo(o.club,40)}
-          <div><b>${o.club.n}</b>
-          <div class="sub">${o.club.p} · ${tDiv(DIVISIONES[o.div].n)} · plantel nivel ${o.club.niv}/5</div></div></div>
-        <div class="efecto" style="color:var(--tenue)">${o.txt}</div>
+      <button class="oferta" onclick="firmar(${i})">
+        ${bannerClub(o.club,{badges:badgesClub(o.club,o.div)})}
+        <div class="of-pie"><span>${o.club.p} · ${LIGAS[o.club.p].liga}</span><span>${L(o.txt)}</span></div>
       </button>`).join("")}`;
   ir("ofertas");
 }
-function firmar(i){
-  const o=S.ofertas[i];
-  // si el club es de otro país, ofrecer el idioma de ese país
-  const sug=IDIOMA_POR_PAIS[o.club.p];
-  if(sug && sug!==IDIOMA && !S.idiomaPreguntado){
-    S.idiomaPreguntado=true;
-    S.ofertaElegida=i;
-    $("#s-ofertas").innerHTML=`
-      <h2 class="disp">${o.club.n}</h2>
-      <p>${sug==="pt"?"Este clube é do Brasil. Quer jogar em português?"
-         :sug==="en"?"This club is from an English-speaking league. Play in English?"
-         :"Este club es de habla hispana. ¿Querés jugar en español?"}</p>
-      <div class="acciones">
-        <button class="btn" onclick="setIdioma('${sug}');firmarDefinitivo()">${
-          sug==="pt"?"Sim, em português":sug==="en"?"Yes, in English":"Sí, en español"}</button>
-        <button class="btn sec" onclick="firmarDefinitivo()">${T("seguir")}</button>
-      </div>`;
-    return;
-  }
-  firmarClub(o);
-}
-function firmarDefinitivo(){ firmarClub(S.ofertas[S.ofertaElegida]); }
+function firmar(i){ firmarClub(S.ofertas[i]); }
 function firmarClub(o){
   S.club=o.club; S.division=o.div; S.esSeleccion=false;
-  // en duelo la semilla es el código: dos DT con el mismo código juegan lo mismo
   // el RNG ya quedó sembrado en verOfertas; acá no se toca para no romper el duelo
   S.plantel=generarPlantel(nivelBaseDe(o.club.niv,o.div),o.div,null,o.club.p);
   if(S.arq.id==="bombero") S.plantel.forEach(j=>{if(j.g==="DEF"||j.g==="POR")j.rt=clamp(j.rt+7,28,94);});
   if(S.arq.id==="ganador"){const d=S.plantel.filter(j=>j.g==="ATA").sort((a,b)=>b.rt-a.rt)[0];if(d)d.rt=clamp(d.rt+8,28,94);}
   S.presupuesto=clamp(18+o.club.niv*8+S.arq.pres,5,100);
-  const P=S.prensa||POLITICAS_PRENSA[1];
-  S.vars={res:50,
-    dir:clamp(50+S.arq.dir+P.dir,5,95),
-    hin:clamp(50+S.arq.hin+P.hin,5,95),
-    ves:clamp(50+S.arq.vest+P.ves,5,95)};
+  S.prensa=POLITICAS_PRENSA[1]; S.prensaElegida=false;
+  S.vars={res:50,dir:clamp(50+S.arq.dir,5,95),hin:clamp(50+S.arq.hin,5,95),ves:clamp(50+S.arq.vest,5,95)};
   S.pool=R.mz(POOL); S.temporada=1; S.estadio=Math.max(1,o.club.niv-1);
+  aplicarTema();
   abrirTemporada();
 }
 
 /* ==========================================================
-   TEMPORADA
+   TEMPORADA — arranque
    ========================================================== */
 function abrirTemporada(){
   S.decs=[S.pool.shift(),S.pool.shift()].filter(Boolean); S.decIdx=0;
   S.decs=S.decs.map(d=>marcar(d,"pool"));
-  // en formativas, una de las dos decisiones es propia de la categoría
-  if(S.division<3 && !S.esSeleccion){
-    S.formUsadas=S.formUsadas||[];
-    const cands=POOL_FORMATIVAS.filter(d=>!S.formUsadas.includes(d[1]));
-    if(cands.length){
-      const el=R.el(cands);
-      S.formUsadas.push(el[1]);
-      S.decs[R.e(0,S.decs.length-1)]=el;
-    }
-  }
   // en formativas, las situaciones son otras: padres, colegio, representantes
   if(S.division<3 && !S.esSeleccion){
     S.poolForm = S.poolForm || R.mz(POOL_FORMATIVAS);
@@ -248,50 +147,78 @@ function abrirTemporada(){
       S.decs[R.e(0,S.decs.length-1)]=marcar(el.d,"rep");
     }
   }
+  aplicarTema();
+  pretemporada();
+  colaPrevia();
+}
+// pantallas que aparecen antes del plantel sólo cuando corresponde
+function colaPrevia(){
+  if(S.introVisto!==S.club.n){ introClub(colaPrevia); return; }
+  if(necesitaIdioma()){ pantallaIdioma(colaPrevia); return; }
+  if(necesitaPrensa()){ pantallaPrensa(colaPrevia); return; }
   verPlantel();
 }
-function grupoLbl(g){return ({POR:"Arquero",DEF:"Defensa",MED:"Mediocampo",ATA:"Ataque"})[g];}
-function verPlantel(){
-  pintarPlantel(); ir("plantel");
-}
+
+/* ==========================================================
+   PLANTEL — forma, cansancio y lesiones: el banco sirve
+   ========================================================== */
+function grupoLbl(g){return tGrupo(g);}
+function verPlantel(){ tmp.selBanco=null; pintarPlantel(); ir("plantel"); }
 function pintarPlantel(){
   const f=S.formacion||S.sistemaPref;
-  const once=armarOnce(S.plantel,f,S.fijos||[]);
-  const a=atributosDe(once);
-  const enOnce=new Set(once.map(o=>o.jug));
-  const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((x,y)=>y.rt-x.rt);
-  const fuera=once.filter(o=>o.fuera).length;
-  const sel=tmp.selBanco;
   $("#s-plantel").innerHTML=`
     <h2 class="disp">${T("tuPlantel")}</h2>
-    <p class="mini">Parado con ${f}. ${fuera?`<span style="color:var(--ambar)">${fuera} juega${fuera>1?'n':''} fuera de puesto y pierde${fuera>1?'n':''} 10 puntos.</span>`:""}</p>
+    <p class="mini">${t3("Pretemporada. Cada uno llega distinto: mirá quién está enchufado y quién no.",
+      "Pré-temporada. Cada um chega diferente: veja quem está voando e quem não.",
+      "Pre-season. Everyone arrives in a different state: see who's flying and who isn't.")}</p>
     ${tablero()}
-    ${barras(a)}
+    ${vistaGestion(f,"pintarPlantel")}
+    <div class="acciones"><button class="btn" onclick="abrirMercado()">${T("irMercado")}</button></div>`;
+}
+function estadoChips(j){
+  const c=[];
+  if(j.les>0) c.push(`<span class="est les">✚ ${t3("lesionado","lesionado","injured")} · ${j.les} ${t3(j.les>1?"fechas":"fecha",j.les>1?"rodadas":"rodada",j.les>1?"games":"game")}</span>`);
+  if(j.sus>0) c.push(`<span class="est sus">▮ ${t3("suspendido","suspenso","suspended")}</span>`);
+  if(j.forma>=2) c.push(`<span class="est fup">▲${j.forma} ${t3("forma","forma","form")}</span>`);
+  if(j.forma<=-2) c.push(`<span class="est fdn">▼${-j.forma} ${t3("forma","forma","form")}</span>`);
+  if(j.fat>=55) c.push(`<span class="est fat">${t3("cansado","cansado","tired")} ${Math.round(j.fat)}%</span>`);
+  return c.join("");
+}
+function vistaGestion(f,rep){
+  const once=onceTemporada(S.plantel,f,S.fijos);
+  const enOnce=new Set(once.map(o=>o.jug));
+  const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((a,b)=>disponible(b)-disponible(a)||efectivo(b)-efectivo(a));
+  window.__banco=banco; window.__once=once; window.__rep=rep;
+  const fuera=once.filter(o=>o.fuera).length;
+  const sel=tmp.selBanco;
+  const mejorEnBanco=banco.filter(disponible).some(b=>once.some(o=>ROL[o.rol].g===b.g&&efectivo(b)>o.rt+1));
+  return `${barras(atributosDe(once))}
     <div class="plantel-grid">
-      <div>${canchaInteractiva(once)}</div>
+      <div>${canchaGestion(once)}
+        ${fuera?`<p class="mini" style="color:var(--ambar)">${fuera} ${t3("fuera de puesto (−10)","fora de posição (−10)","out of position (−10)")}</p>`:""}</div>
       <div class="banco">
-        <h3 class="disp" style="font-size:18px;margin:0 0 6px">Banco</h3>
-        <p class="mini" style="margin-bottom:8px">${sel
-          ? "Ahora tocá el jugador de la cancha al que querés reemplazar."
-          : "Tocá un suplente y después al titular que sale."}</p>
-        ${banco.map((j,i)=>`
-          <button class="sup ${sel===j?'sel':''}" onclick="elegirBanco(${i})">
-            <span class="sup-rt">${j.rt}</span>
-            <span class="sup-nom">${j.nom}</span>
-            <span class="sup-pos">${tGrupo(j.g)} · ${j.ed}</span>
-          </button>`).join("")}
+        <h3 class="disp" style="font-size:18px;margin:0 0 6px">${T("banco")}</h3>
+        <p class="mini" style="margin-bottom:8px">${sel?T("bancoAyuda2"):T("bancoAyuda")}</p>
+        ${mejorEnBanco?`<div class="alerta" style="margin-bottom:8px">${t3("Hay suplentes rindiendo más que algún titular.","Há reservas rendendo mais que algum titular.","Some subs are performing better than a starter.")}</div>`:""}
+        ${banco.map((j,i)=>{const nd=!disponible(j); return `
+          <button class="sup ${sel===j?'sel':''} ${nd?'nodisp':''}" ${nd?'disabled':''} onclick="elegirBanco(${i})">
+            <span class="sup-rt ${efectivo(j)>j.rt?'arriba':efectivo(j)<j.rt?'abajo':''}">${efectivo(j)}</span>
+            <span class="sup-nom">${j.nom}${j.nuevo?` <em class="nuevo">${t3("NUEVO","NOVO","NEW")}</em>`:""}</span>
+            <span class="sup-pos">${tGrupo(j.g)} · ${j.ed} · ${t3("nivel","nível","level")} ${j.rt}</span>
+            <span class="sup-est">${estadoChips(j)}</span>
+          </button>`;}).join("")}
         ${S.fijos&&S.fijos.length?`<button class="btn sec" style="margin-top:10px;font-size:13px"
-          onclick="S.fijos=[];pintarPlantel()">Volver al once automático</button>`:""}
+          onclick="S.fijos=[];tmp.selBanco=null;${rep}()">${T("onceAuto")}</button>`:""}
       </div>
     </div>
-    <p class="mini">Los cuatro números salen de los once que entran. Si cambiás el sistema, cambian.</p>
-    <div class="acciones"><button class="btn" onclick="abrirMercado()">${T("irMercado")}</button></div>`;
-  window.__banco=banco; window.__once=once;
+    <p class="mini">${t3("El número grande es cómo rinde <b>hoy</b>: nivel + forma − cansancio. El once automático va por jerarquía, no por el momento.",
+      "O número grande é quanto rende <b>hoje</b>: nível + forma − cansaço. A escalação automática vai por hierarquia, não pelo momento.",
+      "The big number is how he performs <b>today</b>: level + form − fatigue. The automatic XI goes by reputation, not current form.")}</p>`;
 }
-function canchaInteractiva(once){
-  const W=420,H=440,margen=18;
-  const span=H-margen*2;
-  return `<svg class="cancha" viewBox="0 0 ${W} ${H}" role="img" aria-label="Tu once en la cancha">
+function canchaGestion(once){
+  const W=420,H=450,margen=20, span=H-margen*2;
+  const fc=fichaColores(S.club);
+  return `<svg class="cancha" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t3("Tu once en la cancha","Seu time em campo","Your XI on the pitch")}">
     <rect width="${W}" height="${H}" fill="#224236"/>
     ${[0,1,2,3,4,5,6,7].map(i=>`<rect y="${i*H/8}" width="${W}" height="${H/16}" fill="#284C3E"/>`).join("")}
     <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
@@ -299,49 +226,48 @@ function canchaInteractiva(once){
     <circle cx="${W/2}" cy="${H/2}" r="40" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
     <rect x="${W/2-62}" y="${H-46}" width="124" height="40" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
     ${once.map((o,i)=>{
-      const px=(o.x/100)*W, py=H-margen-(o.y/100)*span;
+      const px=(o.x/100)*W, py=H-margen-(o.y/100)*span, j=o.jug;
       const marcado=tmp.selBanco&&ROL[o.rol].g===tmp.selBanco.g;
+      const fat=clamp(j.fat||0,0,100), colFat=fat>=70?"#D9543F":fat>=50?"#E0A93B":"#4FBF7F";
+      const flecha=j.forma>=2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#4FBF7F">▲</text>`
+        :j.forma<=-2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#D9543F">▼</text>`:"";
       return `<g style="cursor:pointer" onclick="reemplazar(${i})">
-        <circle cx="${px}" cy="${py}" r="16" fill="${marcado?'#E0A93B':'#4FBF7F'}"
-          stroke="${o.fuera?'#E0A93B':'#183028'}" stroke-width="2.5"/>
+        ${j.nuevo?`<circle cx="${px}" cy="${py}" r="21" fill="none" stroke="#E0A93B" stroke-width="2" stroke-dasharray="4 3"/>`:""}
+        <circle cx="${px}" cy="${py}" r="16" fill="${marcado?'#E0A93B':fc.fill}"
+          stroke="${o.fuera?'#E0A93B':fc.stroke}" stroke-width="2.5"/>
         <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="13"
-          fill="#0D1613" pointer-events="none">${o.rt}</text>
+          fill="${marcado?'#111':fc.txt}" pointer-events="none">${o.rt}</text>
+        ${flecha}
         <text x="${px}" y="${py+29}" text-anchor="middle" font-size="9" font-weight="600"
-          fill="#BFE8D2" pointer-events="none">${(o.jug.nom||"").split(" ").pop()}</text>
+          fill="#DCEFE5" pointer-events="none">${(j.nom||"").split(" ").pop()}</text>
+        <rect x="${px-14}" y="${py+33}" width="28" height="3.5" rx="1.5" fill="#0F1714"/>
+        <rect x="${px-14}" y="${py+33}" width="${28*fat/100}" height="3.5" rx="1.5" fill="${colFat}"/>
         <text x="${px}" y="${py-21}" text-anchor="middle" font-size="8"
           fill="#8FC0AA" pointer-events="none">${tRol(o.rol)}</text></g>`;
     }).join("")}
-  </svg>`;
+  </svg>
+  <div class="leyenda"><span><b style="color:#4FBF7F">▲</b>/<b style="color:#D9543F">▼</b> ${t3("forma","forma","form")}</span>
+    <span><i class="mini-bar"></i> ${t3("cansancio","cansaço","fatigue")}</span>
+    <span><i class="pt" style="border:2px dashed #E0A93B"></i> ${t3("recién llegado","recém-chegado","new signing")}</span></div>`;
 }
 function elegirBanco(i){
   const j=window.__banco[i];
+  if(!disponible(j)) return;
   tmp.selBanco = (tmp.selBanco===j) ? null : j;
-  pintarPlantel();
+  window[window.__rep]();
 }
 function reemplazar(i){
-  if(!tmp.selBanco){ return; }
+  if(!tmp.selBanco) return;
   const sale=window.__once[i].jug, entra=tmp.selBanco;
-  S.fijos=S.fijos||[];
-  S.fijos=S.fijos.filter(x=>x!==sale);
+  if(ROL[window.__once[i].rol].g!==entra.g&&!window.__once[i].fuera) return; // mismo puesto
+  S.fijos=(S.fijos||[]).filter(x=>x!==sale&&x!==entra);
+  // el once queda "a mano": los titulares actuales pasan a ser fijos, salvo el que sale
+  window.__once.forEach(o=>{ if(o.jug!==sale&&!S.fijos.includes(o.jug)) S.fijos.push(o.jug); });
   S.fijos.push(entra);
-  if(S.fijos.length>6) S.fijos.shift();
   tmp.selBanco=null;
-  pintarPlantel();
+  window[window.__rep]();
 }
 
-function fijar(idx){
-  const j=S.plantel[idx];
-  if(!j||S.fijos.includes(j)) return;
-  if(S.fijos.length>=5){ S.fijos.shift(); }
-  S.fijos.push(j);
-  verPlantel();
-}
-function soltar(idx){
-  const j=S.plantel[idx];
-  const k=S.fijos.indexOf(j);
-  if(k>=0) S.fijos.splice(k,1);
-  verPlantel();
-}
 
 /* ---------- mercado de pases ---------- */
 function abrirMercado(){
@@ -470,135 +396,144 @@ function convencer(id){
   cabecera();
 }
 
-/* ---------- ruleta ---------- */
-// 18 casillas: los puestos comunes van duplicados, los cracks aparecen una sola vez.
-// Apuntarle a un crack es 1 de 18; a un puesto común, 2 de 18.
-// RULETA POR ZONAS
-// Cuatro zonas en vez de doce puestos: sube muchísimo la chance de acertar
-// sin sacar el azar. Dentro de cada zona, el crack ocupa la mitad de casillas
-// que el común, así pedir crack sigue siendo la apuesta arriesgada.
-const BASE_SEG=[
- {g:"POR",crack:false,lbl:"Arquero",corto:"ARQUERO"},
- {g:"POR",crack:true, lbl:"Arquero crack",corto:"ARQ ★"},
- {g:"DEF",crack:false,lbl:"Defensa",corto:"DEFENSA"},
- {g:"DEF",crack:true, lbl:"Defensa crack",corto:"DEF ★"},
- {g:"MED",crack:false,lbl:"Mediocampo",corto:"MEDIO"},
- {g:"MED",crack:true, lbl:"Mediocampo crack",corto:"MEDIO ★"},
- {g:"ATA",crack:false,lbl:"Ataque",corto:"ATAQUE"},
- {g:"ATA",crack:true, lbl:"Ataque crack",corto:"ATAQUE ★"}
-];
-// cada zona común entra 3 veces, cada crack 1: 12 comunes + 4 cracks = 16 casillas
-const SEGMENTOS=(()=>{
-  const com=[],cra=[];
-  BASE_SEG.forEach(s=>{ if(s.crack) cra.push(s); else {com.push(s);com.push(s);com.push(s);} });
-  // intercalar para que los cracks queden repartidos en la rueda
-  const out=[]; let ci=0;
-  com.forEach((s,i)=>{ out.push(s); if(i%3===2 && ci<cra.length) out.push(cra[ci++]); });
-  while(ci<cra.length) out.push(cra[ci++]);
-  return out;
-})();
-const PUESTOS=BASE_SEG.map(s=>s.lbl);
+/* ---------- ruleta: dos fichas, como en el casino ---------- */
+// 18 casillas: por zona 3 comunes y 1 crack, más 2 rojas ("se te va un jugador").
+// Apostar a un común cuesta 1 ficha (3 de 18 = 17%); a un crack, 2 fichas (1 de 18 = 6%).
+// Si la bocha cae en lo que apostaste, te llevás al jugador. Si no, nada.
+const ZONAS_RUL=["POR","DEF","MED","ATA"];
+const RUL=[["DEF",0],["MED",0],["ATA",1],["POR",0],["X",0],["DEF",0],["MED",1],["ATA",0],["POR",0],
+           ["DEF",1],["MED",0],["ATA",0],["POR",1],["X",0],["DEF",0],["MED",0],["ATA",0],["POR",0]]
+  .map(([g,c])=>({g,crack:!!c,roja:g==="X"}));
+const SEGMENTOS=RUL;
+function lblRul(s,corto){
+  if(s.roja) return corto?"✖":t3("Se va uno","Sai um","One leaves");
+  const n={POR:t3("Arquero","Goleiro","Keeper"),DEF:t3("Defensa","Defesa","Defender"),MED:t3("Medio","Meio","Midfield"),ATA:t3("Ataque","Ataque","Attack")}[s.g];
+  const c={POR:t3("ARQ","GOL","GK"),DEF:"DEF",MED:t3("MED","MEI","MID"),ATA:t3("ATA","ATA","ATT")}[s.g];
+  return corto?(c+(s.crack?"★":"")):(n+(s.crack?" crack":""));
+}
 function abrirRuleta(){
-  tmp.fichas=[]; tmp.girada=false;
+  tmp.apuestas=[]; tmp.girada=false;
   pintarRuleta(); ir("ruleta");
 }
+function fichasUsadas(){ return tmp.apuestas.reduce((a,x)=>a+(x.crack?2:1),0); }
 function svgRuleta(){
-  const n=SEGMENTOS.length, r=120, ri=52, cx=140, cy=140;
-  let out=`<svg id="ruleta" width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="Ruleta de puestos">`;
-  SEGMENTOS.forEach((s,i)=>{
+  const n=RUL.length, r=124, ri=48, cx=140, cy=140;
+  let out=`<svg id="ruleta" width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="${t3("Ruleta del club","Roleta do clube","Club roulette")}">`;
+  RUL.forEach((s,i)=>{
     const a0=(i/n)*2*Math.PI-Math.PI/2, a1=((i+1)/n)*2*Math.PI-Math.PI/2;
     const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0), x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
-    const marcada=tmp.fichas.includes(s.lbl);
-    const base = s.crack ? "#7A4A12" : (i%2?"#26332E":"#2E3F38");
+    const apostada=tmp.apuestas.some(x=>x.g===s.g&&x.crack===s.crack)&&!s.roja;
+    const base=s.roja?"#7A1F1F":s.crack?"#7A4A12":(i%2?"#26332E":"#2E3F38");
     out+=`<path d="M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z"
-      fill="${marcada?(s.crack?'#E0A93B':'#4FBF7F'):base}" stroke="#141C19" stroke-width="1.5"/>`;
-    const am=(a0+a1)/2, tx=cx+((r+ri)/2)*Math.cos(am), ty=cy+((r+ri)/2)*Math.sin(am);
-    const gira=(am*180/Math.PI);
-    out+=`<text x="${tx}" y="${ty+3}" text-anchor="middle" font-size="9" font-weight="600"
-      fill="${marcada?'#141C19':(s.crack?'#F0C98A':'#DDE6E0')}"
-      transform="rotate(${gira>90||gira<-90?gira+180:gira} ${tx} ${ty})">${s.corto}</text>`;
+      fill="${apostada?(s.crack?'#E0A93B':'#4FBF7F'):base}" stroke="#141C19" stroke-width="1.5"/>`;
+    const am=(a0+a1)/2, tx=cx+(r*0.72)*Math.cos(am), ty=cy+(r*0.72)*Math.sin(am);
+    const deg=am*180/Math.PI;
+    out+=`<text x="${tx}" y="${ty+3.5}" text-anchor="middle" font-size="10.5" font-weight="700"
+      fill="${apostada?'#141C19':s.roja?'#FFB3A7':(s.crack?'#F0C98A':'#DDE6E0')}"
+      transform="rotate(${deg+90} ${tx} ${ty})">${lblRul(s,true)}</text>`;
   });
-  out+=`<circle cx="${cx}" cy="${cy}" r="${ri-6}" fill="#141C19" stroke="#4FBF7F" stroke-width="2"/>
-    <text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="11" fill="#8A9A91">18 casillas</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="10" fill="#E0A93B">5 son crack</text></svg>`;
+  out+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="#141C19" stroke="#4FBF7F" stroke-width="2"/>
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="22" font-weight="800" fill="#E4E8E1" font-family="Big Shoulders Display">18</text>
+    <text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="10" fill="#8A9A91">${t3("casillas","casas","slots")}</text></svg>`;
   return out;
 }
-function chancesDe(lbl){
-  const c=SEGMENTOS.filter(s=>s.lbl===lbl).length;
-  return {casillas:c, pct:Math.round(c/SEGMENTOS.length*100)};
-}
 function pintarRuleta(){
+  const usadas=fichasUsadas();
+  const opcion=(g,crack)=>{
+    const on=tmp.apuestas.some(x=>x.g===g&&x.crack===crack);
+    const costo=crack?2:1, casillas=RUL.filter(s=>s.g===g&&s.crack===crack).length;
+    const puede=on||(usadas+costo<=2);
+    return `<button class="ficha-btn ${on?'on':''} ${crack?'crack':''}" ${tmp.girada||!puede?'disabled':''}
+      onclick="ponerFicha('${g}',${crack})">
+      <div class="fb-n">${lblRul({g,crack})}</div>
+      <div class="fb-c">${"●".repeat(costo)} ${costo} ${t3(costo>1?"fichas":"ficha",costo>1?"fichas":"ficha",costo>1?"chips":"chip")}</div>
+      <div class="fb-p">${casillas}/18 · ${Math.round(casillas/18*100)}%</div></button>`;
+  };
   $("#s-ruleta").innerHTML=`
-    <h2 class="disp">La ruleta del club</h2>
-    <p>Cada puesto común ocupa dos casillas de la ruleta; cada crack, una sola.
-    Apostar a un crack paga mucho más, pero cae la mitad de las veces.
-    Poné dos fichas: si la bocha para en un puesto tuyo, el jugador sale bastante mejor.</p>
+    <h2 class="disp">${T("ruleta")}</h2>
+    <p class="mini">${t3("Tenés <b>2 fichas</b>. Un puesto común cuesta 1 ficha; un crack, 2. Si la bocha cae donde apostaste, te llevás al jugador. Si no, nada. Y ojo con las casillas rojas: se te va uno del plantel.",
+      "Você tem <b>2 fichas</b>. Uma posição comum custa 1 ficha; um craque, 2. Se a bola cair onde apostou, leva o jogador. Se não, nada. E cuidado com as casas vermelhas: sai um do elenco.",
+      "You have <b>2 chips</b>. A regular slot costs 1 chip; a star costs 2. If the ball lands on your bet, you sign the player. Otherwise, nothing. Watch the red slots: you lose a squad player.")}</p>
     ${panelPlantel()}
     <div class="ruleta-wrap">
       <div style="font-size:22px;color:var(--ambar);line-height:1">▼</div>
       ${svgRuleta()}
+      <div class="fichas-restan">${[0,1].map(i=>`<span class="chip-f ${i<usadas?'usada':''}"></span>`).join("")}
+        <span class="mini">${2-usadas} ${t3("fichas libres","fichas livres","chips left")}</span></div>
     </div>
-    <div class="fichas">${PUESTOS.map(l=>{
-      const ch=chancesDe(l), es=BASE_SEG.find(s=>s.lbl===l);
-      return `<button class="ficha-btn ${tmp.fichas.includes(l)?'on':''}"
-        ${tmp.girada||(tmp.fichas.length>=2&&!tmp.fichas.includes(l))?'disabled':''}
-        onclick="ponerFicha('${l}')">
-        <div style="${es.crack?'color:var(--ambar);font-weight:600':''}">${l}</div>
-        <div style="font-size:11px;color:var(--tenue)">${ch.casillas} de ${SEGMENTOS.length} casillas · ${ch.pct}%</div>
-      </button>`;}).join("")}</div>
-    <p class="mini" style="margin-top:10px">Fichas puestas: ${tmp.fichas.length} de 2</p>
+    <div class="rul-grid">
+      <div><div class="lbl-sel">${t3("Comunes · 1 ficha","Comuns · 1 ficha","Regular · 1 chip")}</div>
+        <div class="fichas">${ZONAS_RUL.map(g=>opcion(g,false)).join("")}</div></div>
+      <div><div class="lbl-sel" style="color:var(--ambar)">${t3("Cracks · 2 fichas","Craques · 2 fichas","Stars · 2 chips")}</div>
+        <div class="fichas">${ZONAS_RUL.map(g=>opcion(g,true)).join("")}</div></div>
+    </div>
+    <p class="mini"><span style="color:#FF8A78">✖ ${t3("2 casillas rojas (11%): se te va un jugador al azar.","2 casas vermelhas (11%): sai um jogador ao acaso.","2 red slots (11%): a random player leaves.")}</span>
+      ${tmp.apuestas.length?` · ${t3("Chance de llevarte a alguien","Chance de levar alguém","Chance of signing someone")}: <b>${Math.round(tmp.apuestas.reduce((a,x)=>a+RUL.filter(s=>s.g===x.g&&s.crack===x.crack).length,0)/18*100)}%</b>`:""}</p>
     <div class="acciones">
-      <button class="btn" id="btnGirar" onclick="girar()" ${tmp.fichas.length===2&&!tmp.girada?'':'disabled'}>${T("girar")}</button>
-      <button class="btn sec" id="btnSeguirRul" onclick="siguienteDecision()" ${tmp.girada?'':'disabled'}>${T("seguir")}</button></div>
+      <button class="btn" id="btnGirar" onclick="girar()" ${tmp.apuestas.length&&!tmp.girada?'':'disabled'}>${T("girar")}</button>
+      <button class="btn sec" onclick="siguienteDecision()" ${tmp.girada?'disabled':''}>${t3("No juego esta vez","Não jogo desta vez","Sit this one out")}</button></div>
     <div id="salida"></div>`;
 }
-function ponerFicha(lbl){
+function ponerFicha(g,crack){
   if(tmp.girada) return;
-  const k=tmp.fichas.indexOf(lbl);
-  if(k>=0) tmp.fichas.splice(k,1); else if(tmp.fichas.length<2) tmp.fichas.push(lbl);
+  const k=tmp.apuestas.findIndex(x=>x.g===g&&x.crack===crack);
+  if(k>=0) tmp.apuestas.splice(k,1);
+  else if(fichasUsadas()+(crack?2:1)<=2) tmp.apuestas.push({g,crack});
   pintarRuleta();
 }
 function girar(){
-  if(tmp.girada) return;
+  if(tmp.girada||!tmp.apuestas.length) return;
   tmp.girada=true;
-  const gan=R.e(0,SEGMENTOS.length-1);
-  const seg=SEGMENTOS[gan];
-  const grados=360*5 + (360 - (gan+0.5)*(360/SEGMENTOS.length));
+  const gan=R.e(0,RUL.length-1), seg=RUL[gan];
+  const grados=360*5+(360-(gan+0.5)*(360/RUL.length));
   const el=$("#ruleta");
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(el&&!reduce) el.style.transform=`rotate(${grados}deg)`;
-  const acerto=tmp.fichas.includes(seg.lbl);
-  setTimeout(()=>{
-    // el nivel se mide contra lo que YA tenes en ese puesto:
-    // un "crack" tiene que ser mejor que tu titular, no que el promedio de la liga
+  const acerto=!seg.roja&&tmp.apuestas.some(x=>x.g===seg.g&&x.crack===seg.crack);
+  // se calcula ya (con el RNG del duelo), se muestra cuando para la rueda
+  let j=null, seVa=null, cobro=0;
+  if(acerto){
     const mios=S.plantel.filter(x=>x.g===seg.g).map(x=>x.rt);
     const mejorMio=mios.length?Math.max(...mios):nivelBaseDe(S.club.niv,S.division);
     const piso=nivelBaseDe(S.club.niv,S.division)+S.temporada*2;
-    const base=seg.crack?Math.max(mejorMio,piso):Math.max(mejorMio-10,piso-6);
-    let bono=(seg.crack?R.e(3,9):R.e(-4,4))+(acerto?R.e(5,9):0);
-    if(S.arq.id==="formador") bono+=4;
-    const j=nuevoJugador(seg.g,base+bono,S.division,null,S.club.p);
-    j.nuevo=true;
-    // IMPORTANTE: medir el impacto ANTES de sumarlo al plantel
-    const im=impactoDe(j);
-    const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
-    const f=S.formacion||S.sistemaPref;
-    const entra=armarOnce(S.plantel.concat([j]),f,S.fijos).some(o=>o.jug===j);
-    window.__ofrecido=j;
-    const s=$("#salida");
-    if(s) s.innerHTML=`
-      <div class="card" style="cursor:default;border-color:${seg.crack?'var(--ambar)':'var(--borde)'}">
-        <b>${acerto?"¡Le pegaste! ":""}Salió ${seg.lbl.toLowerCase()}</b>
-        <div class="sub">${j.nom} · ${j.ed} años</div>
-        <div style="font-family:'Big Shoulders Display';font-weight:800;font-size:34px;color:var(--verde);line-height:1;margin:4px 0">${j.rt}</div>
-        <div class="efecto">${entra?"Entra al once. "+(util.length?util.join(" · "):"Sin cambio neto."):
-          "Iría al banco: hoy no supera a ninguno de tus titulares en ese puesto."}</div>
+    const base=seg.crack?Math.max(mejorMio,piso)+R.e(4,9):Math.max(mejorMio-4,piso)+R.e(-2,4);
+    j=nuevoJugador(seg.g,base+(S.arq.id==="formador"?4:0),S.division,null,S.club.p);
+    j.nuevo=true; prepJug(j);
+  } else if(seg.roja){
+    const cand=S.plantel.filter(x=>x.g!=="POR");
+    seVa=R.el(cand);
+    cobro=Math.max(3,Math.round((seVa.rt-30)/4));
+  }
+  document.querySelectorAll(".ficha-btn").forEach(x=>x.disabled=true);
+  const b=$("#btnGirar"); if(b) b.disabled=true;
+  setTimeout(()=>{
+    const s=$("#salida"); if(!s) return;
+    if(j){
+      const im=impactoDe(j);
+      const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
+      window.__ofrecido=j;
+      s.innerHTML=`<div class="card premio" style="cursor:default;border-color:${seg.crack?'var(--ambar)':'var(--verde)'}">
+        <b>${t3("¡Le pegaste! Salió ","Acertou! Saiu ","You hit it! It's ")}${lblRul(seg).toLowerCase()}</b>
+        <div class="sub">${j.nom} · ${j.ed} ${T("anios")}</div>
+        <div class="rt-grande">${j.rt}</div>
+        <div class="efecto">${util.length?t3("Entra al once: ","Entra no time: ","Walks into the XI: ")+util.join(" · "):t3("Hoy iría al banco.","Hoje iria para o banco.","He'd start on the bench today.")}</div>
         <div class="acciones" style="margin-top:12px">
-          <button class="btn" onclick="aceptarRuleta(true)">Lo sumo al plantel</button>
-          <button class="btn sec" onclick="aceptarRuleta(false)">Paso, no lo quiero</button>
-        </div></div>`;
-    const b=$("#btnGirar"); if(b) b.disabled=true;
-    document.querySelectorAll(".ficha-btn").forEach(x=>x.disabled=true);
+          <button class="btn" onclick="aceptarRuleta(true)">${T("loSumo")}</button>
+          <button class="btn sec" onclick="aceptarRuleta(false)">${T("paso")}</button></div></div>`;
+    } else if(seVa){
+      S.plantel=S.plantel.filter(x=>x!==seVa); S.fijos=(S.fijos||[]).filter(x=>x!==seVa);
+      S.presupuesto=clamp(S.presupuesto+cobro,0,120); cabecera();
+      s.innerHTML=`<div class="card" style="cursor:default;border-color:var(--rojo)">
+        <b style="color:#FF8A78">✖ ${t3("Casilla roja: se te va un jugador","Casa vermelha: sai um jogador","Red slot: a player leaves")}</b>
+        <div class="sub">${seVa.nom} · ${tGrupo(seVa.g)} · ${t3("nivel","nível","level")} ${seVa.rt}</div>
+        <div class="efecto">${t3(`Lo compra otro club. Entran ${cobro} de presupuesto: algo es algo.`,`Outro clube compra. Entram ${cobro} de orçamento.`,`Another club buys him. You get ${cobro} in budget.`)}</div>
+        <div class="acciones"><button class="btn" onclick="siguienteDecision()">${T("seguir")}</button></div></div>`;
+    } else {
+      s.innerHTML=`<div class="card" style="cursor:default">
+        <b>${t3("Salió ","Saiu ","It's ")}${lblRul(seg).toLowerCase()}</b>
+        <div class="sub">${t3("No apostaste ahí: esta vez no viene nadie.","Você não apostou aí: desta vez não vem ninguém.","You didn't bet on it: nobody comes this time.")}</div>
+        <div class="acciones"><button class="btn" onclick="siguienteDecision()">${T("seguir")}</button></div></div>`;
+    }
   }, reduce?60:4300);
 }
 function aceptarRuleta(si){
@@ -607,6 +542,7 @@ function aceptarRuleta(si){
   window.__ofrecido=null;
   siguienteDecision();
 }
+
 
 /* ---------- decisiones ---------- */
 // filtra opciones que no tienen sentido en el contexto actual
@@ -706,605 +642,491 @@ function tomar(i){
     <div class="acciones"><button class="btn" onclick="S.decIdx++;siguienteDecision()">${T("seguir")}</button></div>`;
   cabecera();
 }
-function elegirCompetencia(){
-  const L=LIGAS[S.club.p];
-  if(S.esSeleccion){
-    const c=["Eliminatorias","Copa América","Copa del Mundo"];
-    return {nombre:c[Math.min(2,S.temporada-3)]||c[0],
-            rivales:SELECCIONES.filter(s=>s.n!==S.club.n)};
-  }
-  if(S.division<3){
-    return {nombre:`${L.liga} ${DIVISIONES[S.division].comp}`,
-            rivales:L.clubes.filter(c=>c.n!==S.club.n).map(c=>Object.assign({p:S.club.p},c))};
-  }
-  // en primera: a veces la copa continental
-  const copa = S.club.niv>=4 && S.rng()<0.35;
-  if(copa){
-    const conf=L.conf;
-    const riv=CLUBES.filter(c=>LIGAS[c.p].conf===conf && c.n!==S.club.n && c.niv>=3);
-    return {nombre:COPA[conf], rivales:riv.length?riv:L.clubes.map(c=>Object.assign({p:S.club.p},c))};
-  }
-  const tor=TORNEOS[S.club.p]||[L.liga];
-  return {nombre:tor[(S.temporada-1)%tor.length],
-          rivales:L.clubes.filter(c=>c.n!==S.club.n).map(c=>Object.assign({p:S.club.p},c))};
-}
+/* ==========================================================
+   TU PLAN PARA LA TEMPORADA
+   Paso 0: sistema y modelo (con encaje y automatismos a la vista)
+   Pasos 1-3: los tres momentos del partido contra tu rival clásico
+   ========================================================== */
 function irPlanteo(){
-  const cp=elegirCompetencia();
-  S.compe=cp.nombre;
-  const rivClub=R.el(cp.rivales);
-  // el rival escala con la temporada, con su categoria y con lo bien que venis.
-  // si ganas todo, te empiezan a poner partidos mas duros.
-  const racha=Math.floor(S.puntos/7);
-  const dif=(S.temporada-1)*3+(rivClub.niv-S.club.niv)*4+racha*2;
-  const baseRiv=nivelBaseDe(S.club.niv,S.division)+dif;
-  S.rival={n:rivClub,
-           plantel:generarPlantel(baseRiv,S.division,null,rivClub.p),
-           formacion:R.el(FORMACIONES), estilo:R.el(ESTILOS)};
-  S.rival.once=armarOnce(S.rival.plantel,S.rival.formacion);
-  S.rival.attrs=atributosDe(S.rival.once);
-  tmp={f:S.sistemaPref,e:S.estiloPref};
-  pintarPlanteo(); ir("planteo");
+  armarTemporada();
+  const TT=S.temp;
+  const rivales=TT.equipos.filter(e=>!e.yo).concat(TT.copa?TT.copa.equipos.filter(e=>!e.yo):[]);
+  const fuerzaDe=e=>e.attrs.reduce((a,b)=>a+b,0);
+  S.rivalPlan=TT.equipos.find(e=>e.clasico)||rivales.slice().sort((a,b)=>fuerzaDe(b)-fuerzaDe(a))[0];
+  S.compe=TT.ligaNombre||TT.copa.nombre;
+  tmp={f:S.formacion||S.sistemaPref,e:S.estilo||S.estiloPref,paso:0,plan:{},res:{},op:null};
+  S.momentosOk=0;
+  pintarPlan(); ir("planteo");
 }
-function fuerteDe(attrs){
-  const idx=attrs.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
-  return {alto:ATRIBUTOS[idx[0].i],bajo:ATRIBUTOS[idx[3].i]};
+function yoParaPlan(){
+  const once=onceTemporada(S.plantel,tmp.f,S.fijos);
+  return {f:tmp.f,e:tmp.e,attrs:atributosDe(once),once};
 }
-function pintarPlanteo(){
-  const rv=S.rival, f=fuerteDe(rv.attrs);
-  const miOnce=armarOnce(S.plantel,tmp.f,S.fijos), miAttrs=atributosDe(miOnce);
-  const zm=ZONAS[tmp.f], zr=ZONAS[rv.formacion];
-  const fit=FIT[tmp.e][tmp.f], mu=MATCHUP[tmp.f][rv.formacion];
-  const zn=["Defensa","Mediocampo","Ataque"];
-  const fuera=miOnce.filter(o=>o.fuera).length;
+function autoSiJuego(f,e){ return (S.autoPar===f+"|"+e)?(S.auto||0):Math.round((S.auto||0)*0.3); }
+function resumenLiga(){
+  const TT=S.temp, eqs=TT.equipos.filter(e=>!e.yo);
+  const c={}; eqs.forEach(e=>c[e.e]=(c[e.e]||0)+1);
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([e,n])=>`<span class="chip-est">${n} · ${tEstilo(e)}</span>`).join("");
+}
+function pintarPlan(){
+  const rv=S.rivalPlan, TT=S.temp;
+  if(tmp.paso===0){
+    const fit=FIT[tmp.e][tmp.f], au=autoSiJuego(tmp.f,tmp.e), cambia=S.autoPar!==tmp.f+"|"+tmp.e;
+    $("#s-planteo").innerHTML=`
+      <h2 class="disp">${t3("Tu plan para la temporada","Seu plano para a temporada","Your plan for the season")}</h2>
+      ${tablero()}
+      <div class="compes">
+        ${TT.ligaNombre?`<div class="compe">${trofeo(S.esSeleccion?"sel":"liga",26)}<div><b>${TT.ligaNombre}</b>
+          <span>${TT.equipos.length} ${t3("equipos","times","teams")} · ${TT.nFechas} ${t3("fechas","rodadas","rounds")}${TT.ac?` · ${TT.ac.a} + ${TT.ac.c}`:""}</span></div></div>`:""}
+        ${TT.copa?`<div class="compe">${trofeo(TT.copa.tipo==="conti"?"conti":TT.copa.tipo==="sel"?"sel":"copa",26)}<div><b>${TT.copa.nombre}</b>
+          <span>${TT.copa.equipos.length} ${t3("equipos, eliminación directa","times, mata-mata","teams, knockout")}</span></div></div>`:""}
+      </div>
+      ${TT.equipos.length?`<p class="mini" style="margin:6px 0 2px">${t3("Cómo juegan tus rivales:","Como jogam seus rivais:","How your opponents play:")}</p><div class="chips-est">${resumenLiga()}</div>`:""}
+      <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
+      <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===tmp.f?'on':''}" onclick="tmp.f='${x}';tmp.res={};tmp.plan={};S.momentosOk=0;pintarPlan()">${x}${x===S.sistemaPref?' ★':''}</button>`).join("")}</div>
+      <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
+      <div class="pills">${ESTILOS.map(x=>`<button class="pill ${x===tmp.e?'on':''}" onclick="tmp.e='${x}';tmp.res={};tmp.plan={};S.momentosOk=0;pintarPlan()">${tEstilo(x)}${x===S.estiloPref?' ★':''}</button>`).join("")}</div>
+      <div class="plan-info">
+        <div class="encaje"><div class="lbl-sel" style="margin:0">${t3("Encaje","Encaixe","Fit")}</div>${pipsFit(fit)}<p>${porqueFit(tmp.e,tmp.f)}</p></div>
+        <div class="encaje"><div class="lbl-sel" style="margin:0">${t3("Automatismos","Automatismos","Automatisms")}</div>
+          <div class="auto-bar"><i style="width:${au}%"></i></div>
+          <p>${cambia&&S.auto?t3(`Si cambiás la idea, tu equipo baja de ${S.auto} a ${au}: lo que aprendió no sirve igual.`,`Se mudar a ideia, seu time cai de ${S.auto} para ${au}.`,`Change the idea and your team drops from ${S.auto} to ${au}.`)
+            :t3(`${au} de 100. Cada temporada con esta misma idea, suben.`,`${au} de 100. Cada temporada com a mesma ideia, sobem.`,`${au} out of 100. Every season with the same idea, it grows.`)}</p></div>
+      </div>
+      ${barras(yoParaPlan().attrs)}
+      <div class="rival-card">${escudo(rv.club,40)}<div><div class="mini">${S.rivalPlan.clasico?t3("Tu clásico","Seu clássico","Your derby"):t3("El rival más fuerte","O rival mais forte","The strongest rival")}</div>
+        <b>${rv.club.n}</b><div class="mini">${rv.f} · ${tEstilo(rv.e)}</div></div></div>
+      <p class="mini">${t3("Ahora vas a congelar tres momentos de un partido contra ellos. Lo que decidas es tu plan para toda la temporada.",
+        "Agora você vai congelar três momentos de um jogo contra eles. O que decidir é seu plano para a temporada toda.",
+        "Now you'll freeze three moments of a match against them. What you decide is your plan for the whole season.")}</p>
+      <div class="acciones"><button class="btn" onclick="tmp.paso=1;tmp.op=null;pintarPlan()">${t3("Ver los momentos","Ver os momentos","See the moments")}</button></div>`;
+    return;
+  }
+  if(tmp.paso>=1&&tmp.paso<=3){
+    const F=FASES[tmp.paso-1], yo=yoParaPlan(), el={f:rv.f,e:rv.e,attrs:rv.attrs};
+    const hecho=tmp.res[F.id];
+    const op=tmp.op||(hecho&&hecho.op)||null;
+    const opVer=op||F.ops[0].id;
+    const au=autoSiJuego(tmp.f,tmp.e);
+    const v=op?ventaja(F.id,op,yo,el,au):null;
+    $("#s-planteo").innerHTML=`
+      <div class="paso-mom">${[1,2,3].map(k=>`<span class="${k<tmp.paso?'ok':k===tmp.paso?'on':''}">${k}</span>`).join("")}</div>
+      <h2 class="disp">${L(F.n)}</h2>
+      <p class="mini">${L(F.ctx)} <b>${rv.club.n}</b> · ${rv.f} · ${tEstilo(rv.e)}</p>
+      <div class="mom-grid">
+        <div>${svgMomento(F.id,opVer,yo,el,yo.once,rv.once,fichaColores(S.club))}
+          <div class="leyenda"><span><i class="pt pro" style="background:${fichaColores(S.club).fill}"></i>${S.club.n}</span>
+            <span><i class="pt" style="background:#141C19;border:2px dashed #E6ECEF"></i>${rv.club.n}</span><span><i class="pt" style="background:rgba(224,169,59,.3);border:1px dashed #E0A93B;border-radius:2px"></i>${t3("zona clave","zona chave","key zone")}</span></div></div>
+        <div>
+          ${F.ops.map(o=>`<button class="card op ${op===o.id?'sel':''}" ${hecho?'disabled':''} onclick="elegirOpMom('${o.id}')">
+            <b>${L(o.n)}</b><div class="sub">${L(o.d)}</div>
+            ${op===o.id&&v?`<div class="conteo">${cuentaTxt(F.id,o.id,v)}</div>`:""}</button>`).join("")}
+          ${hecho?`<div class="resultado-mom ${hecho.ok?'bien':'mal'}"><b>${hecho.ok?t3("Salió bien","Deu certo","It worked"):t3("Salió mal","Deu errado","It went wrong")}</b>
+            <p>${porQue(F.id,hecho.op,hecho.v,rv.club.n)}</p></div>`:""}
+          <div class="acciones">
+            ${!hecho?`<button class="btn" ${op?'':'disabled'} onclick="confirmarMom()">${t3("Jugar la jugada","Jogar o lance","Play it out")}</button>`
+              :`<button class="btn" onclick="tmp.paso++;tmp.op=null;pintarPlan()">${tmp.paso<3?t3("Siguiente momento","Próximo momento","Next moment"):t3("Ver mi plan","Ver meu plano","See my plan")}</button>`}
+            <button class="btn sec" onclick="tmp.paso--;tmp.op=null;pintarPlan()">${T("volver")}</button></div>
+        </div>
+      </div>`;
+    return;
+  }
+  // resumen del plan
+  const yo=yoParaPlan(), au=autoSiJuego(tmp.f,tmp.e);
+  const eqs=TT.equipos.filter(e=>!e.yo).concat(TT.copa?TT.copa.equipos.filter(e=>!e.yo):[]);
   $("#s-planteo").innerHTML=`
-    <h2 class="disp">${T("comoLosParas")}</h2>
-    ${tablero()}
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px">${escudo(rv.n,32)}
-      <div><b style="font-family:'Big Shoulders Display';font-weight:800;font-size:20px">${rv.n.n}</b>
-      <div class="mini">${S.compe} · sale con ${rv.formacion}, ${tEstilo(rv.estilo)}</div></div></div>
-
-    ${(window.__piz={mio:miOnce,riv:rv.once})?"":""}${pizarraCruce(miOnce,rv.once)}
-    <p class="mini" id="lecturaZonas">${textoSectores(miOnce,rv.once)}</p>
-
-    <div class="zonas">
-      <div class="lbl">Vos · ${tmp.f}</div><div class="lbl">Quién le queda a quién</div><div class="lbl">${rv.n.n} · ${rv.formacion}</div>
-      ${[0,1,2].map(i=>`
-        <div class="z ${zm[i]>zr[2-i]?'gana':zm[i]<zr[2-i]?'pierde':''}">${zm[i]}</div>
-        <div class="lbl">tu ${zn[i].toLowerCase()} contra su ${zn[2-i].toLowerCase()}</div>
-        <div class="z ${zr[2-i]>zm[i]?'gana':zr[2-i]<zm[i]?'pierde':''}">${zr[2-i]}</div>`).join("")}
-    </div>
-    <p class="mini">${mu>1.01?"El cruce de sistemas te favorece.":mu<0.99?"El cruce de sistemas te complica.":"El cruce de sistemas está parejo."}</p>
-
-    <h3 class="disp">${T("probarSistema")}</h3>
-    <p class="mini">Tocá uno y mirá cómo se reacomoda tu equipo sobre el de ellos.</p>
-    <div class="grid3">${FORMACIONES.map(x=>{
-      const a=atributosDe(armarOnce(S.plantel,x,S.fijos));
-      const zx=ZONAS[x];
-      return `<button class="card ${tmp.f===x?'sel':''}" style="margin:0" onclick="pf('${x}')">
-        <b>${x}${x===S.sistemaPref?' ★':''}</b>
-        <div class="sub" style="color:${zx[1]>zr[1]?'var(--verde)':zx[1]<zr[1]?'var(--rojo)':'var(--tenue)'}">
-          ${zx[0]}-${zx[1]}-${zx[2]} contra ${zr[2]}-${zr[1]}-${zr[0]}</div>
-        ${cancha(ONCE[x].map(s=>({rol:s[0],x:s[1],y:s[2],jug:{nom:""},rt:"",fuera:false})),
-          {alto:120,ancho:170,rMin:6,mostrarRating:false})}</button>`;}).join("")}</div>
-
-    <h3 class="disp">${T("tuModelo2")}</h3>
-    <div class="grid3">${ESTILOS.map(x=>{
-      const fx=FIT[x][tmp.f];
-      return `<button class="card ${tmp.e===x?'sel':''}" style="margin:0" onclick="pe('${x}')">
-        <b>${tEstilo(x)}${x===S.estiloPref?' ★':''}</b>
-        <div class="sub" style="color:${fx>=1.06?'var(--verde)':fx<=0.94?'var(--rojo)':'var(--tenue)'}">
-          ${PORQUE_FIT[x][tmp.f]}</div></button>`;}).join("")}</div>
-
-    <h3 class="disp">${T("comoQuedan")}</h3>
-    <div class="comparar">
-      <div><div class="lbl-eq">Vos</div>${barras(miAttrs)}</div>
-      <div><div class="lbl-eq">${rv.n.n}</div>${barras(rv.attrs)}</div>
-    </div>
-    <p class="mini">Con ${ESTILO_LBL[tmp.e]} en ${tmp.f}: ${PORQUE_FIT[tmp.e][tmp.f]}
-      Su fuerte es <b>${f.alto}</b>, su punto flojo es <b>${f.bajo}</b>.
-      ${fuera?`<span style="color:var(--ambar)">Con ${tmp.f} tenés ${fuera} jugador${fuera>1?'es':''} fuera de puesto.</span>`:""}</p>
-
+    <h2 class="disp">${t3("Tu plan","Seu plano","Your plan")}</h2>
+    <p class="mini">${tmp.f} · ${tEstilo(tmp.e)} · ${t3("contra","contra","against")} ${rv.club.n}: ${S.momentosOk}/3 ${t3("momentos ganados","momentos vencidos","moments won")}</p>
+    ${FASES.map(F=>{const r=tmp.res[F.id], o=F.ops.find(x=>x.id===r.op);
+      return `<div class="plan-fila"><span class="pf-fase">${L(F.n)}</span><b>${L(o.n)}</b><span class="${r.ok?'ok':'mal'}">${r.ok?'✓':'✗'}</span></div>`;}).join("")}
+    <p style="margin-top:12px">${t3("Este plan se juega toda la temporada. Contra algunos estilos va a funcionar y contra otros va a sufrir: al final vas a ver contra quién.",
+      "Este plano vale para a temporada toda. Contra alguns estilos vai funcionar e contra outros vai sofrer: no fim você vai ver contra quem.",
+      "This plan runs all season. It'll work against some styles and suffer against others: at the end you'll see which.")}</p>
     <div class="acciones">
-      <button class="btn" onclick="jugar()">${T("jugarTemporada")}</button>
-      <button class="btn sec" onclick="resetAjustes()">Volver a la posición original</button></div>`;
-  activarArrastre();
+      <button class="btn" onclick="empezarTemporada()">${T("jugarTemporada")}</button>
+      <button class="btn sec" onclick="tmp.paso=0;tmp.res={};S.momentosOk=0;pintarPlan()">${t3("Rehacer el plan","Refazer o plano","Redo the plan")}</button></div>`;
 }
-
-// una sola pizarra: ellos arriba en rojo, vos abajo en verde, enfrentados
-const PIZ={W:460,H:470,margen:16};
-PIZ.span=(PIZ.H-PIZ.margen*2)*0.86;
-function posMiaDe(o,i,aj){
-  const a=(aj&&aj[i])||{dx:0,dy:0};
-  return {x:clamp((o.x+a.dx)/100,0.04,0.96)*PIZ.W,
-          y:PIZ.H-PIZ.margen-clamp((o.y+a.dy)/100,0,1)*PIZ.span};
+function cuentaTxt(fase,op,v){
+  if(fase==="salida"&&op==="largo") return `${v.mios} ${t3(v.mios>1?"puntas":"punta",v.mios>1?"atacantes":"atacante",v.mios>1?"strikers":"striker")} v ${v.suyos} ${t3("centrales","zagueiros","centre-backs")}`;
+  if(fase==="salida") return `${v.mios} ${t3("para salir","para sair","building")} v ${v.suyos} ${t3("presionando","pressionando","pressing")}`;
+  if(fase==="defensa"&&op==="presion") return `${v.mios} ${t3("presionan","pressionam","pressing")} v ${v.suyos} ${t3("que salen","que saem","building")}`;
+  if(fase==="defensa"&&op==="medio") return `${v.mios} v ${v.suyos} ${t3("por dentro","por dentro","in midfield")}`;
+  if(fase==="defensa") return `${v.mios} ${t3("atrás","atrás","at the back")} v ${v.suyos} ${t3("atacantes","atacantes","attackers")}`;
+  if(op==="centros") return `${v.mios} ${t3("en el área","na área","in the box")} v ${v.suyos} ${t3("defensores","defensores","defenders")}`;
+  if(op==="dentro") return `${v.mios} v ${v.suyos} ${t3("entre líneas","entre linhas","between the lines")}`;
+  return `${v.mios} v ${v.suyos} ${t3("por las bandas","pelas pontas","on the flanks")}`;
 }
-function posRivDe(o){
-  return {x:((100-o.x)/100)*PIZ.W, y:PIZ.margen+(o.y/100)*PIZ.span};
+function elegirOpMom(op){
+  const F=FASES[tmp.paso-1];
+  if(tmp.res[F.id]) return;
+  tmp.op=op;
+  moverFormaMia(F.id,op,tmp.f);
+  // se actualizan las tarjetas sin redibujar la cancha (para que se vea el movimiento)
+  setTimeout(()=>{ if(tmp.op===op) pintarPlanSinCancha(); },740);
 }
-function contarSector(pts,c,r){
-  return pts.filter(p=>Math.min(2,Math.floor(p.x/(PIZ.W/3)))===c
-                    && Math.min(2,Math.floor(p.y/(PIZ.H/3)))===r).length;
+function pintarPlanSinCancha(){
+  const svg=document.getElementById("pizMomento");
+  if(!svg){ pintarPlan(); return; }
+  const guard=svg.outerHTML; pintarPlan();
+  const nuevo=document.getElementById("pizMomento"); if(nuevo) nuevo.outerHTML=guard;
 }
-function conteos(mio,riv,aj){
-  const pm=mio.map((o,i)=>({...posMiaDe(o,i,aj),rol:o.rol})).filter(p=>p.rol!=="POR");
-  const pr=riv.map(posRivDe).map((p,i)=>({...p,rol:riv[i].rol})).filter(p=>p.rol!=="POR");
-  const out=[];
-  for(let r=0;r<3;r++) for(let c=0;c<3;c++)
-    out.push({r,c,a:contarSector(pm,c,r),b:contarSector(pr,c,r)});
-  return out;
+function confirmarMom(){
+  const F=FASES[tmp.paso-1], rv=S.rivalPlan, op=tmp.op;
+  if(!op||tmp.res[F.id]) return;
+  const yo=yoParaPlan(), v=ventaja(F.id,op,yo,{f:rv.f,e:rv.e,attrs:rv.attrs},autoSiJuego(tmp.f,tmp.e));
+  const dado=S.rng(); // siempre se consume una tirada: el duelo no se desincroniza
+  const ok=v.adv>0.15?true:v.adv<-0.15?false:dado<0.5+v.adv;
+  tmp.res[F.id]={op,v,ok}; tmp.plan[F.id]=op;
+  if(ok) S.momentosOk++;
+  document.querySelectorAll("#s-planteo .card.op").forEach(b=>b.disabled=true);
+  animarPelota(F.id,op,tmp.f,()=>pintarPlanSinCancha());
 }
-function pizarraCruce(mio,riv){
-  const {W,H,margen}=PIZ, mid=H/2;
-  const aj=tmp.ajustes||{};
-  const cs=conteos(mio,riv,aj);
-  const sectores=cs.map(s=>{
-    const x=s.c*(W/3), y=s.r*(H/3);
-    const col=s.a>s.b?"#4FBF7F":s.b>s.a?"#D9543F":"#8A9A91";
-    const op=(s.a+s.b)===0?0:(s.a===s.b?0.05:Math.min(3,Math.abs(s.a-s.b))*0.08);
-    return `<rect id="sbg-${s.r}-${s.c}" x="${x}" y="${y}" width="${W/3}" height="${H/3}"
-        fill="${col}" opacity="${op}"/>
-      <text id="stx-${s.r}-${s.c}" x="${x+W/6}" y="${y+H/6+4}" text-anchor="middle"
-        font-size="15" font-weight="800" fill="${col}" opacity="${(s.a+s.b)===0?0:0.5}"
-        pointer-events="none">${s.a}v${s.b}</text>`;
-  }).join("");
-
-  // rival: circulo hueco, nombre arriba. propio: circulo lleno, nombre abajo.
-  const dibRival=riv.map(o=>{
-    const p=posRivDe(o);
-    return `<g pointer-events="none">
-      <circle cx="${p.x}" cy="${p.y}" r="12" fill="#1D2925" stroke="#D9543F" stroke-width="2.5"/>
-      <text x="${p.x}" y="${p.y+4}" text-anchor="middle" class="pos-chip" font-size="11" fill="#F0A99B">${o.rt}</text>
-      <text x="${p.x}" y="${p.y-17}" text-anchor="middle" font-size="8.5" fill="#E8B6AC">${(o.jug.nom||"").split(" ").pop()}</text></g>`;
-  }).join("");
-  const dibMio=mio.map((o,i)=>{
-    const p=posMiaDe(o,i,aj);
-    const mov=aj[i]&&(aj[i].dx||aj[i].dy);
-    return `<g class="arrastrable" data-i="${i}" style="cursor:grab;touch-action:none">
-      <circle cx="${p.x}" cy="${p.y}" r="14" fill="#4FBF7F" stroke="${mov?'#E0A93B':'#183028'}" stroke-width="2.5"/>
-      <text x="${p.x}" y="${p.y+4.5}" text-anchor="middle" class="pos-chip" font-size="12"
-        fill="#0D1613" pointer-events="none">${o.rt}</text>
-      <text x="${p.x}" y="${p.y+26}" text-anchor="middle" font-size="9" font-weight="600"
-        fill="#BFE8D2" pointer-events="none">${(o.jug.nom||"").split(" ").pop()}</text></g>`;
-  }).join("");
-
-  return `<svg id="pizarra" class="cancha" viewBox="0 0 ${W} ${H}" role="img"
-      aria-label="Tu equipo y el del rival en la misma cancha. Arrastrá a tus jugadores para cambiar de sector.">
-    <rect width="${W}" height="${H}" fill="#224236"/>
-    ${[0,1,2,3,4,5,6,7].map(i=>`<rect y="${i*H/8}" width="${W}" height="${H/16}" fill="#284C3E"/>`).join("")}
-    ${sectores}
-    <g stroke="#4F7A69" stroke-width="1" opacity=".4" stroke-dasharray="5 6">
-      <line x1="${W/3}" y1="6" x2="${W/3}" y2="${H-6}"/><line x1="${2*W/3}" y1="6" x2="${2*W/3}" y2="${H-6}"/>
-      <line x1="6" y1="${H/3}" x2="${W-6}" y2="${H/3}"/><line x1="6" y1="${2*H/3}" x2="${W-6}" y2="${2*H/3}"/></g>
-    <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <line x1="6" y1="${mid}" x2="${W-6}" y2="${mid}" stroke="#5A8A76" stroke-width="1.5"/>
-    <circle cx="${W/2}" cy="${mid}" r="42" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${W/2-64}" y="6" width="128" height="44" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${W/2-64}" y="${H-50}" width="128" height="44" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    ${dibRival}
-    ${dibMio}
-  </svg>
-  <div class="leyenda">
-    <span><i class="pt riv"></i>${S.rival.n.n} · ${S.rival.formacion}</span>
-    <span><i class="pt pro"></i>${S.club.n} · ${tmp.f}</span>
-  </div>
-  <p class="mini" style="margin-top:6px">Arrastrá a tus jugadores para correrlos de sector.
-  El número de cada sector es <b>los tuyos contra los de ellos</b>, sin contar arqueros.</p>`;
-}
-// describe la MECÁNICA del cruce, no el veredicto: el jugador saca la conclusión
-function lecturaCruce(zm,zr,mu){
-  const t=[];
-  const dm=zm[1]-zr[1];
-  if(dm>0) t.push(`Ponés ${zm[1]} hombres en el medio contra ${zr[1]}: cuando circulan por dentro les sobra un marcador y les queda uno libre entre líneas.`);
-  else if(dm<0) t.push(`Ponés ${zm[1]} en el medio contra ${zr[1]}: cuando ellos toquen por dentro vas a llegar siempre un paso tarde, y a uno lo vas a dejar solo.`);
-  else t.push(`${zm[1]} contra ${zr[1]} en el medio: nadie tiene un hombre de más, se define en los duelos individuales.`);
-  const da=zm[2]-zr[0];
-  if(da>0) t.push(`Atacás con ${zm[2]} contra ${zr[0]} defensores: hay un atacante que ningún defensor puede tomar.`);
-  else if(da<0) t.push(`Atacás con ${zm[2]} contra ${zr[0]} defensores: te van a marcar de a uno y les va a sobrar gente para cubrir.`);
-  else t.push(`${zm[2]} atacantes contra ${zr[0]} defensores: marca punto por punto, sin coberturas de sobra.`);
-  const dd=zm[0]-zr[2];
-  if(dd>0) t.push(`Atrás quedás ${zm[0]} contra ${zr[2]}: tenés cobertura para tapar al que se filtre.`);
-  else if(dd<0) t.push(`Atrás quedás ${zm[0]} contra ${zr[2]}: si te agarran mal parado, quedan mano a mano.`);
-  return t.join(" ");
-}
-// arrastre: se mueve el jugador SIN redibujar la pizarra (redibujar mata el gesto).
-// solo se actualizan los numeros de los sectores en vivo.
-function activarArrastre(){
-  const svg=document.getElementById("pizarra");
-  if(!svg||!window.__piz) return;
-  const {mio,riv}=window.__piz;
-  let act=null;
-
-  const aPizarra=ev=>{
-    const c=svg.getBoundingClientRect();
-    return {x:(ev.clientX-c.left)/c.width*PIZ.W, y:(ev.clientY-c.top)/c.height*PIZ.H};
-  };
-  const refrescarSectores=()=>{
-    conteos(mio,riv,tmp.ajustes).forEach(s=>{
-      const t=document.getElementById(`stx-${s.r}-${s.c}`);
-      const b=document.getElementById(`sbg-${s.r}-${s.c}`);
-      if(!t||!b) return;
-      const col=s.a>s.b?"#4FBF7F":s.b>s.a?"#D9543F":"#8A9A91";
-      const vacio=(s.a+s.b)===0;
-      t.textContent=`${s.a}v${s.b}`;
-      t.setAttribute("fill",col); t.setAttribute("opacity",vacio?0:0.5);
-      b.setAttribute("fill",col);
-      b.setAttribute("opacity",vacio?0:(s.a===s.b?0.05:Math.min(3,Math.abs(s.a-s.b))*0.08));
-    });
-    const l=document.getElementById("lecturaZonas");
-    if(l) l.innerHTML=textoSectores(mio,riv);
-  };
-  const moverNodo=(g,i)=>{
-    const o=mio[i], p=posMiaDe(o,i,tmp.ajustes);
-    const cir=g.querySelector("circle"), tx=g.querySelectorAll("text");
-    cir.setAttribute("cx",p.x); cir.setAttribute("cy",p.y);
-    cir.setAttribute("stroke","#E0A93B");
-    tx[0].setAttribute("x",p.x); tx[0].setAttribute("y",p.y+4.5);
-    tx[1].setAttribute("x",p.x); tx[1].setAttribute("y",p.y+26);
-  };
-
-  svg.querySelectorAll("g.arrastrable").forEach(g=>{
-    g.addEventListener("pointerdown",ev=>{
-      ev.preventDefault();
-      act={i:+g.dataset.i,g};
-      g.setPointerCapture(ev.pointerId);
-      g.style.cursor="grabbing";
-      svg.appendChild(g); // que quede por encima mientras se arrastra
-    });
-    g.addEventListener("pointermove",ev=>{
-      if(!act) return;
-      const p=aPizarra(ev);
-      const base=ONCE[tmp.f][act.i];
-      const nx=clamp(p.x/PIZ.W*100,4,96);
-      const ny=clamp((PIZ.H-PIZ.margen-p.y)/PIZ.span*100,0,100);
-      tmp.ajustes=tmp.ajustes||{};
-      // tope: se puede matizar el sistema, no reinventarlo
-      tmp.ajustes[act.i]={dx:clamp(nx-base[1],-30,30),dy:clamp(ny-base[2],-24,24)};
-      moverNodo(act.g,act.i);
-      refrescarSectores();
-    });
-    const soltar=ev=>{
-      if(!act) return;
-      act.g.style.cursor="grab";
-      try{act.g.releasePointerCapture(ev.pointerId);}catch(e){}
-      act=null;
-      pintarPlanteo(); // recién ahora se redibuja todo y se actualizan las barras
-    };
-    g.addEventListener("pointerup",soltar);
-    g.addEventListener("pointercancel",soltar);
-  });
-}
-// texto que acompaña a la grilla, se recalcula en vivo al arrastrar
-function textoSectores(mio,riv){
-  const cs=conteos(mio,riv,tmp.ajustes);
-  const fila=r=>cs.filter(s=>s.r===r);
-  const suma=r=>fila(r).reduce((a,s)=>[a[0]+s.a,a[1]+s.b],[0,0]);
-  const [ma,mb]=suma(1);
-  const [aa,ab]=suma(0);
-  const [da,db]=suma(2);
-  const t=[];
-  t.push(ma>mb?`En el medio ponés ${ma} contra ${mb}: te sobra un hombre para circular por dentro.`
-       :ma<mb?`En el medio ponés ${ma} contra ${mb}: te van a superar por adentro.`
-       :`En el medio están ${ma} contra ${mb}: se define en los duelos.`);
-  t.push(aa>ab?`Arriba atacás ${aa} contra ${ab}: hay un atacante que nadie puede tomar.`
-       :aa<ab?`Arriba atacás ${aa} contra ${ab}: te marcan de a uno y les sobra gente.`
-       :`Arriba quedan ${aa} contra ${ab}: marca punto por punto.`);
-  t.push(da>db?`Atrás quedás ${da} contra ${db}: tenés cobertura de sobra.`
-       :da<db?`Atrás quedás ${da} contra ${db}: si te agarran mal parado, quedan mano a mano.`
-       :`Atrás quedás ${da} contra ${db}: sin coberturas libres.`);
-  // el pasillo central y las bandas, que es lo que cambia al arrastrar
-  const cen=cs.find(s=>s.r===1&&s.c===1);
-  const izq=cs.find(s=>s.r===1&&s.c===0), der=cs.find(s=>s.r===1&&s.c===2);
-  const bandaA=izq.a+der.a, bandaB=izq.b+der.b;
-  t.push(`Por el pasillo central quedan ${cen.a} contra ${cen.b}, y por las dos bandas ${bandaA} contra ${bandaB}` +
-    (cen.a>cen.b&&bandaA<bandaB ? ": les ganás por dentro pero les regalás los costados."
-    : cen.a<cen.b&&bandaA>bandaB ? ": estás ancho pero te comen por el medio."
-    : cen.a>cen.b&&bandaA>=bandaB ? ": los estás tapando en todo el ancho del campo."
-    : cen.a<cen.b&&bandaA<=bandaB ? ": te están superando en todos lados, algo hay que mover."
-    : "."));
-  return t.join(" ");
-}
-// premio o castigo chico por como quedaste parado en los sectores
-function ajustePosicional(mio,riv){
-  let g=0,p=0;
-  conteos(mio,riv,tmp.ajustes).forEach(s=>{ if(s.a>s.b)g++; else if(s.b>s.a)p++; });
-  return {mult:1+clamp((g-p)*0.006,-0.03,0.03),gana:g,pierde:p};
-}
-function resetAjustes(){ tmp.ajustes={}; pintarPlanteo(); }
-function pf(x){tmp.f=x;tmp.ajustes={};pintarPlanteo();}
-function pe(x){tmp.e=x;pintarPlanteo();}
 
 /* ==========================================================
    EL AZAR DISFRAZADO DE GENIALIDAD
-   Cuando el resultado se define por la tirada y no por el planteo,
-   la prensa igual te atribuye (o te saca) el mérito. El juego te
-   muestra por dentro lo que la prensa no ve: que no la viste venir.
+   Cuando el resultado le gana a la lógica, la prensa igual te da
+   (o te saca) el mérito. El juego te cuenta lo que la prensa no ve.
    ========================================================== */
 const TITULARES_SUERTE={
  bien:[
-  {t:"Qué cambio del entrenador: la vio antes que nadie",
-   v:"Entró a los 84 y a los 87 la empujó en un córner. Vos lo pusiste porque no te quedaba otro delantero en el banco."},
-  {t:"Le ganó el partido desde la raya",
-   v:"El gol salió de un rebote en un tobillo rival. La instrucción que habías gritado era otra."},
-  {t:"Otra vez el sello del DT en el segundo tiempo",
-   v:"El equipo entró igual que siempre. Lo que cambió fue que esta vez entraron los dos tiros que venían errando."}],
+  {t:{es:"Qué cambio del entrenador: la vio antes que nadie",pt:"Que mudança do treinador: viu antes de todo mundo",en:"What a substitution: the coach saw it before anyone"},
+   v:{es:"Entró a los 84 y a los 87 la empujó en un córner. Lo pusiste porque no te quedaba otro delantero en el banco.",pt:"Entrou aos 84 e aos 87 empurrou num escanteio. Você o colocou porque não havia outro atacante no banco.",en:"He came on at 84 and scored from a corner at 87. You only picked him because there was no other striker on the bench."}},
+  {t:{es:"Le ganó el partido desde la raya",pt:"Ganhou o jogo da beira do campo",en:"He won it from the touchline"},
+   v:{es:"El gol salió de un rebote en un tobillo rival. La instrucción que habías gritado era otra.",pt:"O gol saiu de um desvio no tornozelo de um rival. A instrução que você gritou era outra.",en:"The goal came off an opponent's ankle. You'd been shouting a different instruction."}},
+  {t:{es:"Otra vez el sello del DT en el segundo tiempo",pt:"De novo a marca do técnico no segundo tempo",en:"The coach's touch again in the second half"},
+   v:{es:"El equipo jugó igual que siempre. Lo que cambió fue que esta vez entraron los tiros que venían errando.",pt:"O time jogou como sempre. A diferença é que desta vez os chutes entraram.",en:"The team played as always. This time the shots they'd been missing went in."}}],
  mal:[
-  {t:"El planteo del entrenador no funcionó",
-   v:"Generaron once situaciones y no entró ninguna. En el pizarrón habías ganado el partido."},
-  {t:"Otra vez sin ideas en el segundo tiempo",
-   v:"Tres palos y un gol anulado. El plan estaba bien: la pelota no quiso entrar."},
-  {t:"Le faltó carácter al equipo en el momento clave",
-   v:"Se lesionaron dos en veinte minutos y jugaste el final con un pibe de la reserva."}]
+  {t:{es:"El planteo del entrenador no funcionó",pt:"O plano do treinador não funcionou",en:"The coach's plan didn't work"},
+   v:{es:"Generaron once situaciones y no entró ninguna. En el pizarrón habías ganado el partido.",pt:"Criaram onze chances e nenhuma entrou. Na prancheta você tinha ganho.",en:"Eleven chances, none went in. On the whiteboard you'd won."}},
+  {t:{es:"Otra vez sin ideas en el segundo tiempo",pt:"De novo sem ideias no segundo tempo",en:"Out of ideas again in the second half"},
+   v:{es:"Tres palos y un gol anulado. El plan estaba bien: la pelota no quiso entrar.",pt:"Três bolas na trave e um gol anulado. O plano estava certo: a bola não quis entrar.",en:"Three woodwork hits and a disallowed goal. The plan was right: the ball wouldn't go in."}},
+  {t:{es:"Le faltó carácter al equipo en el momento clave",pt:"Faltou caráter ao time no momento decisivo",en:"The team lacked character when it mattered"},
+   v:{es:"Se lesionaron dos en veinte minutos y jugaste el final con un pibe de la reserva.",pt:"Dois se machucaram em vinte minutos e você terminou com um garoto da base.",en:"Two got injured in twenty minutes and you finished with a reserve kid."}}]
 };
-function moralejaSuerte(dioVuelta, gane){
-  if(!dioVuelta) return null;
-  const lote = gane ? TITULARES_SUERTE.bien : TITULARES_SUERTE.mal;
-  return R.el(lote);
-}
+function moralejaTxt(o){ return {t:L(o.t),v:L(o.v)}; }
 
-/* ---------- recorrido de la temporada, fecha a fecha ---------- */
-// genera un camino creible desde la mitad de tabla hasta donde terminaste
-function recorridoTemporada(posFinal, equipos, fechas){
-  const hitos=Math.min(9, Math.max(5, Math.round(fechas/4)));
-  const arranque=Math.max(1,Math.min(equipos, Math.round(equipos/2)+R.e(-1,1)));
-  const ruta=[arranque];
-  for(let i=1;i<hitos-1;i++){
-    const t=i/(hitos-1);
-    const ideal=arranque+(posFinal-arranque)*t;
-    const ruido=R.e(-2,2)*(1-t*0.7);
-    ruta.push(clamp(Math.round(ideal+ruido),1,equipos));
-  }
-  ruta.push(posFinal);
-  return ruta;
-}
-function animarRecorrido(){
-  const c=S.calc;
-  if(!c.tabla||!c.ruta) return;
-  const cont=document.getElementById("recorrido");
-  if(!cont) return;
-  const eq=c.tabla.equipos, ruta=c.ruta;
-  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let i=0;
-  const pintar=()=>{
-    const hasta=ruta.slice(0,i+1);
-    const W=420,H=150,mx=26,my=18;
-    const px=k=>mx+(k/(ruta.length-1))*(W-mx*2);
-    const py=p=>my+((p-1)/(eq-1))*(H-my*2);
-    const linea=hasta.map((p,k)=>`${k?"L":"M"}${px(k)} ${py(p)}`).join(" ");
-    const ult=hasta[hasta.length-1];
-    cont.innerHTML=`
-      <svg viewBox="0 0 ${W} ${H}" class="recorrido-svg" role="img"
-        aria-label="Evolución de la posición a lo largo de la temporada">
-        <rect width="${W}" height="${H}" fill="#1D2925" rx="4"/>
-        <text x="6" y="${py(1)+4}" font-size="10" fill="#8A9A91">1º</text>
-        <text x="6" y="${py(eq)+4}" font-size="10" fill="#8A9A91">${eq}º</text>
-        <line x1="${mx}" y1="${py(1)}" x2="${W-mx}" y2="${py(1)}" stroke="#33453D" stroke-width="1"/>
-        <line x1="${mx}" y1="${py(eq)}" x2="${W-mx}" y2="${py(eq)}" stroke="#33453D" stroke-width="1"/>
-        <path d="${linea}" fill="none" stroke="#4FBF7F" stroke-width="2.5"
-          stroke-linejoin="round" stroke-linecap="round"/>
-        ${hasta.map((p,k)=>`<circle cx="${px(k)}" cy="${py(p)}" r="${k===hasta.length-1?6:3.5}"
-          fill="${k===hasta.length-1?"#E0A93B":"#4FBF7F"}"/>`).join("")}
-        <text x="${px(hasta.length-1)}" y="${py(ult)-12}" text-anchor="middle"
-          font-size="13" font-weight="800" fill="#E0A93B"
-          font-family="Big Shoulders Display,sans-serif">${ult}º</text>
-      </svg>
-      <p class="mini">${i>=ruta.length-1
-        ? `Terminaste ${ult}º de ${eq}.`
-        : `Fecha ${Math.round((i/(ruta.length-1))*c.tabla.fechas)} de ${c.tabla.fechas}…`}</p>`;
-    i++;
-    if(i<ruta.length) setTimeout(pintar, reduce?0:520);
-  };
-  pintar();
-}
 
-/* ---------- tabla de la temporada ---------- */
-function esCopa(){ return /Copa|Champions|Libertadores|Sudamericana|Mundo|América|Eliminatorias/i.test(S.compe); }
-function rondaDe(pts){
-  return pts>=10?"Campeón":pts>=7?"Finalista":pts>=4?"Semifinales":pts>=1?"Cuartos de final":"Afuera en la fase de grupos";
+/* ==========================================================
+   LA TEMPORADA MINUTO A MINUTO (estilo Brasfoot)
+   Se ven todos los partidos de la fecha a la vez, el reloj avanza
+   y los goles caen. La tabla se reacomoda después de cada fecha.
+   ========================================================== */
+const MS_MIN={1:42,3:14,10:4};
+function empezarTemporada(){
+  S.formacion=tmp.f; S.estilo=tmp.e; S.usadas.push(tmp.f); S.plan=Object.assign({},tmp.plan);
+  const par=S.formacion+"|"+S.estilo;
+  if(S.autoPar!==par){ S.auto=Math.round((S.auto||0)*0.3); S.autoPar=par; }
+  S.autoAntes=S.auto;
+  tmp={vel:(window.__vel||1),pausa:false,saltar:false,posPrev:{},feed:[],tabla:S.temp.ac?"tabA":"tab"};
+  pintarTicker(); ir("temporada");
+  setTimeout(tickerSiguiente,400);
 }
-// arma una tabla creible de la liga con el club en la posicion que le toco
-function tablaTemporada(){
-  const L=LIGAS[S.club.p];
-  const rivales=(L?L.clubes:[]).filter(c=>c.n!==S.club.n);
-  const equipos=Math.min(10,rivales.length+1);
-  const miPos = S.calc.pts>=10?1 : S.calc.pts>=7?2 : S.calc.pts>=4?R.e(4,6) : S.calc.pts>=1?equipos-2 : equipos;
-  const fechas=(equipos-1)*2;
-  // puntos coherentes con la posicion
-  const puntosDe=pos=>clamp(Math.round(fechas*2.1 - (pos-1)*R.r(2.2,4.4) + R.r(-1,1)),8,fechas*3);
-  const otros=R.mz(rivales).slice(0,equipos-1);
-  const filas=[];
-  let k=0;
-  for(let pos=1;pos<=equipos;pos++){
-    if(pos===miPos) filas.push({club:S.club,pts:puntosDe(pos),yo:true,pos});
-    else filas.push({club:otros[k++],pts:puntosDe(pos),yo:false,pos});
-  }
-  return {filas,fechas,miPos,equipos};
-}
-function svgCopa(s){s=s||16;return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">
-  <path d="M7 3h10v4a5 5 0 0 1-10 0Z" fill="#E0A93B"/><path d="M5 4H3v2a4 4 0 0 0 4 4M19 4h2v2a4 4 0 0 1-4 4"
-  stroke="#E0A93B" stroke-width="1.6" fill="none"/><path d="M11 12h2v5h-2zM8 19h8v2H8z" fill="#E0A93B"/></svg>`;}
-
-/* ---------- resolución ---------- */
-function resolver(attrs,f,e,fr,coh,hin,az,pref){
-  const p=PESOS[f];
-  const base=(attrs[0]*p[0]+attrs[1]*p[1]+attrs[2]*p[2]+attrs[3]*p[3])/(p[0]+p[1]+p[2]+p[3]);
-  const fit=FIT[e][f], mu=MATCHUP[f][fr];
-  const aj=base*fit*mu*(pref||1);
-  const cc=aj*coh, ch=cc+hin;
-  return {base,fit,mu,pref:pref||1,aj,coh,cc,hin,az,final:ch+az,sinAzar:ch};
-}
-const cohDe=v=>0.90+(v/100)*0.20;
-const empDe=v=>(v-50)/50*3;
-
-function jugar(){
-  S.formacion=tmp.f; S.estilo=tmp.e; S.usadas.push(tmp.f);
-  const once=armarOnce(S.plantel,S.formacion,S.fijos), attrs=atributosDe(once);
-  const ap=ajustePosicional(once,S.rival.once);
-  S.ajustePos=ap;
-  const multPrensa=(S.prensa&&S.prensa.mult)||1;
-  const pref=(S.formacion===S.sistemaPref?1.03:0.98)*(S.estilo===S.estiloPref?1.02:0.99)*ap.mult*multPrensa;
-  const mio=resolver(attrs,S.formacion,S.estilo,S.rival.formacion,cohDe(S.vars.ves),empDe(S.vars.hin),R.r(-TOPE_AZAR,TOPE_AZAR),pref);
-  const riv=resolver(S.rival.attrs,S.rival.formacion,S.rival.estilo,S.formacion,1,0,R.r(-TOPE_AZAR,TOPE_AZAR),1);
-  const dif=mio.final-riv.final, dsa=mio.sinAzar-riv.sinAzar;
-  // cuanto mas arriba estas, mas cuesta salir campeon
-  const ex = S.esSeleccion?3 : S.division*1.2 + (S.club.niv-3)*0.8;
-  let pos,pts,dRes,dDir,dHin,sube=false;
-  if(dif>=12+ex){pos="Campeón";pts=10;dRes=16;dDir=14;dHin=18;sube=true;}
-  else if(dif>=5+ex*0.6){pos="Subcampeón";pts=7;dRes=9;dDir=8;dHin=9;sube=S.division<3;}
-  else if(dif>=-2){pos="Mitad de tabla";pts=4;dRes=1;dDir=0;dHin=-1;}
-  else if(dif>=-10){pos="Zona baja";pts=1;dRes=-9;dDir=-11;dHin=-12;}
-  else {pos="Pelea el descenso";pts=0;dRes=-17;dDir=-20;dHin=-19;}
-  S.vars.res=clamp(S.vars.res+dRes,0,100);
-  S.vars.dir=clamp(S.vars.dir+dDir,0,100);
-  S.vars.hin=clamp(S.vars.hin+dHin,0,100);
-  S.puntos+=pts;
-  const golesA=Math.max(0,Math.round(1.4+dif/9+R.r(0,1))), golesB=Math.max(0,Math.round(1.4-dif/9+R.r(0,1)));
-  S.calc={mio,riv,dif,dsa,pos,pts,dRes,dDir,dHin,sube,golesA,golesB,attrs};
-  // ¿el azar dio vuelta lo que decía el planteo?
-  const leDioVuelta = Math.sign(dsa)!==Math.sign(dif) && Math.abs(dsa)>1.5;
-  S.calc.moraleja = moralejaSuerte(leDioVuelta, dif>0);
-  if(leDioVuelta) S.suertes=(S.suertes||0)+(dif>0?1:-1);
-  S.calc.tabla = esCopa()?null:tablaTemporada();
-  if(S.calc.tabla) S.calc.ruta = recorridoTemporada(S.calc.tabla.miPos, S.calc.tabla.equipos, S.calc.tabla.fechas);
-  if(pos==="Campeón") S.titulos.push({t:S.temporada,comp:S.compe,club:S.club.n});
-  S.hist.push({t:S.temporada,club:S.club.n,div:S.esSeleccion?"Selección":DIVISIONES[S.division].n,comp:S.compe,f:S.formacion,riv:S.rival.formacion,pos,pts});
-  pintarResolucion(); ir("resolucion"); animarRecorrido();
-}
-function pintarResolucion(){
-  const c=S.calc,m=c.mio,r=c.riv;
-  const parejo=Math.abs(c.dsa)<=TOPE_AZAR*2;
-  const dioVuelta=Math.sign(c.dsa)!==Math.sign(c.dif);
-  $("#s-resolucion").innerHTML=`
-    <h2 class="disp">Temporada ${S.temporada}</h2>
-    <div class="resultado ${c.pts>=7?'bien':c.pts<=1?'mal':''}">
-      <div class="mini" style="margin-bottom:8px">${S.compe}</div>
-      <div class="enfrenta">
-        <div class="eq">${escudo(S.club,42)}<div>${S.club.n}</div><div class="sis">${S.formacion}</div></div>
-        <div class="marc">${c.golesA} — ${c.golesB}</div>
-        <div class="eq">${escudo(S.rival.n,42)}<div>${S.rival.n.n}</div><div class="sis">${S.rival.formacion}</div></div>
+function pintarTicker(){
+  const TT=S.temp;
+  $("#s-temporada").innerHTML=`
+    <div class="tk-cab">
+      <div><div class="tk-comp" id="tkComp">${S.compe}</div><div class="tk-fecha" id="tkFecha"></div></div>
+      <div class="tk-ctrl">
+        ${[1,3,10].map(v=>`<button class="tkv ${tmp.vel===v?'on':''}" onclick="velTk(${v})">×${v}</button>`).join("")}
+        <button class="tkv" id="tkPausa" onclick="pausaTk()">❚❚</button>
+        <button class="tkv" onclick="saltarTk()">${S.temp.j<S.temp.mitad?t3("Ir a la parada","Ir à parada","Skip to break"):t3("Ir al final","Ir ao final","Skip to end")} ⏭</button>
       </div>
-      <div class="mini" style="margin-bottom:4px">${esCopa()?"Partido decisivo del torneo":"El clásico de la temporada"}</div>
-      <b>${c.pos==="Campeón"?copaSVG(28)+" ":""}${esCopa()?rondaDe(c.pts):tCierre(c.pos)}</b>
-      <span>${esCopa()?"Así te fue en el torneo"
-        :`Terminaste ${c.tabla?c.tabla.miPos+"º de "+c.tabla.equipos:""} en la tabla`}</span>
     </div>
-    ${c.tabla?`
-    <h3 class="disp">${T("comoFue")}</h3>
-    <div id="recorrido" class="recorrido"></div>
-    <h3 class="disp">${T("comoQuedoTabla")}</h3>
-    <p class="mini">${S.compe} · ${c.tabla.fechas} fechas. El partido de arriba es el que definió tu año,
-    pero la posición sale de toda la temporada.</p>
-    <table class="tabla-pos"><tr><th>#</th><th>Club</th><th style="text-align:right">Pts</th></tr>
-    ${c.tabla.filas.map(f=>`<tr class="${f.yo?'yo':''}">
-      <td>${f.pos}</td>
-      <td>${escudo(f.club,18)} ${f.club.n}${f.pos===1?" "+copaSVG(14):""}</td>
-      <td style="text-align:right"><b>${f.pts}</b></td></tr>`).join("")}
-    </table>`:""}
-    ${c.moraleja?`<div class="moraleja">
-      <div class="titular">“${c.moraleja.t}”</div>
-      <div class="verdad"><b>Lo que pasó de verdad:</b> ${c.moraleja.v}</div>
-      <div class="cierre">El resultado de una decisión no prueba que la decisión haya sido buena.</div>
-    </div>`:""}
-    <p class="mini">${parejo?(dioVuelta?"Estaban parejos y se dio vuelta en el final. Con esa diferencia, podía pasar."
-      :"Estaban parejos, pero la lectura aguantó."):"La diferencia la hizo el planteo, no la suerte."}</p>
-    <div class="deltas">
-      <span class="d ${cd(c.dRes)}">Resultados ${sg(c.dRes)}</span>
-      <span class="d ${cd(c.dDir)}">Directiva ${sg(c.dDir)}</span>
-      <span class="d ${cd(c.dHin)}">Hinchada ${sg(c.dHin)}</span></div>
-    <details><summary>${T("verCalculo")}</summary>
-      <div class="ln"><span>Nivel del once con ${S.formacion}</span><b>${m.base.toFixed(1)}</b></div>
-      <div class="ln"><span>Fit del modelo con el sistema (${tFit(m.fit)})</span><b>×${m.fit.toFixed(2)}</b></div>
-      <div class="ln"><span>Cruce contra su ${S.rival.formacion}</span><b>×${m.mu.toFixed(2)}</b></div>
-      <div class="ln"><span>Tu sistema y modelo de cabecera, más cómo los paraste</span><b>×${m.pref.toFixed(3)}</b></div>
-      ${S.prensa&&S.prensa.mult!==1?`<div class="ln"><span>Tu política con la prensa (${S.prensa.n})</span><b>×${S.prensa.mult.toFixed(3)}</b></div>`:""}
-      <div class="ln"><span>Sectores ganados / perdidos en la pizarra</span><b>${S.ajustePos?S.ajustePos.gana+" / "+S.ajustePos.pierde:"—"}</b></div>
-      <div class="ln"><span>Cohesión del vestuario</span><b>×${m.coh.toFixed(2)}</b></div>
-      <div class="ln"><span>Empuje de la tribuna</span><b>${m.hin>=0?"+":""}${m.hin.toFixed(1)}</b></div>
-      <div class="ln"><span>Azar (tope ±${TOPE_AZAR})</span><b>${m.az>=0?"+":""}${m.az.toFixed(1)}</b></div>
-      <div class="ln"><span>Tu puntaje</span><b style="color:var(--verde)">${m.final.toFixed(1)}</b></div>
-      <div class="ln"><span>El de ellos</span><b>${r.final.toFixed(1)}</b></div>
-    </details>
+    <div class="tk-reloj"><span id="tkMin">0'</span><div class="tk-barra"><i id="tkBar"></i></div></div>
+    <div class="tk-grid">
+      <div id="tkPartidos" class="tk-partidos"></div>
+      <div>${TT.equipos.length?`<div id="tkTablaSel" class="tk-tabsel"></div><div id="tkTabla"></div>`:""}
+        ${TT.copa?`<div id="tkCopa" class="tk-copa"></div>`:""}</div>
+    </div>
+    <div id="tkFeed" class="tk-feed"></div>`;
+  pintarTablaTk(); pintarCopaTk(); pintarFeedTk();
+}
+function velTk(v){ tmp.vel=v; window.__vel=v; document.querySelectorAll(".tkv").forEach(b=>{ if(/^×/.test(b.textContent)) b.classList.toggle("on",b.textContent==="×"+v); }); }
+function pausaTk(){ tmp.pausa=!tmp.pausa; const b=$("#tkPausa"); if(b) b.textContent=tmp.pausa?"▶":"❚❚"; if(!tmp.pausa&&tmp.reanudar){ const f=tmp.reanudar; tmp.reanudar=null; f(); } }
+function saltarTk(){ tmp.saltar=true; if(tmp.pausa){ tmp.pausa=false; if(tmp.reanudar){const f=tmp.reanudar;tmp.reanudar=null;f();} } }
+
+function tickerSiguiente(){
+  const TT=S.temp;
+  if(S.pant!=="temporada") return;
+  if(TT.j>=TT.jornadas.length){ tmp.saltar=false; finTemporada(); return; }
+  if(TT.j===TT.mitad&&!TT.paro&&TT.j>0){ TT.paro=true; tmp.saltar=false; paradaMitad(); return; }
+  const jor=TT.jornadas[TT.j];
+  jugarJornada(jor);
+  animarJornada(jor,()=>{
+    TT.j++;
+    registrarFeed(jor);
+    pintarTablaTk(); pintarCopaTk(); pintarFeedTk();
+    if(tmp.saltar) tickerSiguiente(); else setTimeout(tickerSiguiente,Math.max(150,900/tmp.vel));
+  });
+}
+function tituloJornada(jor){
+  const TT=S.temp;
+  if(jor.t==="copa") return `${trofeo(TT.copa.tipo==="conti"?"conti":TT.copa.tipo==="sel"?"sel":"copa",18)} ${TT.copa.nombre} · ${jor.ronda}`;
+  const seg=TT.ac?(jor.k<TT.nFechas/2?TT.ac.a:TT.ac.c):TT.ligaNombre;
+  return `${seg} · ${t3("Fecha","Rodada","Round")} ${jor.k+1} ${t3("de","de","of")} ${TT.nFechas}`;
+}
+function animarJornada(jor,fin){
+  const f=$("#tkFecha"); if(f) f.innerHTML=tituloJornada(jor);
+  const cont=$("#tkPartidos");
+  if(!cont){ fin(); return; }
+  cont.innerHTML=jor.res.map((p,i)=>`
+    <div class="tk-p ${p.yo?'yo':''}" id="tkp-${i}">
+      <div class="tk-lin">
+        <span class="tk-eq">${escudo(p.A.club,18)}<span>${p.A.club.n}</span></span>
+        <span class="tk-mar" id="tkm-${i}">0 - 0</span>
+        <span class="tk-eq der"><span>${p.B.club.n}</span>${escudo(p.B.club,18)}</span>
+      </div>
+      <div class="tk-ev" id="tke-${i}"></div>
+    </div>`).join("");
+  const marc=jor.res.map(()=>[0,0]);
+  let m=0;
+  const mostrar=(p,i,e)=>{
+    const ev=$("#tke-"+i), mk=$("#tkm-"+i);
+    if(e.t==="gol"){
+      marc[i][e.l==="a"?0:1]++;
+      if(mk) mk.textContent=`${marc[i][0]} - ${marc[i][1]}`;
+      const box=$("#tkp-"+i); if(box&&!tmp.saltar){ box.classList.remove("gol"); void box.offsetWidth; box.classList.add("gol"); }
+      if(ev) ev.innerHTML+=`<span class="${e.l}">⚽ ${e.m}' ${e.nom}</span>`;
+    } else if(e.t==="roja"&&ev) ev.innerHTML+=`<span class="${e.l} roja">▮ ${e.m}' ${e.nom}</span>`;
+  };
+  const cerrar=()=>{
+    jor.res.forEach((p,i)=>{
+      const mk=$("#tkm-"+i), box=$("#tkp-"+i);
+      if(mk) mk.textContent=`${p.ga} - ${p.gb}${p.pen?` (${p.pen[0]}-${p.pen[1]} ${t3("pen","pên","pens")})`:""}`;
+      if(p.yo&&box){ const soyA=p.A.yo, gf=soyA?p.ga:p.gb, gc=soyA?p.gb:p.ga;
+        const gano=p.pen?(p.gana==="a")===soyA:gf>gc, emp=!p.pen&&gf===gc;
+        box.classList.add(gano?"gano":emp?"empato":"perdio"); }
+      if(p.les&&p.les.length){ const ev=$("#tke-"+i); if(ev) ev.innerHTML+=p.les.map(j=>`<span class="les">✚ ${apellido(j.nom)} ${t3("se lesionó","se lesionou","injured")}</span>`).join(""); }
+    });
+    const mn=$("#tkMin"), b=$("#tkBar"); if(mn) mn.textContent=t3("Final","Fim","FT"); if(b) b.style.width="100%";
+    fin();
+  };
+  if(tmp.saltar){ jor.res.forEach((p,i)=>p.ev.forEach(e=>mostrar(p,i,e))); cerrar(); return; }
+  const paso=()=>{
+    if(tmp.saltar){ jor.res.forEach((p,i)=>p.ev.filter(e=>e.m>m).forEach(e=>mostrar(p,i,e))); cerrar(); return; }
+    if(tmp.pausa){ tmp.reanudar=paso; return; }
+    m++;
+    const mn=$("#tkMin"), b=$("#tkBar");
+    if(mn) mn.textContent=m+"'"; if(b) b.style.width=(m/90*100)+"%";
+    jor.res.forEach((p,i)=>p.ev.filter(e=>e.m===m).forEach(e=>mostrar(p,i,e)));
+    if(m>=90){ cerrar(); return; }
+    setTimeout(paso,MS_MIN[tmp.vel]*(m===45?12:1));
+  };
+  paso();
+}
+function registrarFeed(jor){
+  const p=jor.res.find(x=>x.yo); if(!p) return;
+  const soyA=p.A.yo, gf=soyA?p.ga:p.gb, gc=soyA?p.gb:p.ga, riv=soyA?p.B.club:p.A.club;
+  const gano=p.pen?(p.gana==="a")===soyA:gf>gc, emp=!p.pen&&gf===gc;
+  tmp.feed.unshift({txt:`${jor.t==="copa"?jor.ronda:t3("F","R","R")+(jor.k+1)} · ${gano?t3("Ganaste","Venceu","Won"):emp?t3("Empataste","Empatou","Drew"):t3("Perdiste","Perdeu","Lost")} ${gf}-${gc}${p.pen?` (${soyA?p.pen[0]:p.pen[1]}-${soyA?p.pen[1]:p.pen[0]} pen)`:""} ${t3("vs","vs","vs")} ${riv.n}`,
+    c:gano?"g":emp?"e":"p", les:(p.les||[]).map(j=>apellido(j.nom))});
+}
+function pintarFeedTk(){
+  const c=$("#tkFeed"); if(!c) return;
+  c.innerHTML=tmp.feed.slice(0,8).map(f=>`<div class="fd ${f.c}">${f.txt}${f.les.length?` <span class="les">✚ ${f.les.join(", ")}</span>`:""}</div>`).join("");
+}
+function tablaHTML(campo,conFlechas,compacta){
+  const TT=S.temp, tab=ordenTabla(TT.equipos,campo);
+  return `<table class="tabla-pos tk-tabla"><tr><th>#</th><th></th><th>${t3("Club","Clube","Club")}</th>${compacta?"":`<th>${t3("PJ","J","P")}</th><th>${t3("DG","SG","GD")}</th>`}<th style="text-align:right">Pts</th></tr>
+    ${tab.map((x,i)=>{ const e=x.e, t=e[campo], prev=conFlechas&&tmp.posPrev[campo+e.club.n];
+      const fl=prev&&prev!==i+1?(prev>i+1?`<span class="sube">▲</span>`:`<span class="baja">▼</span>`):"";
+      return `<tr class="${e.yo?'yo':''} ${e.clasico?'clasico':''}"><td>${i+1}</td><td class="fl">${fl}</td>
+        <td>${escudo(e.club,16)} ${e.club.n}</td>${compacta?"":`<td>${t.pj}</td><td>${sg(t.gf-t.gc)}</td>`}<td style="text-align:right"><b>${t.pts}</b></td></tr>`;}).join("")}</table>`;
+}
+function pintarTablaTk(){
+  const TT=S.temp, c=$("#tkTabla"); if(!c||!TT.equipos.length) return;
+  const sel=$("#tkTablaSel");
+  if(sel&&TT.ac) sel.innerHTML=[["tabA",TT.ac.a],["tabC",TT.ac.c],["tab",TT.ac.anual||t3("Anual","Anual","Annual")]]
+    .map(([k,n])=>`<button class="${tmp.tabla===k?'on':''}" onclick="tmp.tabla='${k}';pintarTablaTk()">${n}</button>`).join("");
+  c.innerHTML=tablaHTML(tmp.tabla,true);
+  ["tab","tabA","tabC"].forEach(campo=>ordenTabla(TT.equipos,campo).forEach((x,i)=>tmp.posPrev[campo+x.e.club.n]=i+1));
+}
+function pintarCopaTk(){
+  const TT=S.temp, c=$("#tkCopa"); if(!c||!TT.copa) return;
+  const C=TT.copa;
+  c.innerHTML=`<div class="lbl-sel">${trofeo(C.tipo==="conti"?"conti":C.tipo==="sel"?"sel":"copa",16)} ${C.nombre}</div>
+    ${C.rondas.length?C.rondas.map(r=>`<div class="cr ${r.gano?'ok':'mal'}">${r.ronda}: ${r.gf}-${r.gc}${r.pen?` (${r.pen[0]}-${r.pen[1]})`:""} ${r.rival.n} ${r.gano?'✓':'✗'}</div>`).join("")
+      :`<div class="mini">${t3("Todavía no jugaste","Ainda não jogou","Not played yet")}</div>`}
+    ${C.campeon?`<div class="cr campeon">${trofeo("copa",14)} ${C.campeon.club.n}</div>`:""}`;
+}
+
+/* ---------- parada de mitad de temporada ---------- */
+function paradaMitad(){
+  S.plantel.forEach(j=>{ prepJug(j); j.fat=Math.max(0,j.fat-25); }); // el parate recupera algo
+  const TT=S.temp;
+  const pos=TT.equipos.length?ordenTabla(TT.equipos,"tab").findIndex(x=>x.e.yo)+1:null;
+  const mio=TT.equipos.length?TT.equipos[0].tab:null;
+  let ap="";
+  if(TT.ac){
+    const c=ordenTabla(TT.equipos,"tabA")[0].e;
+    ap=`<div class="resultado ${c.yo?'bien':''}" style="padding:14px">${trofeo("media",c.yo?34:22)}
+      <b style="font-size:26px">${c.yo?t3("¡Campeón del ","Campeão do ","Champions of the ")+TT.ac.a+"!":TT.ac.a+": "+c.club.n}</b>
+      <span>${c.yo?t3("Primer título de la temporada.","Primeiro título da temporada.","First title of the season."):t3("Queda el Clausura para dar vuelta la historia.","Resta o Clausura para virar a história.","The Clausura is still there to turn it around.")}</span></div>`;
+  }
+  const les=S.plantel.filter(j=>j.les>0), cans=S.plantel.filter(j=>j.fat>=55&&!j.les), fuego=S.plantel.filter(j=>j.forma>=3&&!j.les);
+  tmp.selBanco=null;
+  window.__paradaTop=`
+    <h2 class="disp">${TT.ac?t3("Terminó el Apertura","Terminou o Apertura","The Apertura is over"):t3("Mitad de temporada","Metade da temporada","Mid-season break")}</h2>
+    ${ap}
+    ${mio?`<p>${t3("Vas","Você está","You're")} <b>${pos}º</b> ${t3("en la tabla","na tabela","in the table")} · ${mio.g}G ${mio.e}E ${mio.p}P · ${mio.gf}-${mio.gc}</p>`:""}
+    <div class="parada-est">
+      <div><b>${t3("Lesionados","Lesionados","Injured")}</b>${les.length?les.map(j=>`<div>✚ ${j.nom} · ${j.les} ${t3("fechas","rodadas","games")}</div>`).join(""):`<div class="mini">—</div>`}</div>
+      <div><b>${t3("Cansados","Cansados","Tired")}</b>${cans.length?cans.map(j=>`<div>${j.nom} · ${Math.round(j.fat)}%</div>`).join(""):`<div class="mini">—</div>`}</div>
+      <div><b>${t3("Encendidos","Voando","On fire")}</b>${fuego.length?fuego.map(j=>`<div>▲ ${j.nom}</div>`).join(""):`<div class="mini">—</div>`}</div>
+    </div>
+    <p class="mini">${t3("Es el momento de rotar: el cansado rinde menos y se lesiona más.","É hora de rodar: o cansado rende menos e se machuca mais.","Time to rotate: tired players perform worse and get injured more.")}</p>`;
+  pintarParada(); ir("club");
+}
+function pintarParada(){
+  $("#s-club").innerHTML=window.__paradaTop+vistaGestion(S.formacion,"pintarParada")+`
+    <div class="acciones"><button class="btn" onclick="seguirSegunda()">${S.temp.ac?t3("Jugar el Clausura","Jogar o Clausura","Play the Clausura"):t3("Segunda rueda","Segundo turno","Second half")}</button></div>`;
+}
+function seguirSegunda(){
+  if(S.temp.ac) tmp.tabla="tabC";
+  tmp.saltar=false; tmp.pausa=false; tmp.selBanco=null;
+  pintarTicker(); ir("temporada");
+  setTimeout(tickerSiguiente,300);
+}
+
+/* ---------- fin de temporada: el reporte ---------- */
+function finTemporada(){
+  const res=cerrarCalculoTemporada();
+  aplicarCierre(res);
+  // premios: taquilla y presupuesto
+  res.ingreso=10+Math.round(S.vars.res/6)+S.estadio*3+(S.division===3?8:0)+(res.titulos.length?6:0);
+  if(!S.esSeleccion) S.presupuesto=clamp(S.presupuesto+res.ingreso,0,120);
+  res.fig=figuras(); res.lect=lecturaPlan(); res.sorp=sorpresa();
+  S.calc=res;
+  pintarReporte(); ir("resolucion");
+}
+function barraCambio(n,a,d){
+  const b=clamp(Math.round(a),0,100), c=clamp(Math.round(d),0,100);
+  return `<div class="bc"><span>${n}</span><div class="bc-bar"><i class="antes" style="width:${Math.min(b,c)}%"></i>
+    <i class="${c>=b?'sube':'baja'}" style="left:${Math.min(b,c)}%;width:${Math.abs(c-b)}%"></i></div><b class="${c>b?'p':c<b?'n':''}">${c}${c!==b?` (${sg(c-b)})`:""}</b></div>`;
+}
+function pintarReporte(){
+  const c=S.calc, TT=S.temp, f=c.fig;
+  const prom=j=>(j.st.nt/j.st.pj).toFixed(1);
+  const titulo=c.titulos.length?c.titulos.map(t=>`<div class="tit-gan">${trofeo(t.tipo,40)}<span>${t.comp}</span></div>`).join(""):"";
+  $("#s-resolucion").innerHTML=`
+    <h2 class="disp">${t3("Temporada","Temporada","Season")} ${S.temporada} · ${S.club.n}</h2>
+    <div class="resultado ${c.pts>=7?'bien':c.pts<=1?'mal':''}">
+      ${c.pos?`<div class="pos-grande">${c.pos}º<small>${t3("de","de","of")} ${c.equipos}</small></div>
+        <span>${TT.ligaNombre} · ${t3("esperaban que terminaras","esperavam que você terminasse","they expected you to finish")} ${c.exp}º</span>`
+        :`<div class="pos-grande" style="font-size:40px">${c.copaGano?t3("Campeón","Campeão","Champions"):c.copa.eliminado||t3("Final","Final","Final")}</div><span>${c.copa.nombre}</span>`}
+      ${titulo?`<div class="titulos-gan">${titulo}</div>`:""}
+    </div>
+    ${TT.equipos.length?`<details open><summary>${T("comoQuedoTabla")}</summary>
+      ${TT.ac?`<p class="mini">${TT.ac.a}: <b>${c.apertura.club.n}</b> · ${TT.ac.c}: <b>${c.clausura.club.n}</b></p>`:""}
+      ${tablaHTML("tab",false)}</details>`:""}
+    ${c.copa?`<div class="copa-rec"><div class="lbl-sel">${trofeo(c.copa.tipo==="conti"?"conti":c.copa.tipo==="sel"?"sel":"copa",18)} ${c.copa.nombre}</div>
+      ${c.copa.rondas.map(r=>`<div class="cr ${r.gano?'ok':'mal'}">${r.ronda}: ${escudo(r.rival,16)} ${r.rival.n} ${r.gf}-${r.gc}${r.pen?` (${r.pen[0]}-${r.pen[1]} pen)`:""} ${r.gano?'✓':'✗'}</div>`).join("")}
+      ${c.copa.campeon&&!c.copa.campeon.yo?`<div class="mini">${t3("Campeón","Campeão","Winner")}: ${c.copa.campeon.club.n}</div>`:""}</div>`:""}
+
+    <h3 class="disp">${t3("Tu plan, fase por fase","Seu plano, fase a fase","Your plan, phase by phase")}</h3>
+    ${c.lect.map(l=>`<div class="lect">
+      <div class="lect-cab"><span>${L(l.F.n)}</span><b>${L(l.op.n)}</b></div>
+      ${l.bien.length?`<div class="ok">✓ ${t3("Funcionó contra","Funcionou contra","Worked against")} ${l.bien.map(x=>`<b>${tEstilo(x.e)}</b> (${x.x.rivales.slice(0,3).join(", ")})`).join(" · ")}</div>`:""}
+      ${l.mal.length?`<div class="mal">✗ ${t3("Sufrió contra","Sofreu contra","Struggled against")} ${l.mal.map(x=>`<b>${tEstilo(x.e)}</b> (${x.x.rivales.slice(0,3).join(", ")})`).join(" · ")}</div>`:""}
+      ${!l.bien.length&&!l.mal.length?`<div class="mini">${t3("Ni fu ni fa: no marcó diferencias.","Nem fede nem cheira: não fez diferença.","Neither here nor there.")}</div>`:""}
+    </div>`).join("")}
+
+    <h3 class="disp">${t3("Figuras","Destaques","Standouts")}</h3>
+    <div class="figuras">
+      ${f.gol?`<div class="fig"><span>${t3("Goleador","Artilheiro","Top scorer")}</span><b>${f.gol.nom}</b><em>${f.gol.st.g} ${t3("goles","gols","goals")}</em></div>`:""}
+      ${f.mejor?`<div class="fig"><span>${t3("El mejor","O melhor","Best player")}</span><b>${f.mejor.nom}</b><em>${t3("nota","nota","rating")} ${prom(f.mejor)}</em></div>`:""}
+      ${f.rev?`<div class="fig"><span>${t3("Revelación","Revelação","Breakthrough")}</span><b>${f.rev.nom}</b><em>${f.rev.ed} ${T("anios")} · ${prom(f.rev)}</em></div>`:""}
+    </div>
+
+    <h3 class="disp">${t3("Lo que te llevás","O que você leva","What you take home")}</h3>
+    ${barraCambio(T("directiva"),c.antes.dir,S.vars.dir)}
+    ${barraCambio(T("hinchada"),c.antes.hin,S.vars.hin)}
+    ${barraCambio(t3("Automatismos","Automatismos","Automatisms"),S.autoAntes||0,S.auto)}
+    ${!S.esSeleccion?`<p class="mini">${t3("Entran","Entram","In")} <b>${c.ingreso}</b> ${t3("de presupuesto (taquilla y premios).","de orçamento (bilheteria e prêmios).","budget (gate and prizes).")}</p>`:""}
+
+    ${c.sorp?(()=>{const m=c.sorp.m, t=moralejaTxt(R_el_local(c.sorp.gane?TITULARES_SUERTE.bien:TITULARES_SUERTE.mal));
+      return `<div class="moraleja"><div class="titular">“${t.t}”</div>
+      <div class="verdad"><b>${c.sorp.gane?t3("Ganaste siendo menos:","Venceu sendo inferior:","You won as underdogs:"):t3("Perdiste siendo más:","Perdeu sendo superior:","You lost as favourites:")}</b> ${m.gf}-${m.gc} ${t3("vs","vs","vs")} ${m.rival.n}. ${t.v}</div>
+      <div class="cierre">${t3("El resultado de una decisión no prueba que la decisión haya sido buena.","O resultado de uma decisão não prova que ela foi boa.","The outcome of a decision doesn't prove the decision was good.")}</div></div>`;})():""}
     <div class="acciones"><button class="btn" onclick="cerrarTemporada()">${T("cerrarTemporada")}</button></div>`;
 }
+// elegir un titular sin tocar el RNG del duelo
+function R_el_local(a){ return a[(S.temporada*7+S.puntos)%a.length]; }
 
 /* ---------- cierre de temporada, crecimiento del club ---------- */
 function cerrarTemporada(){
   const umbral=S.arq.id==="ganador"?26:S.arq.id==="bombero"?12:18;
   const eventos=[];
+  const c=S.calc;
   // juveniles del formador
   if(S.arq.id==="formador") S.plantel.filter(j=>j.ed<=23).forEach(j=>{j.rt=clamp(j.rt+4,28,94);});
-  S.plantel.forEach(j=>{j.ed++; if(j.ed>31) j.rt=clamp(j.rt-2,28,94);});
+  // los que jugaron bien crecen, los viejos bajan
+  S.plantel.forEach(j=>{
+    j.ed++; delete j.nuevo;
+    if(j.ed>31) j.rt=clamp(j.rt-2,28,94);
+    if(j.st&&j.st.pj>=4&&j.ed<=24&&j.st.nt/j.st.pj>=6.8) j.rt=clamp(j.rt+2,28,94);
+  });
   // ascenso de categoría
   let ascendio=false;
-  if(S.division<3&&!S.esSeleccion){
-    const salto = S.calc.pos==="Campeón" ? (S.calc.dif>=22?3:2) : S.calc.pos==="Subcampeón" ? 1 : 0;
-    if(salto>0){
-      const antes=S.division;
-      S.division=Math.min(3,S.division+salto);
-      ascendio=S.division>antes;
-      if(ascendio){ S.ascensos=(S.ascensos||0)+1; eventos.push(`Te suben a ${tDiv(DIVISIONES[S.division].n)} de ${S.club.n}.`); }
-    }
+  if(c.sube>0&&S.division<3&&!S.esSeleccion){
+    const antes=S.division;
+    S.division=Math.min(3,S.division+c.sube);
+    ascendio=S.division>antes;
+    if(ascendio){ S.ascensos=(S.ascensos||0)+1; eventos.push(t3(`Te suben a ${tDiv(DIVISIONES[S.division].n)} de ${S.club.n}.`,`Você sobe para ${tDiv(DIVISIONES[S.division].n)} do ${S.club.n}.`,`You're promoted to ${S.club.n} ${tDiv(DIVISIONES[S.division].n)}.`)); }
   }
   // crecimiento del club
-  if(S.vars.hin>70&&S.estadio<5&&S.calc.pts>=7){S.estadio++;eventos.push(`El club amplía el estadio (nivel ${S.estadio}).`);}
-  const ingreso=10+Math.round(S.vars.res/6)+S.estadio*3+(S.division===3?8:0);
-  S.presupuesto=clamp(S.presupuesto+ingreso,0,120);
-  eventos.push(`Entran ${ingreso} de presupuesto por temporada y taquilla.`);
+  if(!S.esSeleccion&&S.vars.hin>70&&S.estadio<5&&c.pts>=7){S.estadio++;eventos.push(t3(`El club amplía el estadio (nivel ${S.estadio}).`,`O clube amplia o estádio (nível ${S.estadio}).`,`The club expands the stadium (level ${S.estadio}).`));}
   // despido
   let despedido=false;
   if(S.vars.dir<umbral&&S.temporada<tempTotal()){
     despedido=true; S.despidos++;
-    S.exClub=S.club;
-    S.hist.push({t:S.temporada,club:S.club.n,div:"—",f:"",riv:"",pos:"Te echaron",pts:0});
-    const chico=R.el(CLUBES.filter(c=>c.niv<=2));
-    S.club=chico; S.division=3; S.estadio=1; S.idoloPreguntado=false;
+    S.exClub=S.esSeleccion?null:S.club;
+    S.hist.push({t:S.temporada,club:S.club.n,div:"—",f:"",pos:t3("Te echaron","Demitido","Sacked"),pts:0});
+    const chico=R.el(CLUBES.filter(x=>x.niv<=2));
+    S.club=chico; S.division=3; S.estadio=1; S.idoloPreguntado=false; S.esSeleccion=false; S.fijos=[];
     S.plantel=generarPlantel(nivelBaseDe(chico.niv,3),3,null,chico.p);
     S.presupuesto=20; S.vars.dir=46; S.vars.hin=44;
+    aplicarTema();
   }
-  // ascenso de categoria -> pantalla de subir juveniles
   if(ascendio&&S.temporada<tempTotal()){ pantallaAscenso(); return; }
-  // oferta de seleccion: buen recorrido, en primera, no siendo ya seleccionador
+  // selección: hace falta una carrera de verdad, no dos buenos años
   if(!despedido&&!S.esSeleccion&&S.division===3&&S.temporada>=4&&S.temporada<tempTotal()
-     &&S.titulos.length>=2&&S.puntos>=S.temporada*8&&S.club.niv>=4&&!S.ofertaSel){
+     &&S.titulos.filter(t=>t.tipo!=="media"&&t.div===3).length>=2&&S.puntos>=S.temporada*7&&S.club.niv>=4&&!S.ofertaSel){
     S.ofertaSel=true;
-    const sel=SELECCIONES.find(s=>s.n===S.club.p)||R.el(SELECCIONES);
-    pantallaSeleccion(sel); return;
+    const base=SELECCIONES.find(s=>s.n===S.club.p)||R.el(SELECCIONES);
+    pantallaSeleccion(Object.assign({sel:true},base)); return;
   }
-  // te vienen a buscar
-  if(!despedido&&!S.esSeleccion&&S.temporada<tempTotal()&&S.calc.pts>=7&&S.vars.hin>50){
-    const mejores=CLUBES.filter(c=>c.n!==S.club.n&&c.niv>=Math.min(5,S.club.niv+1));
-    const sueño = S.clubHincha && S.clubHincha.n!==S.club.n && S.titulos.length>=1 ? S.clubHincha : null;
-    const cand = sueño && S.rng()<0.5 ? sueño : (mejores.length?R.el(mejores):null);
-    if(cand && !S.ofertaHecha){
-      S.ofertaHecha=true;
-      pantallaOferta(cand, cand===sueño); return;
-    }
+  // te vienen a buscar: si te fue mejor de lo esperado
+  if(!despedido&&!S.esSeleccion&&S.division===3&&S.temporada<tempTotal()&&(c.pts>=7||c.titulos.length)&&S.vars.hin>45&&!S.ofertaHecha){
+    const mejores=CLUBES.filter(x=>x.n!==S.club.n&&x.niv>=Math.min(5,S.club.niv+1));
+    const sueño=S.clubHincha&&S.clubHincha.n!==S.club.n&&(S.titulos.length>=1||S.club.niv>=S.clubHincha.niv-1)?S.clubHincha:null;
+    const cand=sueño&&S.rng()<0.5?sueño:(mejores.length?R.el(mejores):null);
+    if(cand){ S.ofertaHecha=true; pantallaOferta(cand,cand===sueño); return; }
   }
   S.ofertaHecha=false;
-  // favor al ex club
   let favor=null;
-  if(!despedido&&!S.esSeleccion&&S.exClub&&S.presupuesto>45&&S.temporada<tempTotal()){
-    favor=S.exClub;
-  }
+  if(!despedido&&!S.esSeleccion&&S.exClub&&S.presupuesto>45&&S.temporada<tempTotal()) favor=S.exClub;
   $("#s-club").innerHTML=`
-    <h2 class="disp">${despedido?"Te echaron":"Cierre de temporada"}</h2>
-    ${despedido?`<p>La directiva no te bancó más. Te agarra ${S.club.n}, en Primera,
-      con menos plantel y menos plata. Seguís dirigiendo.</p>
-      <div style="display:flex;gap:12px;align-items:center;margin:14px 0">${escudo(S.club,44)}
-      <div><b style="font-family:'Big Shoulders Display';font-weight:800;font-size:24px">${S.club.n}</b>
-      <div class="mini">${S.club.p} · Primera</div></div></div>`
-    :`<ul style="margin:12px 0 12px 18px">${eventos.map(e=>`<li style="margin-bottom:5px">${e}</li>`).join("")}</ul>`}
+    <h2 class="disp">${despedido?t3("Te echaron","Você foi demitido","You've been sacked"):t3("Cierre de temporada","Fim de temporada","End of season")}</h2>
+    ${despedido?`<p>${t3(`La directiva no te bancó más. Te agarra ${S.club.n}, en Primera, con menos plantel y menos plata. Seguís dirigiendo.`,
+        `A diretoria não te segurou. O ${S.club.n} te contrata, na Primeira, com elenco e dinheiro menores.`,
+        `The board ran out of patience. ${S.club.n} hire you, in the top flight, with a weaker squad and less money.`)}</p>
+      ${bannerClub(S.club,{tam:48,badges:badgesClub(S.club,3)})}`
+    :`<ul style="margin:12px 0 12px 18px">${eventos.map(e=>`<li style="margin-bottom:5px">${e}</li>`).join("")||`<li>${t3("Se viene otra temporada.","Vem aí outra temporada.","Another season awaits.")}</li>`}</ul>`}
     ${favor?`
-      <h3 class="disp">Te llaman de ${favor.n}</h3>
-      <div class="ficha-sit"><div class="cat">Tu ex club</div>
-      <p>${favor.n} está corto de plata. Te ofrecen un jugador que en el mercado vale la mitad
-      de lo que te piden. Comprarlo es ayudarlos.</p></div>
-      <button class="card" onclick="ayudarExClub(true)"><b style="font-size:17px">Se lo comprás igual</b>
-        <div class="sub">Pagás 30 de más de lo que vale. Te lo van a recordar.</div></button>
-      <button class="card" onclick="ayudarExClub(false)"><b style="font-size:17px">No es tu problema</b>
-        <div class="sub">Cuidás el presupuesto de tu club actual.</div></button>`
+      <h3 class="disp">${t3("Te llaman de ","Te ligam do ","A call from ")}${favor.n}</h3>
+      <div class="ficha-sit"><div class="cat">${t3("Tu ex club","Seu ex-clube","Your former club")}</div>
+      <p>${t3(`${favor.n} está corto de plata. Te ofrecen un jugador que en el mercado vale la mitad de lo que te piden. Comprarlo es ayudarlos.`,
+        `O ${favor.n} está sem dinheiro. Te oferecem um jogador que vale metade do que pedem. Comprar é ajudar.`,
+        `${favor.n} are short of money. They offer you a player worth half the asking price. Buying him is helping them.`)}</p></div>
+      <button class="card" onclick="ayudarExClub(true)"><b style="font-size:17px">${t3("Se lo comprás igual","Compra mesmo assim","Buy him anyway")}</b>
+        <div class="sub">${t3("Pagás 30 de más. Te lo van a recordar.","Paga 30 a mais. Vão lembrar.","You overpay by 30. They'll remember.")}</div></button>
+      <button class="card" onclick="ayudarExClub(false)"><b style="font-size:17px">${t3("No es tu problema","Não é problema seu","Not your problem")}</b>
+        <div class="sub">${t3("Cuidás el presupuesto de tu club actual.","Cuida do orçamento do clube atual.","You protect your current club's budget.")}</div></button>`
     :`<div class="acciones"><button class="btn" onclick="siguienteTemporada()">${T("seguir")}</button></div>`}`;
   ir("club");
 }
+
 
 /* subir juveniles al plantel superior */
 function pantallaAscenso(){
@@ -1317,17 +1139,18 @@ function pantallaAscenso(){
 function pintarAscenso(){
   const cand=window.__cand;
   $("#s-club").innerHTML=`
-    <h2 class="disp">Subís de categoría</h2>
-    <p>Pasás a <b>${tDiv(DIVISIONES[S.division].n)}</b> de ${S.club.n}. El plantel de arriba es otro,
-    pero podés llevarte hasta dos pibes tuyos. Los que suben ganan 3 de nivel por el salto.</p>
+    <h2 class="disp">${t3("Subís de categoría","Você sobe de categoria","You're moving up")}</h2>
+    <p>${t3(`Pasás a <b>${tDiv(DIVISIONES[S.division].n)}</b> de ${S.club.n}. El plantel de arriba es otro, pero podés llevarte hasta dos pibes tuyos. Los que suben ganan 3 de nivel.`,
+      `Você passa para <b>${tDiv(DIVISIONES[S.division].n)}</b> do ${S.club.n}. O elenco de cima é outro, mas pode levar até dois garotos seus. Quem sobe ganha 3 de nível.`,
+      `You move up to ${S.club.n} <b>${tDiv(DIVISIONES[S.division].n)}</b>. It's a new squad, but you can take up to two of your kids. They gain 3 levels.`)}</p>
     ${cand.map((j,i)=>`
       <button class="card ${tmp.suben.includes(i)?'sel':''}"
         ${tmp.suben.length>=2&&!tmp.suben.includes(i)?'disabled':''} onclick="marcarSube(${i})">
         <b style="font-size:17px">${j.nom}</b>
-        <div class="sub">${tGrupo(j.g)} · ${j.ed} años · nivel ${j.rt}</div>
+        <div class="sub">${tGrupo(j.g)} · ${j.ed} ${T("anios")} · ${t3("nivel","nível","level")} ${j.rt}${j.st&&j.st.pj?` · ${j.st.g} ${t3("goles","gols","goals")}`:""}</div>
       </button>`).join("")}
-    <p class="mini">Elegidos: ${tmp.suben.length} de 2</p>
-    <div class="acciones"><button class="btn" onclick="confirmarAscenso()">Subir al plantel</button></div>`;
+    <p class="mini">${tmp.suben.length} / 2</p>
+    <div class="acciones"><button class="btn" onclick="confirmarAscenso()">${t3("Subir al plantel","Subir ao elenco","Promote them")}</button></div>`;
 }
 function marcarSube(i){
   const k=tmp.suben.indexOf(i);
@@ -1345,20 +1168,21 @@ function confirmarAscenso(){
 /* un club te viene a buscar */
 function pantallaOferta(club,esSueño){
   window.__of=club;
+  const info=CLUB_INFO[club.n];
   $("#s-club").innerHTML=`
-    <h2 class="disp">${esSueño?"Te llama tu club":"Te vienen a buscar"}</h2>
-    <div style="display:flex;gap:12px;align-items:center;margin:12px 0">${escudo(club,46)}
-      <div><b style="font-family:'Big Shoulders Display';font-weight:800;font-size:26px">${club.n}</b>
-      <div class="mini">${club.p} · ${LIGAS[club.p].liga} · plantel nivel ${club.niv}/5</div></div></div>
-    <p>${esSueño?`Es el club del que sos hincha. Te ofrecen el banco. No hay muchas veces en la vida que
-      pase esto, y nadie te garantiza que vuelva a pasar.`
-      :`Ganaste y se dieron cuenta. Te ofrecen un plantel mejor que el que tenés, con la exigencia que eso implica.`}</p>
-    <p class="mini">En ${S.club.n} venís con ${S.titulos.length} título${S.titulos.length===1?"":"s"}
-      y la hinchada en ${Math.round(S.vars.hin)}.</p>
-    <button class="card" onclick="aceptarOferta(true)"><b style="font-size:17px">Te vas a ${club.n}</b>
-      <div class="sub">Plantel nuevo, otra exigencia. ${esSueño?"Cumplís el sueño.":"Empezás de cero con ellos."}</div></button>
-    <button class="card" onclick="aceptarOferta(false)"><b style="font-size:17px">Te quedás donde estás</b>
-      <div class="sub">La directiva y el vestuario te lo agradecen. La oferta puede no volver.</div></button>`;
+    <h2 class="disp">${esSueño?t3("Te llama tu club","Seu clube te chama","Your club is calling"):t3("Te vienen a buscar","Vieram te buscar","They want you")}</h2>
+    ${bannerClub(club,{badges:badgesClub(club,3)})}
+    ${info?`<p class="mini" style="margin-top:8px">${L(info.glo)}</p>`:""}
+    <p>${esSueño?t3("Es el club del que sos hincha. Te ofrecen el banco. No pasa muchas veces en la vida, y nadie te garantiza que vuelva a pasar.",
+        "É o clube para o qual você torce. Oferecem o banco. Isso não acontece muitas vezes na vida.",
+        "It's the club you support. They're offering you the job. It doesn't happen often in life, and it may never happen again.")
+      :t3("Te fue bien y se dieron cuenta. Te ofrecen un plantel mejor, con la exigencia que eso implica.",
+        "Foi bem e perceberam. Oferecem um elenco melhor, com a cobrança que isso implica.",
+        "You did well and they noticed. They offer a better squad, with the pressure that comes with it.")}</p>
+    <button class="card" onclick="aceptarOferta(true)"><b style="font-size:17px">${t3("Te vas a ","Você vai para o ","You go to ")}${club.n}</b>
+      <div class="sub">${esSueño?t3("Cumplís el sueño.","Realiza o sonho.","You live the dream."):t3("Plantel nuevo, otra exigencia.","Elenco novo, outra cobrança.","New squad, new demands.")}</div></button>
+    <button class="card" onclick="aceptarOferta(false)"><b style="font-size:17px">${t3("Te quedás en ","Fica no ","You stay at ")}${S.club.n}</b>
+      <div class="sub">${t3("La directiva y el vestuario te lo agradecen. La oferta puede no volver.","A diretoria e o vestiário agradecem. A proposta pode não voltar.","The board and dressing room appreciate it. The offer may not come back.")}</div></button>`;
   ir("club");
 }
 function aceptarOferta(si){
@@ -1367,7 +1191,9 @@ function aceptarOferta(si){
     S.plantel=generarPlantel(nivelBaseDe(S.club.niv,3),3,null,S.club.p); S.fijos=[];
     S.presupuesto=clamp(18+S.club.niv*8,10,100);
     S.vars.dir=52; S.vars.hin=S.clubHincha&&S.club.n===S.clubHincha.n?68:48; S.estadio=Math.max(1,S.club.niv-1);
-    S.hist.push({t:S.temporada,club:S.club.n,div:"Primera",comp:"Asumís el cargo",f:"",riv:"",pos:"Nuevo club",pts:0});
+    S.idoloPreguntado=false; S.clasifConti=false;
+    S.hist.push({t:S.temporada,club:S.club.n,div:"Primera",comp:t3("Asumís el cargo","Assume o cargo","New job"),f:"",pos:t3("Nuevo club","Novo clube","New club"),pts:0});
+    aplicarTema();
   } else {
     S.vars.dir=clamp(S.vars.dir+8,0,100);
     S.vars.hin=clamp(S.vars.hin+10,0,100);
@@ -1379,26 +1205,26 @@ function aceptarOferta(si){
 /* oferta de seleccion nacional */
 function pantallaSeleccion(sel){
   $("#s-club").innerHTML=`
-    <h2 class="disp">Te llama una selección</h2>
-    <div style="display:flex;gap:12px;align-items:center;margin:12px 0">${escudo(sel,44)}
-      <div><b style="font-family:'Big Shoulders Display';font-weight:800;font-size:24px">Selección de ${sel.n}</b>
-      <div class="mini">Te ofrecen el banco hasta el final del ciclo</div></div></div>
-    <p>En la selección no se ficha: se convoca. No hay mercado ni presupuesto, sólo los jugadores
-    que tenés y cómo los parás. Si aceptás, dejás ${S.club.n}.</p>
-    <button class="card" onclick="tomarSeleccion(true)"><b style="font-size:17px">Aceptás el cargo</b>
-      <div class="sub">Vas a Eliminatorias, Copa América y Mundial. Es la vidriera más grande.</div></button>
-    <button class="card" onclick="tomarSeleccion(false)"><b style="font-size:17px">Seguís en el club</b>
-      <div class="sub">Terminás lo que empezaste. La directiva y la hinchada te lo agradecen.</div></button>`;
+    <h2 class="disp">${t3("Te llama una selección","Uma seleção te chama","A national team is calling")}</h2>
+    ${bannerClub(sel,{badges:badgesClub(sel,3)})}
+    <p>${t3(`En la selección no se ficha: se convoca. No hay mercado ni presupuesto, sólo los jugadores que tenés y cómo los parás. Si aceptás, dejás ${S.club.n}.`,
+      `Na seleção não se contrata: se convoca. Sem mercado nem orçamento. Se aceitar, deixa o ${S.club.n}.`,
+      `You don't sign players for a national team: you call them up. No market, no budget. Accept and you leave ${S.club.n}.`)}</p>
+    <button class="card" onclick="tomarSeleccion(true)"><b style="font-size:17px">${t3("Aceptás el cargo","Aceita o cargo","Accept the job")}</b>
+      <div class="sub">${t3("Eliminatorias, Copa América y Mundial. La vidriera más grande.","Eliminatórias, Copa América e Copa do Mundo.","Qualifiers, Copa América and the World Cup.")}</div></button>
+    <button class="card" onclick="tomarSeleccion(false)"><b style="font-size:17px">${t3("Seguís en el club","Continua no clube","Stay at the club")}</b>
+      <div class="sub">${t3("Terminás lo que empezaste.","Termina o que começou.","Finish what you started.")}</div></button>`;
   window.__sel=sel;
   ir("club");
 }
 function tomarSeleccion(si){
   if(si){
     const sel=window.__sel;
-    S.exClub=S.club; S.club=sel; S.esSeleccion=true; S.division=3;
+    S.exClub=S.club; S.club=sel; S.esSeleccion=true; S.division=3; S.selT=0; S.fijos=[];
     S.plantel=generarPlantel(nivelBaseDe(sel.niv,3)+8,3,null,sel.p);
     S.presupuesto=0; S.vars.dir=58; S.vars.hin=52;
-    S.hist.push({t:S.temporada,club:"Selección de "+sel.n,div:"Selección",f:"",riv:"",pos:"Asumís",pts:0});
+    S.hist.push({t:S.temporada,club:t3("Selección de ","Seleção de ","")+sel.n,div:"Selección",f:"",pos:t3("Asumís","Assume","Takes over"),pts:0});
+    aplicarTema();
   } else {
     S.vars.dir=clamp(S.vars.dir+8,0,100);
     S.vars.hin=clamp(S.vars.hin+10,0,100);
@@ -1429,12 +1255,14 @@ function siguienteTemporada(){
 /* ---------- final ---------- */
 function apodo(){
   const sum=k=>S.tomadas.reduce((a,d)=>a+d[k],0);
-  const ejes=[["res","El Resultadista"],["dir","El Político"],["hin","El Ídolo de la Tribuna"],["ves","El Padre del Grupo"]];
+  const ejes=[["res",t3("El Resultadista","O Resultadista","The Results Man")],["dir",t3("El Político","O Político","The Politician")],
+    ["hin",t3("El Ídolo de la Tribuna","O Ídolo da Torcida","The Crowd's Idol")],["ves",t3("El Padre del Grupo","O Pai do Grupo","The Father of the Squad")]];
   let mej=ejes[0],mx=-99; ejes.forEach(([k,n])=>{const v=sum(k);if(v>mx){mx=v;mej=[k,n];}});
-  let base=mx<=0?"El Superviviente":mej[1];
+  let base=mx<=0?t3("El Superviviente","O Sobrevivente","The Survivor"):mej[1];
   const u=new Set(S.usadas);
-  let suf = u.size===1?"Dogmático" : u.size>=4?"Camaleón" : S.despidos>0?"Trotamundos" : S.puntos>=40?"Ganador Serial":"";
-  return suf?`${base}, el ${suf}`:base;
+  let suf = u.size===1?t3("Dogmático","Dogmático","Dogmatist") : u.size>=4?t3("Camaleón","Camaleão","Chameleon")
+    : S.despidos>0?t3("Trotamundos","Andarilho","Globetrotter") : S.puntos>=40?t3("Ganador Serial","Vencedor Serial","Serial Winner"):"";
+  return suf?(IDIOMA==="en"?`${base}, the ${suf}`:IDIOMA==="pt"?`${base}, o ${suf}`:`${base}, el ${suf}`):base;
 }
 function final(){
   const prom=(S.vars.res+S.vars.dir+S.vars.hin+S.vars.ves)/4;
@@ -1455,41 +1283,40 @@ function final(){
     <div class="tarjeta">
       <div class="nota">${nota}</div>
       <div class="apodo">${ap}</div>
-      <div class="mini">${S.nombre} · ${score} de 100</div>
+      <div class="mini">${S.nombre} · ${score} / 100</div>
       <hr>
-      <div class="fila"><span>Puntos de carrera</span><span>${S.puntos} de ${tempTotal()*10}</span></div>
-      <div class="fila"><span>Títulos</span><span>${tit?Array(tit).fill(copaSVG(15)).join(" "):"—"} ${tit}</span></div>
-      <div class="fila"><span>Terminó en</span><span>${S.club.n}, ${tDiv(DIVISIONES[S.division].n)}</span></div>
-      <div class="fila"><span>Estadio</span><span>nivel ${S.estadio} de 5</span></div>
-      <div class="fila"><span>Veces que te echaron</span><span>${S.despidos}</span></div>
-      ${S.etiqueta?`<div class="fila"><span>Te decían</span><span>${tEtiq(S.etiqueta,"n")}</span></div>`:""}
+      <div class="fila"><span>${t3("Puntos de carrera","Pontos de carreira","Career points")}</span><span>${S.puntos} / ${tempTotal()*10}</span></div>
+      <div class="fila"><span>${T("titulos")}</span><span>${tit?S.titulos.map(t=>trofeo(t.tipo||"liga",17)).join(" "):"—"} ${tit}</span></div>
+      <div class="fila"><span>${t3("Terminó en","Terminou em","Finished at")}</span><span>${S.club.n}, ${tDiv(DIVISIONES[S.division].n)}</span></div>
+      <div class="fila"><span>${T("estadio")}</span><span>${S.estadio} / 5</span></div>
+      <div class="fila"><span>${t3("Veces que te echaron","Vezes demitido","Times sacked")}</span><span>${S.despidos}</span></div>
+      ${S.etiqueta?`<div class="fila"><span>${t3("Te decían","Te chamavam","They called you")}</span><span>${tEtiq(S.etiqueta,"n")}</span></div>`:""}
       ${S.duelo?`<hr><div class="fila"><span>Código del duelo</span><span class="codigo-txt">${S.duelo}</span></div>
       <div class="fila"><span>Modo</span><span>${S.modo?S.modo.n:"Normal"}</span></div>`:""}
       <hr>
-      <div class="fila"><span>Directiva</span><span>${Math.round(S.vars.dir)}</span></div>
-      <div class="fila"><span>Hinchada</span><span>${Math.round(S.vars.hin)}</span></div>
-      <div class="fila"><span>Vestuario</span><span>${Math.round(S.vars.ves)}</span></div>
+      <div class="fila"><span>${T("directiva")}</span><span>${Math.round(S.vars.dir)}</span></div>
+      <div class="fila"><span>${T("hinchada")}</span><span>${Math.round(S.vars.hin)}</span></div>
+      <div class="fila"><span>${T("vestuario")}</span><span>${Math.round(S.vars.ves)}</span></div>
     </div>
-    ${S.titulos.length?`<h3 class="disp">Lo que ganaste</h3>
-      <table>${S.titulos.map(t=>`<tr><td style="width:26px">${copaSVG(18)}</td>
+    ${S.titulos.length?`<h3 class="disp">${t3("Lo que ganaste","O que você ganhou","Your trophies")}</h3>
+      <table>${S.titulos.map(t=>`<tr><td style="width:30px">${trofeo(t.tipo||"liga",22)}</td>
         <td>${t.comp}</td><td>${t.club}</td><td>T${t.t}</td></tr>`).join("")}</table>`:""}
     ${(()=>{const rs=recordsLogrados(S);const rotos=rs.filter(r=>r.roto);
       return `<h3 class="disp">${T("records")}</h3>
-      ${rotos.length?`<p class="mini">Rompiste ${rotos.length} marca${rotos.length>1?"s":""} histórica${rotos.length>1?"s":""}.</p>`:""}
-      <table><tr><th>Marca</th><th style="text-align:right">Récord</th><th style="text-align:right">Vos</th></tr>
+      ${rotos.length?`<p class="mini">${t3("Marcas históricas rotas","Marcas históricas quebradas","Historic records broken")}: ${rotos.length}</p>`:""}
+      <table><tr><th>${t3("Marca","Marca","Record")}</th><th style="text-align:right">${t3("Récord","Recorde","Best")}</th><th style="text-align:right">${t3("Vos","Você","You")}</th></tr>
       ${rs.map(r=>`<tr class="${r.roto?'record-roto':''}">
-        <td>${r.roto?copaSVG(14)+" ":""}${tRecord(r)}<div class="mini">${r.duenio}</div></td>
+        <td>${r.roto?trofeo("liga",14)+" ":""}${tRecord(r)}<div class="mini">${r.duenio}</div></td>
         <td style="text-align:right">${r.marca}</td>
         <td style="text-align:right"><b>${r.valor}</b></td></tr>`).join("")}</table>`;})()}
 
     <h3 class="disp">${T("trayectoria")}</h3>
-    <table><tr><th>T</th><th>Club</th><th>Competencia</th><th>Sistema</th><th>Cierre</th></tr>
-    ${S.hist.map(h=>`<tr><td>${h.t}</td><td>${h.club}</td><td>${h.comp||h.div}</td><td>${h.f||"—"}</td><td>${h.pos}</td></tr>`).join("")}</table>
-    <details><summary>Cómo se calculó todo esto</summary>
-      <p class="mini" style="margin-top:8px">Cada temporada se resolvió con tres capas: cuánto potencia tu sistema
-      a los cuatro atributos de tu once, cuán compatible es tu modelo de juego con ese sistema, y qué le ganás
-      o le perdés al sistema del rival. Encima van la cohesión del vestuario, el empuje de la tribuna y un azar
-      acotado a ±${TOPE_AZAR} puntos: nunca alcanza para dar vuelta una diferencia grande de planteo.</p></details>
+    <table><tr><th>T</th><th>${t3("Club","Clube","Club")}</th><th>${t3("Competencia","Competição","Competition")}</th><th>${t3("Sistema","Sistema","System")}</th><th>${t3("Cierre","Fim","Finish")}</th></tr>
+    ${S.hist.map(h=>`<tr><td>${h.t}</td><td>${h.club}</td><td>${h.comp||h.div}</td><td>${h.f||"—"}</td><td>${h.pos} ${(h.tit||[]).map(x=>trofeo(x,14)).join("")}</td></tr>`).join("")}</table>
+    <details><summary>${t3("Cómo se jugó todo esto","Como tudo isso foi jogado","How it all worked")}</summary>
+      <p class="mini" style="margin-top:8px">${t3("Cada partido de cada temporada se jugó de verdad: el once que pusiste, cuánto encajaban tu sistema y tu modelo, lo que tu equipo tenía automatizado, tu plan en las tres fases contra el estilo de cada rival, el vestuario, la tribuna, la forma y el cansancio de cada jugador. El azar existe, pero en una temporada larga gana el que sabe.",
+        "Cada jogo de cada temporada foi jogado de verdade: a escalação, o encaixe entre sistema e modelo, os automatismos, seu plano nas três fases contra o estilo de cada rival, o vestiário, a torcida, a forma e o cansaço. A sorte existe, mas numa temporada longa ganha quem sabe.",
+        "Every match of every season was actually played: your XI, how well system and model fit, your automatisms, your three-phase plan against each opponent's style, the dressing room, the crowd, each player's form and fatigue. Luck exists, but over a long season the one who knows wins.")}</p></details>
     ${S.duelo?`<div class="nota-lat">Duelo <span class="codigo">${S.duelo}</span>.
       Copiá tu resultado y pasáselo al otro DT. Cuando te pase el suyo,
       pegalo acá abajo y el juego los compara.</div>
@@ -1560,4 +1387,5 @@ function copiar(){
   if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(ok).catch(ok);
   else ok();
 }
+setIdioma(idiomaGuardado());
 portada();

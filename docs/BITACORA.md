@@ -253,3 +253,22 @@ Cinco veces te propuse algo distinto de lo que pedías, y vale la pena que quede
 - **Reescribir los textos en español con tu voz**, que es trabajo tuyo.
 - **Escudos oficiales**, si decidís asumir el riesgo de licencia.
 - **Ranking global**, que necesita un backend mínimo.
+
+---
+
+# v6 — Playtest de v5 (diez pedidos)
+
+| # | Lo que pediste | Lo que se hizo |
+|---|---|---|
+| 1 | La portada no se traducía | Portada, duelo, identidad, idea, ofertas, plantel, ruleta, plan, temporada, reporte, cierre y final pasan por los tres idiomas |
+| 2 | Arranque con mucho texto; sistema y modelo no definían nada; prensa no al inicio | Pantalla exprés + pantalla "Tu idea de juego" con cancha animada, encaje, ganás/arriesgás y **automatismos**; prensa aparece al llegar a un grande |
+| 3 | Escudos, colores e historia de los clubes | Tema de colores por club; presentación con gloria, deuda, ídolo, clásico y DT histórico; se corrigió el prefijo `seleccion-` de los escudos |
+| 4 | "Quién te quiere" poco visual | Escudo grande, franja de colores, insignias PROFESIONAL/FORMATIVAS y estrellas |
+| 5 | "Seguir" sin idioma y sin consecuencia | "Seguir en [idioma]" (−2 hinchada) contra adaptarte (+4 hinchada, +3 vestuario), en cada club nuevo |
+| 6 | El banco no servía | Forma, cansancio, lesiones y suspensiones; once automático por jerarquía; parada de mitad de temporada |
+| 7 | Ruleta: plantel duplicado, apuesta sin efecto | 2 fichas (común 1, crack 2), sólo ganás si cae lo apostado, 2 casillas rojas; el panel ya no repite titulares |
+| 8 | "Cómo los parás" no se parecía a dirigir | Tres momentos congelados por fase con animación; lo elegido es el plan de toda la temporada |
+| 9 | No se entendían los ×multiplicadores | Reporte: qué funcionó y qué no contra qué estilos, figuras, premios |
+| 10 | Suspenso tipo Brasfoot | Liga y copas reales jugadas minuto a minuto con tabla en vivo |
+
+Además: Napoli ya no dice "los únicos scudettos" (ganó después de Maradona); la selección exige dos títulos de Primera; récord de títulos pasa a 8 porque ahora hay más torneos por temporada.

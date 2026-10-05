@@ -13,10 +13,9 @@ function slugClub(n){
 function escudo(club,size){
   const s=size||34;
   if(USAR_ESCUDOS_REALES){
-    const id="esc"+Math.random().toString(36).slice(2,9);
-    return `<span class="escudo" style="display:inline-flex;width:${s}px;height:${s*1.14}px;align-items:center">
-      <img src="escudos/${slugClub(club.n)}.png" alt="${club.n}" width="${s}" height="${s*1.14}"
-        style="object-fit:contain" onerror="this.outerHTML=escudoSVG(${JSON.stringify(JSON.stringify(club))},${s})">
+        return `<span class="escudo" style="display:inline-flex;width:${s}px;height:${s*1.14}px;align-items:center">
+      <img src="escudos/${club.sel?"seleccion-":""}${slugClub(club.n)}.png" alt="${club.n}" width="${s}" height="${s*1.14}"
+        style="object-fit:contain" onerror="this.outerHTML=escudoSVG(${JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;')},${s})">
     </span>`;
   }
   return escudoSVG(JSON.stringify(club),s);
@@ -47,8 +46,8 @@ function cancha(once,opts){
     const etiqueta = opts.mostrarRating!==false ? o.rt : "";
     const alerta = o.fuera?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#E0A93B" stroke-width="2"/>`:"";
     return `${alerta}<circle cx="${px}" cy="${py}" r="${r}" fill="${col}" opacity=".92"/>
-      <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="14" fill="#0D1613">${etiqueta}</text>
-      ${opts.mostrarNombre?`<text x="${px}" y="${py+r+12}" text-anchor="middle" font-size="9.5" fill="#CFDAD3">${o.jug.nom.split(" ")[1]}</text>`:""}`;
+      <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="14" fill="${opts.txt||'#0D1613'}">${etiqueta}</text>
+      ${opts.mostrarNombre?`<text x="${px}" y="${py+r+12}" text-anchor="middle" font-size="9.5" fill="#CFDAD3">${(o.jug.nom||"").split(" ").pop()}</text>`:""}`;
   }).join("");
   return `<svg class="cancha" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Disposición del equipo en la cancha">
     <rect width="${ancho}" height="${alto}" fill="#25473A"/>
@@ -77,7 +76,7 @@ function barras(attrs,previos){
    ========================================================== */
 function cabecera(){
   const c=$("#cab");
-  if(["portada","identidad"].includes(S.pant)){c.hidden=true;return;}
+  if(["portada","identidad","idea","duelo","ofertas"].includes(S.pant)){c.hidden=true;return;}
   c.hidden=false;
   if(!S.club){c.innerHTML="";return;}
   const med=(v,n,max)=>{
@@ -86,10 +85,10 @@ function cabecera(){
     return `<div class="hstat"><b>${Math.round(v)}</b><span>${n}</span>
       <div class="hbar"><i style="width:${pc}%;background:${col}"></i></div></div>`;};
   c.innerHTML=`<div class="hrow">${escudo(S.club,30)}
-    <div class="hinfo"><b>${S.club.n}</b>${S.etiqueta?`<div class="hetiq">${tEtiq(S.etiqueta,"n")}</div>`:""}<span>${S.esSeleccion?"Selección":DIVISIONES[S.division].n}${S.compe?" · "+S.compe:""} · T${Math.min(S.temporada,tempTotal())}/${tempTotal()}</span></div></div>
+    <div class="hinfo"><b>${S.club.n}</b>${S.etiqueta?`<div class="hetiq">${tEtiq(S.etiqueta,"n")}</div>`:""}<span>${S.esSeleccion?t3("Selección","Seleção","National team"):tDiv(DIVISIONES[S.division].n)}${S.compe?" · "+S.compe:""} · T${Math.min(S.temporada,tempTotal())}/${tempTotal()}</span></div></div>
     <div class="hstats">
-      ${med(S.vars.dir,"Directiva")}${med(S.vars.hin,"Hinchada")}
-      ${med(S.vars.ves,"Vestuario")}${med(S.presupuesto,"Plata",120)}
+      ${med(S.vars.dir,T("directiva"))}${med(S.vars.hin,T("hinchada"))}
+      ${med(S.vars.ves,T("vestuario"))}${S.esSeleccion?"":med(S.presupuesto,T("plata"),120)}
     </div>`;
 }
 function ir(p){S.pant=p;document.querySelectorAll("section").forEach(x=>x.classList.remove("on"));
@@ -107,22 +106,18 @@ function nombrePuesto(jug, rolSlot){
 function panelPlantel(){
   const f=S.formacion||S.sistemaPref;
   if(!f||!S.plantel||!S.plantel.length) return "";
-  const once=armarOnce(S.plantel,f,S.fijos||[]);
+  const once=typeof onceTemporada==="function"?onceTemporada(S.plantel,f,S.fijos||[]):armarOnce(S.plantel,f,S.fijos||[]);
   const enOnce=new Set(once.map(o=>o.jug));
   const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((a,b)=>b.rt-a.rt);
   const a=atributosDe(once);
+  const fc=S.club?fichaColores(S.club):null;
   return `<details class="panel-plantel">
     <summary>${T("verPlantel")} — ${f} · ${ATRIBUTOS.map((n,i)=>n[0]+a[i]).join(" ")}</summary>
     <div class="pp-cuerpo">
-      ${cancha(once,{mostrarNombre:true,alto:280,ancho:400})}
-      <h4 class="disp" style="font-size:16px;margin:12px 0 4px">${T("titulares")}</h4>
-      <table><tr><th>${T("puesto")}</th><th>${T("jugador")}</th><th style="text-align:right">Nivel</th></tr>
-      ${once.map(o=>`<tr><td>${tRol(o.rol)}</td>
-        <td>${o.jug.nom}${o.fuera?' <span style="color:var(--ambar)">fuera de puesto</span>':''}</td>
-        <td style="text-align:right"><b>${o.rt}</b></td></tr>`).join("")}</table>
+      ${cancha(once,{mostrarNombre:true,alto:280,ancho:400,color:fc?fc.fill:undefined,txt:fc?fc.txt:undefined})}
       <h4 class="disp" style="font-size:16px;margin:12px 0 4px">${T("banco")}</h4>
-      <table><tr><th>${T("puesto")}</th><th>${T("jugador")}</th><th style="text-align:right">Nivel</th></tr>
-      ${banco.map(j=>`<tr><td>${tGrupo(j.g)}</td><td>${j.nom} · ${j.ed} años</td>
+      <table><tr><th>${T("puesto")}</th><th>${T("jugador")}</th><th style="text-align:right">${T("nivel")}</th></tr>
+      ${banco.map(j=>`<tr><td>${tGrupo(j.g)}</td><td>${j.nom}${j.nuevo?` <em class="nuevo">${t3("NUEVO","NOVO","NEW")}</em>`:""} · ${j.ed} ${T("anios")}</td>
         <td style="text-align:right">${j.rt}</td></tr>`).join("")}</table>
     </div></details>`;
 }
@@ -135,7 +130,7 @@ function panelPlantel(){
 function tablero(){
   if(!S.club) return "";
   const f=S.formacion||S.sistemaPref;
-  const once=armarOnce(S.plantel,f,S.fijos||[]);
+  const once=typeof onceTemporada==="function"?onceTemporada(S.plantel,f,S.fijos||[]):armarOnce(S.plantel,f,S.fijos||[]);
   const a=atributosDe(once);
   const fuera=once.filter(o=>o.fuera).length;
   const edades=once.map(o=>o.jug.ed);
@@ -143,30 +138,30 @@ function tablero(){
   const nivelOnce=Math.round(once.reduce((x,o)=>x+o.rt,0)/once.length);
   const umbral=S.arq.id==="ganador"?26:S.arq.id==="bombero"?12:18;
   const riesgo=S.vars.dir-umbral;
-  const objetivo = S.division<3 ? "Subir de categoría"
-    : S.club.niv>=5 ? "Salir campeón" : S.club.niv>=3 ? "Pelear arriba" : "Mantener la categoría";
+  const objetivo = S.esSeleccion ? t3("Llegar lejos","Ir longe","Go deep") : S.division<3 ? t3("Subir de categoría","Subir de categoria","Win promotion")
+    : S.club.niv>=5 ? t3("Salir campeón","Ser campeão","Win the title") : S.club.niv>=3 ? t3("Pelear arriba","Brigar lá em cima","Challenge at the top") : t3("Mantener la categoría","Manter a categoria","Avoid the drop");
   return `<details class="tablero">
     <summary>${T("tablero")}</summary>
     <div class="tab-cuerpo">
       <div class="tab-grid">
-        <div><span>Objetivo</span><b>${objetivo}</b></div>
-        <div><span>Once titular</span><b>${nivelOnce}</b></div>
-        <div><span>Edad promedio</span><b>${edadProm} años</b></div>
-        <div><span>Plantel</span><b>${S.plantel.length} jugadores</b></div>
-        <div><span>Estadio</span><b>nivel ${S.estadio} de 5</b></div>
-        <div><span>Títulos</span><b>${S.titulos.length}</b></div>
+        <div><span>${T("objetivo")}</span><b>${objetivo}</b></div>
+        <div><span>${T("onceTitular")}</span><b>${nivelOnce}</b></div>
+        <div><span>${T("edadProm")}</span><b>${edadProm}</b></div>
+        <div><span>${T("plantelN")}</span><b>${S.plantel.length}</b></div>
+        <div><span>${T("estadio")}</span><b>${S.estadio}/5</b></div>
+        <div><span>${T("titulos")}</span><b>${S.titulos.length} ${S.titulos.slice(-4).map(t=>trofeo(t.tipo||"liga",15)).join("")}</b></div>
       </div>
       ${barras(a)}
       <div class="tab-alertas">
-        ${riesgo<8?`<div class="alerta mal">La directiva está a ${Math.max(0,Math.round(riesgo))} puntos de echarte.</div>`:""}
-        ${S.vars.ves<35?`<div class="alerta mal">El vestuario está roto: te castiga el rendimiento.</div>`:""}
-        ${S.vars.hin<30?`<div class="alerta mal">La tribuna te soltó la mano.</div>`:""}
-        ${fuera?`<div class="alerta">${fuera} jugador${fuera>1?"es":""} fuera de puesto con ${f}.</div>`:""}
-        ${S.presupuesto<10?`<div class="alerta">Casi sin presupuesto para el próximo mercado.</div>`:""}
-        ${edadProm>30?`<div class="alerta">Plantel viejo: van a empezar a bajar de nivel.</div>`:""}
+        ${riesgo<8?`<div class="alerta mal">${t3(`La directiva está a ${Math.max(0,Math.round(riesgo))} puntos de echarte.`,`A diretoria está a ${Math.max(0,Math.round(riesgo))} pontos de te demitir.`,`The board is ${Math.max(0,Math.round(riesgo))} points from sacking you.`)}</div>`:""}
+        ${S.vars.ves<35?`<div class="alerta mal">${t3("El vestuario está roto: te castiga el rendimiento.","O vestiário está rachado: o rendimento cai.","The dressing room is broken: performance suffers.")}</div>`:""}
+        ${S.vars.hin<30?`<div class="alerta mal">${t3("La tribuna te soltó la mano.","A torcida te abandonou.","The crowd has turned on you.")}</div>`:""}
+        ${fuera?`<div class="alerta">${fuera} ${t3("fuera de puesto con","fora de posição com","out of position with")} ${f}.</div>`:""}
+        ${S.presupuesto<10?`<div class="alerta">${t3("Casi sin presupuesto para el próximo mercado.","Quase sem orçamento para o próximo mercado.","Almost no budget for the next window.")}</div>`:""}
+        ${edadProm>30?`<div class="alerta">${t3("Plantel viejo: van a empezar a bajar de nivel.","Elenco velho: vão começar a cair de nível.","Ageing squad: levels will start to drop.")}</div>`:""}
         ${riesgo>=8&&S.vars.ves>=35&&S.vars.hin>=30&&!fuera?`<div class="alerta ok">${T("todoEnOrden")}.</div>`:""}
       </div>
-      ${S.etiqueta?`<p class="mini">Te dicen <b style="color:var(--ambar)">${S.etiqueta.n}</b>. ${S.etiqueta.desc}</p>`:""}
+      ${S.etiqueta?`<p class="mini">${t3("Te dicen","Te chamam","They call you")} <b style="color:var(--ambar)">${tEtiq(S.etiqueta,"n")}</b>. ${tEtiq(S.etiqueta,"desc")}</p>`:""}
     </div></details>`;
 }
 

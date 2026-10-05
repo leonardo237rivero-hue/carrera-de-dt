@@ -426,3 +426,64 @@ Traducido completo a **portugués** e **inglés**. El español sigue siendo el o
 
 **Lo que falta**, y es trabajo de alguien con el oído puesto en cada país: el portugués y el inglés están correctos pero son más neutros que el español. El registro rioplatense del original —"te quieren hacer la cama", "el pibe se agrandó"— tiene equivalentes en cada fútbol que un nativo encontraría mejor que una traducción. Los archivos están separados por idioma justamente para que eso se pueda pulir sin tocar el juego.
 
+
+---
+
+# v6 — Lo que cambió después del playtest de v5
+
+Diez pedidos del playtest, diez respuestas. El principio que las ordena: **el sistema y el modelo tienen que definir el juego**, y el jugador tiene que poder leer por qué gana o pierde sin ver ni una fórmula.
+
+## 1. Arranque exprés (estilo Copero)
+- **Quién sos** en una pantalla: apellido, club del que sos hincha, perfil (tres fichas con una línea cada una; los efectos quedan en un desplegable "Qué cambia") y duración.
+- La **prensa ya no se elige al arrancar**: aparece como pantalla propia la primera vez que dirigís un club grande (nivel 4+) en Primera.
+
+## 2. Tu idea de juego (microjuego que enseña)
+- Pantalla propia: sistema + modelo con una cancha grande que se mueve entre **Sin pelota** y **Con pelota** (triángulos en posesión, flechas de presión y línea alta, bloque compacto, carriles de contra, pelotazo).
+- **Encaje** en cinco barras con la explicación mecánica (PORQUE_FIT, ahora en los tres idiomas), y tarjetas **Ganás / Arriesgás**.
+- **Automatismos** (0-100): arrancan en 30. Cada temporada con la misma idea suben 25 × encaje (ideal 1.0 … contradictorio 0.2). Cambiar la idea deja el 30%. Rinden hasta +6% en cada partido. Reemplazan al viejo bonus fijo de "sistema de cabecera".
+- La presión alta desgasta de verdad: +2 de cansancio por partido.
+
+## 3. Momentos del partido (reemplaza "Cómo los parás")
+Se congela la jugada en tres fases contra tu clásico (o el rival más fuerte):
+| Fase | Opciones |
+|---|---|
+| Tu salida contra su presión | Salida de 3 · Laterales altos · Largo al 9 |
+| Su salida contra tu presión | Presión alta · Bloque medio · Repliegue |
+| Tu llegada al último tercio | Centros · Por dentro · Cambio de frente |
+
+- Al tocar una opción tus jugadores se reacomodan (animación), se ilumina la zona clave y aparece el conteo ("4 para salir v 2 presionando"). Al confirmar corre la pelota y se explica por qué salió bien o mal.
+- La ventaja sale de rasgos reales de cada sistema (cuántos presionan, cuántos centrales, cuántos por dentro, cuántos abiertos, cuántas puntas), del modelo rival (presiona, posee, contraataca o se mete atrás), de la calidad del once y de lo que tu modelo tiene automatizado. Si la ventaja es clara, el resultado es seguro; si es pareja, decide una tirada.
+- **Lo elegido es tu plan para toda la temporada**: se aplica partido a partido contra el estilo de cada rival (±3.5% por fase). Funciona contra unos y sufre contra otros; el reporte te lo muestra.
+
+## 4. La temporada de verdad (estilo Brasfoot)
+- **Liga todos contra todos, ida y vuelta** (hasta 10 equipos, siempre con tu clásico). Uruguay y Argentina juegan **Apertura y Clausura** (y en Uruguay la **Tabla Anual** define el Campeonato Uruguayo).
+- **Copas** por eliminación directa intercaladas en el calendario: copa nacional, o la continental si sos grande y terminaste arriba. Penales si hay empate.
+- **Selección**: Eliminatorias (liga), después Copa América y Mundial (eliminación).
+- **Minuto a minuto**: todos los partidos de la fecha a la vez, el reloj corre, los goles caen con autor, tu partido resaltado, rojas y lesiones. Velocidad ×1/×3/×10, pausa, saltar a la parada. La tabla se reacomoda con flechas ▲▼.
+- **Parada de mitad de temporada** (o fin del Apertura): lesionados, cansados, encendidos, y cambios en el once.
+- Goles: Poisson con λ = 1.3·e^(ΔF/24), acotado entre 0.4 y 3.4. La fuerza del partido multiplica nivel del once, encaje, cruce de sistemas, automatismos, plan contra ese rival, vestuario y localía con la tribuna.
+- Puntos de carrera según la posición contra la **esperada** por jerarquía del club: campeón 10; 4 + 1.5 por puesto de más (tope 8). Copa: +3 (+4 continental).
+
+## 5. El banco sirve
+- Cada jugador tiene **forma** (−6 a +6), **cansancio** y puede **lesionarse** o quedar **suspendido**. Rinde hoy = nivel + forma − (cansancio−50)/5.
+- La pretemporada siempre trae historias: una figura fuera de forma, un suplente encendido, a veces un lesionado, un veterano cargado.
+- El once automático va por **jerarquía**, no por el momento: el DT que mira la forma y rota gana más.
+- Los recién llegados (mercado, ruleta) aparecen con aro punteado y etiqueta NUEVO.
+
+## 6. Ruleta de fichas
+18 casillas: por zona 3 comunes y 1 crack, más 2 rojas. **2 fichas**: común 1 ficha (17%), crack 2 fichas (6%). Si cae en lo apostado, el jugador viene; si no, nada. Roja: se va un jugador al azar y entra algo de plata. Se puede no jugar.
+
+## 7. Clubes con identidad
+- Tema de colores del club en toda la interfaz (cabecera, fichas propias, partido propio en la ruleta de resultados).
+- Presentación al asumir: fundación, estadio, DT histórico, ídolo, clásico, **su gloria** y **lo que te piden**. Ficha completa para ~33 grandes, básica para ~28 medianos.
+- Ofertas con escudo grande, franja de colores, insignia PROFESIONAL / FORMATIVAS y estrellas de jerarquía.
+- Trofeos con íconos por tipo: liga, copa nacional, copa continental, torneo corto, selección.
+
+## 8. Idioma del vestuario
+Cada vez que llegás a un club de un país con idioma disponible distinto al tuyo: **adaptarte** (Hinchada +4, Vestuario +3, el juego cambia de idioma) o **"Seguir en [tu idioma]"** (Hinchada −2).
+
+## 9. Reporte de temporada legible
+Sin multiplicadores. Posición grande contra la esperada, tabla final, recorrido de copa, **tu plan fase por fase** (contra qué estilos funcionó y contra cuáles sufrió, con nombres de rivales), **figuras** (goleador, mejor nota, revelación), barras de Directiva/Hinchada/Automatismos antes→después, plata que entra y la moraleja del partido que el azar dio vuelta.
+
+## Balance (simulador headless, 60 carreras por celda)
+El DT que sabe le gana al que elige al azar **85-100%** de las veces según modo y club; en 6 temporadas saca 1-5 títulos según arranque, el azar solo 0-1.

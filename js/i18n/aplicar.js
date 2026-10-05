@@ -29,7 +29,7 @@ const IDOLO_EXTRA={
  "Milan":{qpt:"o capitão eterno do clube",qen:"the club's eternal captain",erapt:"os anos noventa",eraen:"the nineties"},
  "Inter":{qpt:"o capitão da Tríplice Coroa",qen:"the captain of the Treble",erapt:"os anos dois mil",eraen:"the 2000s"},
  "Juventus":{qpt:"o capitão e maior artilheiro do clube",qen:"the club's captain and top scorer",erapt:"os anos dois mil",eraen:"the 2000s"},
- "Napoli":{qpt:"quem deu ao sul os únicos scudettos",qen:"the man who gave the south its only scudetti",erapt:"os anos oitenta",eraen:"the eighties"},
+ "Napoli":{qpt:"quem deu ao sul seus primeiros scudettos",qen:"the man who gave the south its first scudetti",erapt:"os anos oitenta",eraen:"the eighties"},
  "Roma":{qpt:"o Capitano, ídolo de uma camisa só",qen:"Il Capitano, a one-club idol",erapt:"os anos dois mil",eraen:"the 2000s"},
  "Bayern München":{qpt:"o Kaiser, símbolo do clube",qen:"Der Kaiser, symbol of the club",erapt:"os anos setenta",eraen:"the seventies"}
 };
