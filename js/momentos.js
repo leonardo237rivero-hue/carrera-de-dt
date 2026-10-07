@@ -302,45 +302,32 @@ function caminoPelota(fase,op,mia){
 /* ==========================================================
    PIZARRA DEL MOMENTO (SVG con transiciones)
    ========================================================== */
-const MW=420, MH=520;
-const px=x=>x/100*MW, py=Y=>MH-(Y/100)*MH;
+const MW=420, MH=470;
+function camMom(){ return camara({ancho:MW,top:20,bot:456,hw:226}); }
+const zonaPts=z=>[[z[0],z[1]],[z[0]+z[2],z[1]],[z[0]+z[2],z[1]+z[3]],[z[0],z[1]+z[3]]];
 function svgMomento(fase,op,yo,el,once,rivOnce,colores){
+  const P=camMom();
   const mia=formaMia(fase,op,yo.f), suya=formaRival(fase,el.e,el.f);
   const z=zonaClave(fase,op);
-  const fc=colores||{fill:"#4FBF7F",stroke:"#183028",txt:"#0D1613"};
-  const lineas=`<rect width="${MW}" height="${MH}" fill="#224236"/>
-    ${[0,1,2,3,4,5,6,7,8,9].map(i=>`<rect y="${i*MH/10}" width="${MW}" height="${MH/20}" fill="#284C3E"/>`).join("")}
-    <rect x="6" y="6" width="${MW-12}" height="${MH-12}" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <line x1="6" y1="${MH/2}" x2="${MW-6}" y2="${MH/2}" stroke="#5A8A76" stroke-width="1.5"/>
-    <circle cx="${MW/2}" cy="${MH/2}" r="44" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${MW/2-80}" y="6" width="160" height="62" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${MW/2-80}" y="${MH-68}" width="160" height="62" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <g stroke="#5A8A76" stroke-dasharray="4 7" opacity=".45"><line x1="6" y1="${MH/3}" x2="${MW-6}" y2="${MH/3}"/><line x1="6" y1="${2*MH/3}" x2="${MW-6}" y2="${2*MH/3}"/></g>`;
-  const zona=`<rect id="mzona" x="${px(z[0])}" y="${py(z[1]+z[3])}" width="${px(z[2])}" height="${MH*z[3]/100}"
-      fill="#E0A93B" opacity=".13" stroke="#E0A93B" stroke-dasharray="6 5" stroke-width="1.5" rx="6" style="transition:all .7s"/>`;
-  const riv=suya.map((p,i)=>`<g class="mj" style="transform:translate(${px(p.x)}px,${py(p.Y)}px)">
-      <circle r="11" fill="#141C19" stroke="#E6ECEF" stroke-width="2.5" stroke-dasharray="3 2"/>
-      <text y="4" text-anchor="middle" class="pos-chip" font-size="10" fill="#E6ECEF">${rivOnce&&rivOnce[i]?rivOnce[i].rt:""}</text></g>`).join("");
-  const mio=mia.map((p,i)=>`<g class="mj" id="mm-${i}" style="transform:translate(${px(p.x)}px,${py(p.Y)}px)">
-      <circle r="13" fill="${fc.fill}" stroke="${fc.stroke}" stroke-width="2.5"/>
-      <text y="4.5" text-anchor="middle" class="pos-chip" font-size="11" fill="${fc.txt}">${once&&once[i]?once[i].rt:""}</text>
-      <text y="25" text-anchor="middle" font-size="8.5" font-weight="600" fill="#DCEFE5">${once&&once[i]?(once[i].jug.nom||"").split(" ").pop():""}</text></g>`).join("");
-  return `<svg id="pizMomento" class="cancha momento" viewBox="0 0 ${MW} ${MH}" role="img"
-      aria-label="${L(FASES.find(F=>F.id===fase).n)}">${lineas}${zona}
-      <path id="mpelota-camino" d="" fill="none" stroke="#FFF" stroke-width="2.5" stroke-dasharray="7 6" opacity=".0"/>
+  const zona=`<path id="mzona" d="${poliD(P,zonaPts(z))}" fill="rgba(166,240,60,.12)" stroke="${NEON}" stroke-dasharray="6 5" stroke-width="1.6" stroke-linejoin="round"/>`;
+  const riv=suya.map((p,i)=>`<g class="mj" style="transform:${fichaTransform(P,p.x,p.Y)}">${fichaSVG({rival:true})}</g>`).join("");
+  const mio=mia.map((p,i)=>`<g class="mj" id="mm-${i}" style="transform:${fichaTransform(P,p.x,p.Y)}">${fichaSVG({etiqueta:once&&once[i]?once[i].rt:"",sub:once&&once[i]?(once[i].jug.nom||"").split(" ").pop():""})}</g>`).join("");
+  return `<svg id="pizMomento" class="cancha persp momento" viewBox="0 0 ${MW} ${MH}" role="img"
+      aria-label="${L(FASES.find(F=>F.id===fase).n)}">${canchaFondo(P,{tercios:true})}${zona}
+      <path id="mpelota-camino" d="" fill="none" stroke="#FFF" stroke-width="2.5" stroke-dasharray="7 6" opacity="0"/>
       ${riv}${mio}
-      <circle id="mpelota" r="6" fill="#FFF" stroke="#111" stroke-width="1.5" style="opacity:0"/></svg>`;
+      <circle id="mpelota" r="5.5" fill="#FFF" stroke="#6B746F" stroke-width="1.2" style="opacity:0"/>
+      ${canchaVineta("vin-mom",MW,MH)}</svg>`;
 }
 // mueve las fichas propias a la forma de otra opción (sin redibujar: transición CSS)
 function moverFormaMia(fase,op,f){
-  const mia=formaMia(fase,op,f);
-  mia.forEach((p,i)=>{ const g=document.getElementById("mm-"+i); if(g) g.style.transform=`translate(${px(p.x)}px,${py(p.Y)}px)`; });
-  const z=zonaClave(fase,op), r=document.getElementById("mzona");
-  if(r){ r.setAttribute("x",px(z[0])); r.setAttribute("y",py(z[1]+z[3])); r.setAttribute("width",px(z[2])); r.setAttribute("height",MH*z[3]/100); }
+  const P=camMom(), mia=formaMia(fase,op,f);
+  mia.forEach((p,i)=>{ const g=document.getElementById("mm-"+i); if(g) g.style.transform=fichaTransform(P,p.x,p.Y); });
+  const r=document.getElementById("mzona"); if(r) r.setAttribute("d",poliD(P,zonaPts(zonaClave(fase,op))));
 }
 function animarPelota(fase,op,f,alTerminar){
-  const cam=caminoPelota(fase,op,formaMia(fase,op,f));
-  const d=cam.map((p,i)=>`${i?"L":"M"}${px(p.x)} ${py(p.Y)}`).join(" ");
+  const P=camMom(), cam=caminoPelota(fase,op,formaMia(fase,op,f));
+  const d=cam.map((p,i)=>{const q=P(p.x,p.Y); return `${i?"L":"M"}${q.x.toFixed(1)} ${q.y.toFixed(1)}`;}).join(" ");
   const path=document.getElementById("mpelota-camino"), b=document.getElementById("mpelota");
   const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(!path||!b||reduce||!path.getTotalLength){ if(alTerminar) alTerminar(); return; }

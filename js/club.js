@@ -242,13 +242,13 @@ function trofeo(tipo,s){
     <path d="M7 3h10v3a5 5 0 0 1-10 0Z" fill="#D8DEE4"/><path d="M7 4H4v1.5A3 3 0 0 0 7 8.5M17 4h3v1.5a3 3 0 0 1-3 3" stroke="#D8DEE4" stroke-width="1.5" fill="none"/>
     <path d="M11 11h2v5h-2z" fill="#D8DEE4"/><rect x="7" y="16" width="10" height="2.5" rx="1" fill="#A9B3BC"/><rect x="8.5" y="19" width="7" height="2" fill="#A9B3BC"/></svg>`;
   if(tipo==="sel") return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px">
-    <circle cx="12" cy="7" r="4.5" fill="#F2C94C"/><path d="M9 11c-1 3 1 5 1 7h4c0-2 2-4 1-7" fill="#E0A93B"/>
+    <circle cx="12" cy="7" r="4.5" fill="#F2C94C"/><path d="M9 11c-1 3 1 5 1 7h4c0-2 2-4 1-7" fill="#F2B33D"/>
     <rect x="8" y="18" width="8" height="3" rx="1" fill="#0B6B3A"/></svg>`;
   if(tipo==="media") return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px">
-    <path d="M6 4h12l-2 6H8z" fill="#8FC0AA"/><circle cx="12" cy="15" r="5" fill="#E0A93B"/><circle cx="12" cy="15" r="2.6" fill="#C9A227"/></svg>`;
+    <path d="M6 4h12l-2 6H8z" fill="#8FC0AA"/><circle cx="12" cy="15" r="5" fill="#F2B33D"/><circle cx="12" cy="15" r="2.6" fill="#C9A227"/></svg>`;
   // liga: bandeja/escudo dorado
   return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true" style="vertical-align:-3px">
-    <path d="M5 3h14v7c0 5-3.5 8-7 10-3.5-2-7-5-7-10Z" fill="#E0A93B"/><path d="M12 6l1.6 3.3 3.6.5-2.6 2.5.6 3.6L12 14.2 8.8 15.9l.6-3.6-2.6-2.5 3.6-.5Z" fill="#FFF3C4"/></svg>`;
+    <path d="M5 3h14v7c0 5-3.5 8-7 10-3.5-2-7-5-7-10Z" fill="#F2B33D"/><path d="M12 6l1.6 3.3 3.6.5-2.6 2.5.6 3.6L12 14.2 8.8 15.9l.6-3.6-2.6-2.5 3.6-.5Z" fill="#FFF3C4"/></svg>`;
 }
 
 /* ==========================================================

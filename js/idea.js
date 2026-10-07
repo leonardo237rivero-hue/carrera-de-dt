@@ -102,7 +102,9 @@ function formaIdea(f,e,fase){
       const [a,b]={pre:[40,.5],pos:[28,.52],con:[16,.52],blo:[3,.48]}[me]; Y=a+b*y;
       if(me==="blo"||me==="con") x=50+(x-50)*0.82;
     } else {
-      if(me==="pos"){ Y=24+0.66*y; if(/^(LT|CA)/.test(s[0])){Y+=16;x=x<50?5:95;} if(/^EX/.test(s[0]))x=x<50?10:90; }
+      if(me==="pos"){ Y=24+0.66*y; if(/^(LT|CA)/.test(s[0])){Y+=16;x=x<50?5:95;} if(/^EX/.test(s[0]))x=x<50?10:90;
+        // el 5 baja a recibir y los interiores se adelantan: así se arma el triángulo del medio
+        if(f==="4-3-3"&&s[0]==="MC") Y-=10; if(f==="4-3-3"&&/^M[ID]$/.test(s[0])) Y+=4; }
       else if(me==="pre"){ Y=30+0.63*y; if(/^(LT|CA)/.test(s[0])) Y+=10; }
       else if(me==="con"){ Y=ROL[s[0]].g==="ATA"?78+0.1*y:10+0.55*y; if(s[0]==="MCO")Y=62; }
       else { Y=ROL[s[0]].g==="ATA"?62+0.15*y:6+0.45*y; }
@@ -110,56 +112,48 @@ function formaIdea(f,e,fase){
     return {rol:s[0],x,Y};
   });
 }
+const IW=380, IH=420;
+function camIdea(){ return camara({ancho:IW,top:22,bot:404,hw:206}); }
 function svgIdea(f,e,fase){
-  const W=380,H=460, X=x=>x/100*W, Yp=Y=>H-(Y/100)*H;
-  const pts=formaIdea(f,e,fase), me=MID[e];
-  const club={c:["#4FBF7F","#183028"]};
-  let extra="";
+  const P=camIdea(), pts=formaIdea(f,e,fase), me=MID[e];
   const campo=pts.filter(p=>p.rol!=="POR");
+  let extra="", pelota=null, cartel="";
   if(fase==="con"&&(me==="pos"||me==="pre")){
-    // triángulos: cada uno con sus dos compañeros más cercanos
-    const seg=new Set();
-    campo.forEach((p,i)=>{
-      campo.map((q,k)=>({k,d:Math.hypot(q.x-p.x,(q.Y-p.Y)*1.1)})).filter(o=>o.k!==i).sort((a,b)=>a.d-b.d).slice(0,2)
-        .forEach(o=>{ if(o.d<34){ const key=[Math.min(i,o.k),Math.max(i,o.k)].join("-"); seg.add(key);} });
-    });
-    extra=[...seg].map(k=>{const [a,b]=k.split("-").map(Number);
-      return `<line x1="${X(campo[a].x)}" y1="${Yp(campo[a].Y)}" x2="${X(campo[b].x)}" y2="${Yp(campo[b].Y)}" stroke="#E0A93B" stroke-width="1.6" opacity=".55"/>`;}).join("");
+    extra=triangulosSVG(P,f,pts,true);
+    pelota=pelotaTriangulo(f,pts);
+    const t0=(TRIANGULOS[f]||[])[0];
+    if(t0){ const cx=t0.reduce((a,i)=>a+pts[i].x,0)/3, cy=t0.reduce((a,i)=>a+pts[i].Y,0)/3, q=P(cx,cy+1.5);
+      cartel=cartelSVG(q.x,q.y,t3("TRIÁNGULO ACTIVO","TRIÂNGULO ATIVO","ACTIVE TRIANGLE"),true); }
   }
+  const flecha=(a,b,col,dash,ancho)=>`<path d="${segD(P,a,b,0,6)}" fill="none" stroke="${col}" stroke-width="${ancho||2.4}" ${dash?`stroke-dasharray="${dash}"`:""} stroke-linecap="round" marker-end="url(#fl-${col==="#F05A4A"?"r":"a"})"/>`;
   if(fase==="sin"&&me==="pre"){
-    extra=campo.filter(p=>p.Y>55).map(p=>`<line x1="${X(p.x)}" y1="${Yp(p.Y)}" x2="${X(p.x+(50-p.x)*0.15)}" y2="${Yp(p.Y+11)}" stroke="#D9543F" stroke-width="2.5" marker-end="url(#fl)"/>`).join("")
-      +`<line x1="10" y1="${Yp(47)}" x2="${W-10}" y2="${Yp(47)}" stroke="#E0A93B" stroke-dasharray="6 5" stroke-width="1.5"/>
-       <text x="${W-12}" y="${Yp(47)-5}" text-anchor="end" font-size="10" fill="#E0A93B">${t3("línea alta","linha alta","high line")}</text>`;
+    extra=campo.filter(p=>p.Y>55).map(p=>flecha([p.x,p.Y],[p.x+(50-p.x)*0.15,p.Y+11],"#F05A4A")).join("")
+      +`<path d="${segD(P,[2,47],[98,47])}" stroke="#F2B33D" stroke-dasharray="6 5" stroke-width="1.6" fill="none"/>`;
+    const q=P(97,47); cartel=`<text x="${q.x}" y="${q.y-6}" text-anchor="end" class="ficha-et" fill="#F2B33D">${t3("LÍNEA ALTA","LINHA ALTA","HIGH LINE")}</text>`;
   }
   if(fase==="sin"&&(me==="blo"||me==="con")){
-    const lineas=[...new Set(campo.map(p=>Math.round(p.Y/6)))].slice(0,3);
-    extra=`<rect x="14" y="${Yp(me==="blo"?40:52)}" width="${W-28}" height="${H*(me==="blo"?34:36)/100}" fill="#5B9BD5" opacity=".1" stroke="#5B9BD5" stroke-dasharray="5 5" rx="6"/>
-      <text x="20" y="${Yp(me==="blo"?40:52)+14}" font-size="10" fill="#8FB8E0">${t3("bloque compacto","bloco compacto","compact block")}</text>`;
+    const y0=me==="blo"?6:16, y1=me==="blo"?40:52;
+    extra=`<path d="${poliD(P,[[4,y0],[96,y0],[96,y1],[4,y1]])}" fill="rgba(111,168,220,.12)" stroke="#6FA8DC" stroke-dasharray="5 5" stroke-width="1.4"/>`;
+    const q=P(6,y1); cartel=`<text x="${q.x+4}" y="${q.y+14}" class="ficha-et" fill="#9CC3E8">${t3("BLOQUE COMPACTO","BLOCO COMPACTO","COMPACT BLOCK")}</text>`;
   }
   if(fase==="con"&&me==="con"){
-    extra=campo.filter(p=>ROL[p.rol].g==="ATA").map(p=>`<line x1="${X(p.x)}" y1="${Yp(p.Y-30)}" x2="${X(p.x)}" y2="${Yp(p.Y+8)}" stroke="#E0A93B" stroke-width="2.5" marker-end="url(#fl)" opacity=".8"/>`).join("");
+    extra=campo.filter(p=>ROL[p.rol].g==="ATA").map(p=>flecha([p.x,p.Y-24],[p.x,p.Y+10],"#F2B33D")).join("");
   }
   if(fase==="con"&&me==="blo"){
     const dc=campo.filter(p=>p.rol==="DC")[0]||campo[campo.length-1], cen=campo.find(p=>p.rol==="DFC");
-    extra=`<path d="M${X(cen.x)} ${Yp(cen.Y)} Q ${X(20)} ${Yp(50)} ${X(dc.x)} ${Yp(dc.Y)}" fill="none" stroke="#E0A93B" stroke-width="2.5" stroke-dasharray="7 6" marker-end="url(#fl)"/>`;
+    extra=flecha([cen.x,cen.Y],[dc.x,dc.Y],"#F2B33D","8 6");
   }
   if(fase==="sin"&&me==="pos"){
-    extra=campo.filter(p=>p.Y>42&&p.Y<70).slice(0,4).map(p=>`<circle cx="${X(p.x)}" cy="${Yp(p.Y+5)}" r="20" fill="none" stroke="#D9543F" stroke-width="1.5" stroke-dasharray="3 4" opacity=".7"/>`).join("")
-      +`<text x="${W/2}" y="${Yp(78)}" text-anchor="middle" font-size="10" fill="#E8B6AC">${t3("presión tras pérdida","pressão pós-perda","counter-press")}</text>`;
+    extra=campo.filter(p=>p.Y>42&&p.Y<70).slice(0,4).map(p=>{const q=P(p.x,p.Y); const r=24*escFicha(q.s);
+      return `<ellipse cx="${q.x}" cy="${q.y}" rx="${r}" ry="${r*.62}" fill="none" stroke="#F05A4A" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>`;}).join("");
+    const q=P(50,80); cartel=`<text x="${q.x}" y="${q.y}" text-anchor="middle" class="ficha-et" fill="#F5A79C">${t3("PRESIÓN TRAS PÉRDIDA","PRESSÃO PÓS-PERDA","COUNTER-PRESS")}</text>`;
   }
-  return `<svg class="cancha idea" viewBox="0 0 ${W} ${H}" role="img" aria-label="${f} ${ESTILO_LBL[e]}">
-    <defs><marker id="fl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#E0A93B"/></marker></defs>
-    <rect width="${W}" height="${H}" fill="#224236"/>
-    ${[0,1,2,3,4,5,6,7,8,9].map(i=>`<rect y="${i*H/10}" width="${W}" height="${H/20}" fill="#284C3E"/>`).join("")}
-    <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <line x1="6" y1="${H/2}" x2="${W-6}" y2="${H/2}" stroke="#5A8A76" stroke-width="1.5"/>
-    <circle cx="${W/2}" cy="${H/2}" r="40" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${W/2-72}" y="${H-60}" width="144" height="54" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${W/2-72}" y="6" width="144" height="54" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    ${extra}
-    ${pts.map((p,i)=>`<g class="mj" id="ij-${i}" style="transform:translate(${X(p.x)}px,${Yp(p.Y)}px)">
-      <circle r="12" fill="#4FBF7F" stroke="#183028" stroke-width="2.5"/>
-      <text y="3.5" text-anchor="middle" font-size="8" font-weight="700" fill="#0D1613">${tRol(p.rol).split(" ")[0].slice(0,3).toUpperCase()}</text></g>`).join("")}
+  return `<svg class="cancha persp idea" viewBox="0 0 ${IW} ${IH}" role="img" aria-label="${f} ${ESTILO_LBL[e]}">
+    <defs><marker id="fl-a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F2B33D"/></marker>
+      <marker id="fl-r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F05A4A"/></marker></defs>
+    ${canchaFondo(P)}${extra}
+    ${pts.map((p,i)=>`<g class="mj" id="ij-${i}" style="transform:${fichaTransform(P,p.x,p.Y)}">${fichaSVG({etiqueta:tRol(p.rol).split(" ")[0].slice(0,3).toUpperCase(),pelota:p===pelota})}</g>`).join("")}
+    ${cartel}${canchaVineta("vin-idea",IW,IH)}
   </svg>`;
 }
 function pintarIdea(){
@@ -198,9 +192,9 @@ function pintarIdea(){
 }
 function cambiarFaseIdea(fz){
   tmp.fase=fz;
-  const pts=formaIdea(tmp.f,tmp.e,fz), W=380,H=460;
+  const pts=formaIdea(tmp.f,tmp.e,fz), P=camIdea();
   // se mueven las fichas (transición) y después se redibujan las ayudas visuales
-  pts.forEach((p,i)=>{const g=document.getElementById("ij-"+i); if(g) g.style.transform=`translate(${p.x/100*W}px,${H-(p.Y/100)*H}px)`;});
+  pts.forEach((p,i)=>{const g=document.getElementById("ij-"+i); if(g) g.style.transform=fichaTransform(P,p.x,p.Y);});
   document.querySelectorAll("#s-idea .tabs button").forEach((b,i)=>b.classList.toggle("on",(i===0)===(fz==="sin")));
   setTimeout(()=>{ if(tmp.fase===fz){ const c=$("#ideaCancha"); if(c) c.innerHTML=svgIdea(tmp.f,tmp.e,fz); } },720);
 }

@@ -28,7 +28,7 @@ function escudoSVG(clubJson,size){
   return `<svg class="escudo" width="${s}" height="${s*1.14}" viewBox="0 0 40 46" aria-hidden="true">
     <path d="M2 2h36v26c0 9-9 14-18 16C11 42 2 37 2 28Z" fill="${c1}" stroke="${c2}" stroke-width="2.5"/>
     <path d="M20 2v42" stroke="${c2}" stroke-width="2.5" opacity=".55"/>
-    <text x="20" y="26" text-anchor="middle" font-family="Big Shoulders Display,sans-serif" font-weight="800"
+    <text x="20" y="26" text-anchor="middle" font-family="Archivo,sans-serif" font-stretch="62%" font-weight="800"
       font-size="17" fill="${oscuro?'#FFF':'#111'}">${ini}</text></svg>`;
 }
 
@@ -38,24 +38,24 @@ function escudoSVG(clubJson,size){
 function cancha(once,opts){
   opts=opts||{};
   const alto=opts.alto||300, ancho=opts.ancho||420;
-  const col=opts.color||"#4FBF7F", inv=opts.invertir;
+  const col=opts.color||"#A6F03C", inv=opts.invertir;
   const pts=once.map(o=>{
     const px=(o.x/100)*ancho;
     const py=inv ? (o.y/100)*alto : alto-(o.y/100)*alto;
     const r=opts.rMin||15;
     const etiqueta = opts.mostrarRating!==false ? o.rt : "";
-    const alerta = o.fuera?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#E0A93B" stroke-width="2"/>`:"";
-    return `${alerta}<circle cx="${px}" cy="${py}" r="${r}" fill="${col}" opacity=".92"/>
+    const alerta = o.fuera?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#F2B33D" stroke-width="2"/>`:"";
+    return `${alerta}<circle cx="${px}" cy="${py+2.5}" r="${r}" fill="rgba(0,0,0,.35)"/><circle cx="${px}" cy="${py}" r="${r}" fill="${col}"/>
       <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="14" fill="${opts.txt||'#0D1613'}">${etiqueta}</text>
       ${opts.mostrarNombre?`<text x="${px}" y="${py+r+12}" text-anchor="middle" font-size="9.5" fill="#CFDAD3">${(o.jug.nom||"").split(" ").pop()}</text>`:""}`;
   }).join("");
   return `<svg class="cancha" viewBox="0 0 ${ancho} ${alto}" role="img" aria-label="Disposición del equipo en la cancha">
-    <rect width="${ancho}" height="${alto}" fill="#25473A"/>
-    ${[0,1,2,3,4,5].map(i=>`<rect y="${i*alto/6}" width="${ancho}" height="${alto/12}" fill="#2B5142"/>`).join("")}
-    <rect x="6" y="6" width="${ancho-12}" height="${alto-12}" fill="none" stroke="#4F7A69" stroke-width="1.5"/>
-    <line x1="6" y1="${alto/2}" x2="${ancho-6}" y2="${alto/2}" stroke="#4F7A69" stroke-width="1.5"/>
-    <circle cx="${ancho/2}" cy="${alto/2}" r="34" fill="none" stroke="#4F7A69" stroke-width="1.5"/>
-    <rect x="${ancho/2-58}" y="${inv?6:alto-46}" width="116" height="40" fill="none" stroke="#4F7A69" stroke-width="1.5"/>
+    <rect width="${ancho}" height="${alto}" fill="#0D1F15"/>
+    ${[0,1,2,3,4,5].map(i=>`<rect y="${i*alto/6}" width="${ancho}" height="${alto/12}" fill="#11281B"/>`).join("")}
+    <rect x="6" y="6" width="${ancho-12}" height="${alto-12}" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <line x1="6" y1="${alto/2}" x2="${ancho-6}" y2="${alto/2}" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <circle cx="${ancho/2}" cy="${alto/2}" r="34" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <rect x="${ancho/2-58}" y="${inv?6:alto-46}" width="116" height="40" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
     ${pts}</svg>`;
 }
 

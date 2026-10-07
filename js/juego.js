@@ -7,24 +7,39 @@
 function cambiarIdioma(id){ setIdioma(id); portada(); }
 function portada(){
   S=nuevo(); aplicarTema();
-  const demo=armarOnce(generarPlantel(70,3,null,"Uruguay"),"4-3-3",[]);
-  $("#s-portada").innerHTML=`
-    <div style="margin:26px 0 18px">
-      <h2 class="disp" style="font-size:46px">${T("titulo")}</h2>
-      <p class="mini" style="margin-top:6px">${t3("Vos elegís cómo juega el equipo. El resto lo decide la cancha.",
-        "Você escolhe como o time joga. O resto, o campo decide.",
+  const W=390,H=280, P=camara({ancho:W,top:22,bot:272,hw:214});
+  const pts=formaIdea("4-3-3","Posesion","con");
+  const t0=(TRIANGULOS["4-3-3"]||[])[0]||[];
+  const cx=t0.reduce((a,i)=>a+pts[i].x,0)/3, cy=t0.reduce((a,i)=>a+pts[i].Y,0)/3;
+  const cc=P(cx,cy+7);
+  const fichas=pts.map((p,i)=>{ const q=P(p.x,p.Y), w=30*escFicha(q.s), h=w*.62, k=100/W;
+    return `<span class="p-ficha" style="left:${(q.x*k).toFixed(2)}%;top:${(q.y/H*100).toFixed(2)}%"><i style="left:${(-w/2*k).toFixed(2)}cqw;top:${(-h/2*k).toFixed(2)}cqw;width:${(w*k).toFixed(2)}cqw;height:${(h*k).toFixed(2)}cqw;box-shadow:0 ${(3*q.s).toFixed(1)}px 0 ${NEON_SOMBRA},0 0 14px rgba(166,240,60,.5),inset 0 0 0 ${(3*q.s).toFixed(1)}px rgba(10,40,10,.3);animation-delay:-${(i*.8).toFixed(2)}s"></i></span>`; }).join("");
+  const tit=T("titulo"), corte=tit.indexOf(" ");
+  const tit1=corte>0?tit.slice(0,corte):tit, tit2=corte>0?tit.slice(corte+1):"";
+  $("#s-portada").innerHTML=`<div class="portada">
+    <div class="p-arriba">
+      <div class="etq entra" style="align-self:flex-start">${t3("MANAGER TÁCTICO","MANAGER TÁTICO","TACTICAL MANAGER")}</div>
+      <h1 class="p-titulo entra entra-2"><span>${tit1}</span><span class="neon">${tit2}</span></h1>
+      <p class="p-lema entra entra-3">${t3("Vos decidís cómo juega el equipo. La cancha decide el resto.",
+        "Você decide como o time joga. O campo decide o resto.",
         "You decide how the team plays. The pitch decides the rest.")}</p>
     </div>
-    ${cancha(demo,{mostrarRating:false,alto:300,ancho:420})}
-    <div class="idiomas">${IDIOMAS.map(x=>`
-      <button class="lang ${IDIOMA===x.id?'on':''}" onclick="cambiarIdioma('${x.id}')">${x.bandera} ${x.n}</button>`).join("")}</div>
-    <div class="acciones">
+    <div class="p-cancha" aria-hidden="true">
+      <svg viewBox="0 0 ${W} ${H}">${canchaFondo(P)}${triangulosSVG(P,"4-3-3",pts,true)}</svg>
+      ${fichas}
+      <span class="p-cartel" style="left:${(cc.x/W*100).toFixed(2)}%;top:${(cc.y/H*100).toFixed(2)}%"><b>${t3("TRIÁNGULO","TRIÂNGULO","TRIANGLE")}</b><i></i></span>
+      <div class="p-fade"></div>
+    </div>
+    <div class="p-abajo">
+      <div class="idiomas" role="group" aria-label="Idioma">${IDIOMAS.map(x=>`
+        <button class="lang ${IDIOMA===x.id?'on':''}" onclick="cambiarIdioma('${x.id}')">${x.n}</button>`).join("")}</div>
       <button class="btn" onclick="identidad()">${T("empezar")}</button>
       <button class="btn sec" onclick="abrirDuelo()">${T("duelo")}</button>
+      <p class="p-nota">${t3("En el duelo, los dos DT reciben las mismas situaciones, las mismas cartas y la misma suerte. Solo cambia lo que decide cada uno.",
+        "No duelo, os dois técnicos recebem as mesmas situações, as mesmas cartas e a mesma sorte. Só muda o que cada um decide.",
+        "In a duel both coaches get the same situations, the same cards and the same luck. Only their decisions differ.")}</p>
     </div>
-    <p class="mini" style="margin-top:12px">${t3("En el duelo los dos DT reciben las mismas situaciones, las mismas cartas y el mismo azar. Sólo cambia lo que cada uno decide.",
-      "No duelo os dois técnicos recebem as mesmas situações, as mesmas cartas e a mesma sorte. Só muda o que cada um decide.",
-      "In a duel both coaches get the same situations, the same cards and the same luck. Only their decisions differ.")}</p>`;
+  </div>`;
   ir("portada");
 }
 
@@ -219,36 +234,36 @@ function canchaGestion(once){
   const W=420,H=450,margen=20, span=H-margen*2;
   const fc=fichaColores(S.club);
   return `<svg class="cancha" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t3("Tu once en la cancha","Seu time em campo","Your XI on the pitch")}">
-    <rect width="${W}" height="${H}" fill="#224236"/>
-    ${[0,1,2,3,4,5,6,7].map(i=>`<rect y="${i*H/8}" width="${W}" height="${H/16}" fill="#284C3E"/>`).join("")}
-    <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <line x1="6" y1="${H/2}" x2="${W-6}" y2="${H/2}" stroke="#5A8A76" stroke-width="1.5"/>
-    <circle cx="${W/2}" cy="${H/2}" r="40" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
-    <rect x="${W/2-62}" y="${H-46}" width="124" height="40" fill="none" stroke="#5A8A76" stroke-width="1.5"/>
+    <rect width="${W}" height="${H}" fill="#0D1F15"/>
+    ${[0,1,2,3,4,5,6,7].map(i=>`<rect y="${i*H/8}" width="${W}" height="${H/16}" fill="#11281B"/>`).join("")}
+    <rect x="6" y="6" width="${W-12}" height="${H-12}" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <line x1="6" y1="${H/2}" x2="${W-6}" y2="${H/2}" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <circle cx="${W/2}" cy="${H/2}" r="40" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
+    <rect x="${W/2-62}" y="${H-46}" width="124" height="40" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
     ${once.map((o,i)=>{
       const px=(o.x/100)*W, py=H-margen-(o.y/100)*span, j=o.jug;
       const marcado=tmp.selBanco&&ROL[o.rol].g===tmp.selBanco.g;
-      const fat=clamp(j.fat||0,0,100), colFat=fat>=70?"#D9543F":fat>=50?"#E0A93B":"#4FBF7F";
-      const flecha=j.forma>=2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#4FBF7F">▲</text>`
-        :j.forma<=-2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#D9543F">▼</text>`:"";
+      const fat=clamp(j.fat||0,0,100), colFat=fat>=70?"#F05A4A":fat>=50?"#F2B33D":"#A6F03C";
+      const flecha=j.forma>=2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#A6F03C">▲</text>`
+        :j.forma<=-2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#F05A4A">▼</text>`:"";
       return `<g style="cursor:pointer" onclick="reemplazar(${i})">
-        ${j.nuevo?`<circle cx="${px}" cy="${py}" r="21" fill="none" stroke="#E0A93B" stroke-width="2" stroke-dasharray="4 3"/>`:""}
-        <circle cx="${px}" cy="${py}" r="16" fill="${marcado?'#E0A93B':fc.fill}"
-          stroke="${o.fuera?'#E0A93B':fc.stroke}" stroke-width="2.5"/>
+        ${j.nuevo?`<circle cx="${px}" cy="${py}" r="21" fill="none" stroke="#F2B33D" stroke-width="2" stroke-dasharray="4 3"/>`:""}
+        <circle cx="${px}" cy="${py}" r="16" fill="${marcado?'#F2B33D':fc.fill}"
+          stroke="${o.fuera?'#F2B33D':fc.stroke}" stroke-width="2.5"/>
         <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="13"
           fill="${marcado?'#111':fc.txt}" pointer-events="none">${o.rt}</text>
         ${flecha}
         <text x="${px}" y="${py+29}" text-anchor="middle" font-size="9" font-weight="600"
           fill="#DCEFE5" pointer-events="none">${(j.nom||"").split(" ").pop()}</text>
-        <rect x="${px-14}" y="${py+33}" width="28" height="3.5" rx="1.5" fill="#0F1714"/>
+        <rect x="${px-14}" y="${py+33}" width="28" height="3.5" rx="1.5" fill="#050A07"/>
         <rect x="${px-14}" y="${py+33}" width="${28*fat/100}" height="3.5" rx="1.5" fill="${colFat}"/>
         <text x="${px}" y="${py-21}" text-anchor="middle" font-size="8"
           fill="#8FC0AA" pointer-events="none">${tRol(o.rol)}</text></g>`;
     }).join("")}
   </svg>
-  <div class="leyenda"><span><b style="color:#4FBF7F">▲</b>/<b style="color:#D9543F">▼</b> ${t3("forma","forma","form")}</span>
+  <div class="leyenda"><span><b style="color:#A6F03C">▲</b>/<b style="color:#F05A4A">▼</b> ${t3("forma","forma","form")}</span>
     <span><i class="mini-bar"></i> ${t3("cansancio","cansaço","fatigue")}</span>
-    <span><i class="pt" style="border:2px dashed #E0A93B"></i> ${t3("recién llegado","recém-chegado","new signing")}</span></div>`;
+    <span><i class="pt" style="border:2px dashed #F2B33D"></i> ${t3("recién llegado","recém-chegado","new signing")}</span></div>`;
 }
 function elegirBanco(i){
   const j=window.__banco[i];
@@ -423,17 +438,17 @@ function svgRuleta(){
     const a0=(i/n)*2*Math.PI-Math.PI/2, a1=((i+1)/n)*2*Math.PI-Math.PI/2;
     const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0), x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
     const apostada=tmp.apuestas.some(x=>x.g===s.g&&x.crack===s.crack)&&!s.roja;
-    const base=s.roja?"#7A1F1F":s.crack?"#7A4A12":(i%2?"#26332E":"#2E3F38");
+    const base=s.roja?"#7A1F1F":s.crack?"#7A4A12":(i%2?"#132219":"#2E3F38");
     out+=`<path d="M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z"
-      fill="${apostada?(s.crack?'#E0A93B':'#4FBF7F'):base}" stroke="#141C19" stroke-width="1.5"/>`;
+      fill="${apostada?(s.crack?'#F2B33D':'#4FBF7F'):base}" stroke="#070D0A" stroke-width="1.5"/>`;
     const am=(a0+a1)/2, tx=cx+(r*0.72)*Math.cos(am), ty=cy+(r*0.72)*Math.sin(am);
     const deg=am*180/Math.PI;
     out+=`<text x="${tx}" y="${ty+3.5}" text-anchor="middle" font-size="10.5" font-weight="700"
-      fill="${apostada?'#141C19':s.roja?'#FFB3A7':(s.crack?'#F0C98A':'#DDE6E0')}"
+      fill="${apostada?'#070D0A':s.roja?'#FFB3A7':(s.crack?'#F0C98A':'#DDE6E0')}"
       transform="rotate(${deg+90} ${tx} ${ty})">${lblRul(s,true)}</text>`;
   });
-  out+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="#141C19" stroke="#4FBF7F" stroke-width="2"/>
-    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="22" font-weight="800" fill="#E4E8E1" font-family="Big Shoulders Display">18</text>
+  out+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="#070D0A" stroke="#4FBF7F" stroke-width="2"/>
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="22" font-weight="800" fill="#E4E8E1" font-family="Archivo" font-stretch="62%">18</text>
     <text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="10" fill="#8A9A91">${t3("casillas","casas","slots")}</text></svg>`;
   return out;
 }
@@ -715,8 +730,8 @@ function pintarPlan(){
       <p class="mini">${L(F.ctx)} <b>${rv.club.n}</b> · ${rv.f} · ${tEstilo(rv.e)}</p>
       <div class="mom-grid">
         <div>${svgMomento(F.id,opVer,yo,el,yo.once,rv.once,fichaColores(S.club))}
-          <div class="leyenda"><span><i class="pt pro" style="background:${fichaColores(S.club).fill}"></i>${S.club.n}</span>
-            <span><i class="pt" style="background:#141C19;border:2px dashed #E6ECEF"></i>${rv.club.n}</span><span><i class="pt" style="background:rgba(224,169,59,.3);border:1px dashed #E0A93B;border-radius:2px"></i>${t3("zona clave","zona chave","key zone")}</span></div></div>
+          <div class="leyenda"><span><i class="pt pro"></i>${S.club.n}</span>
+            <span><i class="pt" style="background:#E9EEF0;border:2px solid #8E989C"></i>${rv.club.n}</span><span><i class="pt" style="background:rgba(166,240,60,.18);border:1px dashed #A6F03C;border-radius:2px"></i>${t3("zona clave","zona chave","key zone")}</span></div></div>
         <div>
           ${F.ops.map(o=>`<button class="card op ${op===o.id?'sel':''}" ${hecho?'disabled':''} onclick="elegirOpMom('${o.id}')">
             <b>${L(o.n)}</b><div class="sub">${L(o.d)}</div>
