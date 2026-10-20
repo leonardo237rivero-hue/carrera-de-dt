@@ -65,7 +65,7 @@ function escalaRivales(){
 function equipoRival(club,div){
   const id=identidadRival(club);
   const base=(club.sel?nivelBaseDe(club.niv,3)+8:nivelBaseDe(club.niv,div))+escalaRivales();
-  const pl=generarPlantel(base,div,null,club.p);
+  const pl=generarPlantel(base,div,null,club.p,club.n);
   const once=armarOnce(pl,id.f);
   return {club,f:id.f,e:id.e,attrs:atributosDe(once),once,auto:40,coh:1,emp:0};
 }

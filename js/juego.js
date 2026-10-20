@@ -143,7 +143,7 @@ function firmar(i){ firmarClub(S.ofertas[i]); }
 function firmarClub(o){
   S.club=o.club; S.division=o.div; S.esSeleccion=false;
   // el RNG ya quedó sembrado en verOfertas; acá no se toca para no romper el duelo
-  S.plantel=generarPlantel(nivelBaseDe(o.club.niv,o.div),o.div,null,o.club.p);
+  S.plantel=generarPlantel(nivelBaseDe(o.club.niv,o.div),o.div,null,o.club.p,o.club.n);
   if(S.arq.id==="bombero") S.plantel.forEach(j=>{if(j.g==="DEF"||j.g==="POR")j.rt=clamp(j.rt+7,28,94);});
   if(S.arq.id==="ganador"){const d=S.plantel.filter(j=>j.g==="ATA").sort((a,b)=>b.rt-a.rt)[0];if(d)d.rt=clamp(d.rt+8,28,94);}
   S.presupuesto=clamp(18+o.club.niv*8+S.arq.pres,5,100);
@@ -158,6 +158,7 @@ function firmarClub(o){
    TEMPORADA — arranque
    ========================================================== */
 function abrirTemporada(){
+  S.compe=null; // la competencia se fija al armar la temporada (antes quedaba la del club anterior)
   S.decs=[S.pool.shift(),S.pool.shift()].filter(Boolean); S.decIdx=0;
   S.decs=S.decs.map(d=>marcar(d,"pool"));
   // en formativas, las situaciones son otras: padres, colegio, representantes
@@ -311,6 +312,8 @@ function abrirMercado(){
   const nivelBase=nivelBaseDe(S.club.niv,S.division)+S.temporada*2;
   S.cartas=grupos.map(g=>{
     const j=nuevoJugador(g,nivelBase+R.e(2,12),S.division,null,S.club.p);
+    const real=S.division===3&&!S.esSeleccion?realDeLiga(g,S.club.p,S.club.n):null;
+    if(real){ j.nom=real.nom; j.de=real.de; j.real=true; }
     return {j,costo:clamp(Math.round(Math.max(4,(j.rt-nivelBase+12))*1.6+R.e(-4,6)),4,70),estado:"libre",
             demora:Math.round(R.r(6000,14000))};
   });
@@ -334,7 +337,7 @@ function pintarMercado(){
       const costo=S.esSeleccion?0:k.costo;
       return `<button class="jug" ${k.estado!=="libre"||costo>S.presupuesto?"disabled":""} onclick="piquear(${i})">
         <div class="rt">${k.j.rt}</div>
-        <div class="nm">${k.j.nom}</div>
+        <div class="nm">${k.j.nom}</div>${k.j.de?`<div class="ps" style="opacity:.8">${t3("viene de","vem do","from")} ${k.j.de}</div>`:""}
         <div class="ps">${tGrupo(k.j.g)} · ${k.j.ed} años · ${S.esSeleccion?"convocable":"cuesta "+k.costo}</div>
         <div class="imp">${util.length?util.map(t=>`<div style="color:var(--verde)">${t}</div>`).join(""):
           `<span style="color:var(--tenue)">No entra al once. No te cambia nada hoy.</span>`}
@@ -1257,7 +1260,7 @@ function cerrarTemporada(){
     S.hist.push({t:S.temporada,club:S.club.n,div:"—",f:"",pos:t3("Te echaron","Demitido","Sacked"),pts:0});
     const chico=R.el(CLUBES.filter(x=>x.niv<=2));
     S.club=chico; S.division=3; S.estadio=1; S.idoloPreguntado=false; S.esSeleccion=false; S.fijos=[];
-    S.plantel=generarPlantel(nivelBaseDe(chico.niv,3),3,null,chico.p);
+    S.plantel=generarPlantel(nivelBaseDe(chico.niv,3),3,null,chico.p,chico.n);
     S.presupuesto=20; S.vars.dir=46; S.vars.hin=44;
     aplicarTema();
   }
@@ -1332,7 +1335,7 @@ function marcarSube(i){
 }
 function confirmarAscenso(){
   const suben=tmp.suben.map(i=>window.__cand[i]);
-  S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p);
+  S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p,S.club.n);
   suben.forEach(j=>{ j.rt=clamp(j.rt+3,20,94); j.subido=true; S.plantel.push(j); });
   S.presupuesto=clamp(S.presupuesto+12,0,120);
   siguienteTemporada();
@@ -1361,7 +1364,7 @@ function pantallaOferta(club,esSueño){
 function aceptarOferta(si){
   if(si){
     S.exClub=S.club; S.club=window.__of; S.division=3; S.esSeleccion=false;
-    S.plantel=generarPlantel(nivelBaseDe(S.club.niv,3),3,null,S.club.p); S.fijos=[];
+    S.plantel=generarPlantel(nivelBaseDe(S.club.niv,3),3,null,S.club.p,S.club.n); S.fijos=[];
     S.presupuesto=clamp(18+S.club.niv*8,10,100);
     S.vars.dir=52; S.vars.hin=S.clubHincha&&S.club.n===S.clubHincha.n?68:48; S.estadio=Math.max(1,S.club.niv-1);
     S.idoloPreguntado=false; S.clasifConti=false;

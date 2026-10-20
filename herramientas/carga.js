@@ -1,7 +1,7 @@
 // Carga todos los módulos del juego en Node, con un DOM de mentira.
 const fs=require('fs'), path=require('path');
 const raiz=path.join(__dirname,'..');
-const ORDEN=['tactica','decisiones','datos',
+const ORDEN=['tactica','decisiones','datos','planteles',
   'i18n/core','i18n/textos','i18n/datos-i18n','i18n/pool-pt','i18n/pool-en','i18n/pool-extra','i18n/aplicar',
   'nucleo','cancha','ui','club','momentos','temporada','idea','juego'];
 function codigo(){

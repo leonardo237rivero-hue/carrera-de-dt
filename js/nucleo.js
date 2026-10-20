@@ -46,8 +46,19 @@ function nuevoJugador(g,base,div,edad,pais){
 }
 // cada plantel tiene un perfil: fuerte en una linea, flojo en otra.
 // eso es lo que hace que elegir sistema importe de verdad.
-function generarPlantel(base,div,perfil,pais){
+// nombres reales: se reparten por línea en el orden de la fuente (titulares primero)
+function nombresDe(club){ return (typeof PLANTELES!=="undefined"&&club&&PLANTELES[club])||null; }
+// un jugador real de otro club del mismo país (para el mercado); null si no hay
+function realDeLiga(g,pais,excluir){
+  if(typeof PLANTELES==="undefined"||typeof CLUBES==="undefined") return null;
+  const usados=new Set((S&&S.plantel||[]).map(j=>j.nom));
+  const cl=R.mz(CLUBES.filter(c=>c.p===pais&&c.n!==excluir&&PLANTELES[c.n]));
+  for(const c of cl){ const op=(PLANTELES[c.n][g]||[]).filter(n=>!usados.has(n)); if(op.length) return {nom:R.el(op),de:c.n}; }
+  return null;
+}
+function generarPlantel(base,div,perfil,pais,club){
   const p=[];
+  const reales=div===3?nombresDe(club):null;
   const sesgo = perfil || (()=>{
     const s={POR:0,DEF:0,MED:0,ATA:0};
     const gs=R.mz(["DEF","MED","ATA"]);
@@ -59,7 +70,9 @@ function generarPlantel(base,div,perfil,pais){
     for(let i=0;i<n;i++){
       // el titular del puesto es mejor que el suplente
       const escalon = i===0?4 : i===1?0 : -6;
-      p.push(nuevoJugador(g,base+sesgo[g]+escalon,div,null,pais));
+      const j=nuevoJugador(g,base+sesgo[g]+escalon,div,null,pais);
+      if(reales&&reales[g]&&reales[g][i]){ j.nom=reales[g][i]; j.real=true; }
+      p.push(j);
     }
   });
   p.perfil=sesgo;
