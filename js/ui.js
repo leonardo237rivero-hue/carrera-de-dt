@@ -62,12 +62,19 @@ function cancha(once,opts){
 /* ==========================================================
    BARRAS DE ATRIBUTOS
    ========================================================== */
-function barras(attrs,previos){
-  return `<div class="attrs">${ATRIBUTOS.map((n,i)=>{
+// para qué sirve cada barra: es exactamente lo que se compara en los momentos del partido
+const USO_ATRIB=[
+  {es:"Define centros y pelotazos. Se mide contra su Defensa.",pt:"Define cruzamentos e bolas longas. Contra a Defesa deles.",en:"Finishes crosses and long balls. Measured against their Defence."},
+  {es:"Salir jugando y romper por dentro. Contra su Presión.",pt:"Sair jogando e furar por dentro. Contra a Pressão deles.",en:"Building out and breaking through the middle. Against their Press."},
+  {es:"Aguantar en bloque y en repliegue. Contra su Ataque.",pt:"Aguentar em bloco e recuado. Contra o Ataque deles.",en:"Holding a block or deep line. Against their Attack."},
+  {es:"Morder arriba cuando salen. Contra su Creación.",pt:"Morder lá em cima. Contra a Criação deles.",en:"Biting high when they build. Against their Creation."}];
+function barras(attrs,previos,explicar){
+  return `<div class="attrs ${explicar?'con-uso':''}">${ATRIBUTOS.map((n,i)=>{
     const v=attrs[i], d=previos?v-previos[i]:0;
     return `<div class="attr"><div class="l"><span>${n}</span>
       <span><b>${v}</b>${d?` <span class="delta ${d<0?'n':''}">${sg(d)}</span>`:""}</span></div>
-      <div class="bar"><i class="${v<45?'baja':''}" style="width:${clamp(v,0,100)}%"></i></div></div>`;
+      <div class="bar"><i class="${v<45?'baja':''}" style="width:${clamp(v,0,100)}%"></i></div>
+      ${explicar?`<div class="uso">${L(USO_ATRIB[i])}</div>`:""}</div>`;
   }).join("")}</div>`;
 }
 
@@ -103,7 +110,7 @@ const PUESTO_LARGO={POR:"Arquero",DEF:"Defensa",MED:"Mediocampo",ATA:"Ataque"};
 function nombrePuesto(jug, rolSlot){
   return rolSlot ? ROL[rolSlot].n : PUESTO_LARGO[jug.g];
 }
-function panelPlantel(){
+function panelPlantel(abierto){
   const f=S.formacion||S.sistemaPref;
   if(!f||!S.plantel||!S.plantel.length) return "";
   const once=typeof onceTemporada==="function"?onceTemporada(S.plantel,f,S.fijos||[]):armarOnce(S.plantel,f,S.fijos||[]);
@@ -111,7 +118,7 @@ function panelPlantel(){
   const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((a,b)=>b.rt-a.rt);
   const a=atributosDe(once);
   const fc=S.club?fichaColores(S.club):null;
-  return `<details class="panel-plantel">
+  return `<details class="panel-plantel" ${abierto?"open":""}>
     <summary>${T("verPlantel")} — ${f} · ${ATRIBUTOS.map((n,i)=>n[0]+a[i]).join(" ")}</summary>
     <div class="pp-cuerpo">
       ${cancha(once,{mostrarNombre:true,alto:280,ancho:400,color:fc?fc.fill:undefined,txt:fc?fc.txt:undefined})}
@@ -151,7 +158,6 @@ function tablero(){
         <div><span>${T("estadio")}</span><b>${S.estadio}/5</b></div>
         <div><span>${T("titulos")}</span><b>${S.titulos.length} ${S.titulos.slice(-4).map(t=>trofeo(t.tipo||"liga",15)).join("")}</b></div>
       </div>
-      ${barras(a)}
       <div class="tab-alertas">
         ${riesgo<8?`<div class="alerta mal">${t3(`La directiva está a ${Math.max(0,Math.round(riesgo))} puntos de echarte.`,`A diretoria está a ${Math.max(0,Math.round(riesgo))} pontos de te demitir.`,`The board is ${Math.max(0,Math.round(riesgo))} points from sacking you.`)}</div>`:""}
         ${S.vars.ves<35?`<div class="alerta mal">${t3("El vestuario está roto: te castiga el rendimiento.","O vestiário está rachado: o rendimento cai.","The dressing room is broken: performance suffers.")}</div>`:""}

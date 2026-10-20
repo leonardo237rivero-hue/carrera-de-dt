@@ -27,6 +27,11 @@ function portada(){
     <div class="p-cancha" aria-hidden="true">
       <svg viewBox="0 0 ${W} ${H}">${canchaFondo(P)}${triangulosSVG(P,"4-3-3",pts,true)}</svg>
       ${fichas}
+      ${(()=>{ // la pelota circula por el triángulo: pase, control, pase
+        const v=t0.map(i=>P(pts[i].x,pts[i].Y)).map(q=>[(q.x/W*100).toFixed(2),(q.y/H*100).toFixed(2)]);
+        if(v.length<3) return "";
+        const kf=`@keyframes p-pase{0%,18%{left:${v[0][0]}%;top:${v[0][1]}%}33%,51%{left:${v[1][0]}%;top:${v[1][1]}%}66%,84%{left:${v[2][0]}%;top:${v[2][1]}%}100%{left:${v[0][0]}%;top:${v[0][1]}%}}`;
+        return `<style>${kf}</style><span class="p-pelota"></span>`;})()}
       <span class="p-cartel" style="left:${(cc.x/W*100).toFixed(2)}%;top:${(cc.y/H*100).toFixed(2)}%"><b>${t3("TRIÁNGULO","TRIÂNGULO","TRIANGLE")}</b><i></i></span>
       <div class="p-fade"></div>
     </div>
@@ -99,6 +104,17 @@ function empezarDuelo(){
 function verOfertas(){
   // en duelo la semilla manda desde el principio: hasta las ofertas son iguales
   S.rng = S.duelo ? mul32(hashS(S.duelo)) : mul32(hashS("libre"+Math.random()));
+  S.reOfertas = S.duelo ? 0 : 1;
+  generarOfertas(); pintarOfertas();
+}
+function otrasOfertas(){
+  if(!(S.reOfertas>0)) return;
+  S.reOfertas--;
+  const antes=S.ofertas.map(o=>o.club.n);
+  let k=0; do{ generarOfertas(); k++; } while(k<8&&S.ofertas.some(o=>antes.includes(o.club.n)));
+  pintarOfertas();
+}
+function generarOfertas(){
   const mez=R.mz(CLUBES);
   const grande=mez.find(c=>c.niv>=5), medio=mez.find(c=>c.niv===3||c.niv===4), chico=mez.find(c=>c.niv<=2);
   S.ofertas=[
@@ -109,6 +125,8 @@ function verOfertas(){
     {club:chico,div:3,txt:{es:"Primera de un club chico. Poca plata, pero nadie te pide salir campeón.",
       pt:"Primeira de um clube pequeno. Pouco dinheiro, mas ninguém pede título.",en:"First team at a small club. Little money, but nobody demands a title."}}
   ];
+}
+function pintarOfertas(){
   $("#s-ofertas").innerHTML=`
     <h2 class="disp">${T("quienTeQuiere")}</h2>
     <p class="mini">${t3("Tres ofertas sobre la mesa. Elegí dónde arranca tu carrera.","Três propostas na mesa. Escolha onde começa sua carreira.","Three offers on the table. Pick where your career starts.")}</p>
@@ -116,7 +134,9 @@ function verOfertas(){
       <button class="oferta" onclick="firmar(${i})">
         ${bannerClub(o.club,{badges:badgesClub(o.club,o.div)})}
         <div class="of-pie"><span>${o.club.p} · ${LIGAS[o.club.p].liga}</span><span>${L(o.txt)}</span></div>
-      </button>`).join("")}`;
+      </button>`).join("")}
+    ${S.reOfertas>0?`<div class="acciones"><button class="btn sec" onclick="otrasOfertas()">↻ ${t3("Ninguna me convence: ver otras tres","Nenhuma me convence: ver outras três","None of these: see three more")}</button></div>
+      <p class="mini" style="text-align:center">${t3("Una sola vez. Las que rechazás no vuelven.","Uma vez só. As recusadas não voltam.","Only once. The ones you turn down won't come back.")}</p>`:""}`;
   ir("ofertas");
 }
 function firmar(i){ firmarClub(S.ofertas[i]); }
@@ -207,7 +227,8 @@ function vistaGestion(f,rep){
   const fuera=once.filter(o=>o.fuera).length;
   const sel=tmp.selBanco;
   const mejorEnBanco=banco.filter(disponible).some(b=>once.some(o=>ROL[o.rol].g===b.g&&efectivo(b)>o.rt+1));
-  return `${barras(atributosDe(once))}
+  return `<div class="lbl-sel" style="margin-top:6px">${t3("Lo que tu once le da al plan","O que seu time dá ao plano","What your XI gives the plan")}</div>
+    ${barras(atributosDe(once),null,true)}
     <div class="plantel-grid">
       <div>${canchaGestion(once)}
         ${fuera?`<p class="mini" style="color:var(--ambar)">${fuera} ${t3("fuera de puesto (−10)","fora de posição (−10)","out of position (−10)")}</p>`:""}</div>
@@ -306,7 +327,6 @@ function pintarMercado(){
     <h2 class="disp">${S.esSeleccion?"Convocatoria":(S.division<3?"Captación de juveniles":"Mercado de pases")}</h2>
     <p class="mini">${S.esSeleccion?"Otro cuerpo técnico mira los mismos nombres.":"Otro DT mira la misma lista."} El primero que se tira, se lo lleva.
     Debajo de cada uno ves cuánto te cambia el equipo con tu sistema actual.</p>
-    ${panelPlantel()}
     <div class="reloj"><i id="rbar"></i></div>
     <div class="grid3">${S.cartas.map((k,i)=>{
       const im=impactoDe(k.j);
@@ -324,7 +344,8 @@ function pintarMercado(){
           NO TE ALCANZA<tspan></tspan><br><span style="font-size:11px;font-weight:400">te faltan ${Math.ceil(costo-S.presupuesto)}</span></div>`:''}
         ${k.estado==="mio"?'<div class="sello" style="color:var(--verde)">FICHADO</div>':''}
       </button>`;}).join("")}</div>
-    <div class="acciones"><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>`;
+    <div class="acciones"><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>
+    ${panelPlantel(true)}`;
 }
 function correrPiqueo(){
   const t0=Date.now(), dur=15000;
@@ -413,8 +434,10 @@ function convencer(id){
 
 /* ---------- ruleta: dos fichas, como en el casino ---------- */
 // 18 casillas: por zona 3 comunes y 1 crack, más 2 rojas ("se te va un jugador").
-// Apostar a un común cuesta 1 ficha (3 de 18 = 17%); a un crack, 2 fichas (1 de 18 = 6%).
-// Si la bocha cae en lo que apostaste, te llevás al jugador. Si no, nada.
+// Apostar a un común cuesta 1 ficha; a un crack, 2 fichas.
+// Las fichas se apilan: dos fichas en el mismo puesto común = doble chance
+// (la segunda ficha "compra" una casilla roja o vacía y la pinta de ese puesto).
+// Re-tiro: uno por temporada, y uno extra si venís en racha (los premia el juego).
 const ZONAS_RUL=["POR","DEF","MED","ATA"];
 const RUL=[["DEF",0],["MED",0],["ATA",1],["POR",0],["X",0],["DEF",0],["MED",1],["ATA",0],["POR",0],
            ["DEF",1],["MED",0],["ATA",0],["POR",1],["X",0],["DEF",0],["MED",0],["ATA",0],["POR",0]]
@@ -427,80 +450,120 @@ function lblRul(s,corto){
   return corto?(c+(s.crack?"★":"")):(n+(s.crack?" crack":""));
 }
 function abrirRuleta(){
-  tmp.apuestas=[]; tmp.girada=false;
+  tmp.apuestas=[]; tmp.girada=false; tmp.rulRes=null;
+  // re-tiros: 1 por temporada; +1 si venís en racha (ganaste el último título o la hinchada te banca)
+  if(S.rulTemp!==S.temporada){ S.rulTemp=S.temporada; S.reTiros=1+((S.vars.hin>=70||S.vars.res>=70)?1:0); }
   pintarRuleta(); ir("ruleta");
 }
 function fichasUsadas(){ return tmp.apuestas.reduce((a,x)=>a+(x.crack?2:1),0); }
+function fichasEn(g,crack){ return tmp.apuestas.filter(x=>x.g===g&&x.crack===crack).length; }
+// la ruleta efectiva: cada ficha extra en un común pinta una casilla roja (primero) con ese puesto
+function rulEfectiva(){
+  const r=RUL.map(s=>Object.assign({},s));
+  const dobles=[]; ZONAS_RUL.forEach(g=>{ if(fichasEn(g,false)>=2) dobles.push(g); });
+  dobles.forEach(g=>{
+    // duplicar: se pintan 3 casillas más de ese puesto → 6/18. Primero las rojas, después comunes sin apuesta.
+    let n=3;
+    const libre=s=>!s.crack&&!s.extra&&!s.roja&&s.g!==g&&!dobles.includes(s.g)&&fichasEn(s.g,false)===0;
+    for(let i=0;i<r.length&&n>0;i++) if(r[i].roja){ r[i]={g,crack:false,roja:false,extra:true}; n--; }
+    for(let i=0;i<r.length&&n>0;i++) if(libre(r[i])){ r[i]={g,crack:false,roja:false,extra:true}; n--; }
+  });
+  return r;
+}
+function chanceDe(r){
+  r=r||rulEfectiva();
+  const hit=r.filter(s=>!s.roja&&tmp.apuestas.some(x=>x.g===s.g&&x.crack===s.crack)).length;
+  return Math.round(hit/r.length*100);
+}
 function svgRuleta(){
-  const n=RUL.length, r=124, ri=48, cx=140, cy=140;
+  const R2=rulEfectiva(), n=R2.length, r=124, ri=50, cx=140, cy=140;
   let out=`<svg id="ruleta" width="280" height="280" viewBox="0 0 280 280" role="img" aria-label="${t3("Ruleta del club","Roleta do clube","Club roulette")}">`;
-  RUL.forEach((s,i)=>{
+  R2.forEach((s,i)=>{
     const a0=(i/n)*2*Math.PI-Math.PI/2, a1=((i+1)/n)*2*Math.PI-Math.PI/2;
     const x0=cx+r*Math.cos(a0), y0=cy+r*Math.sin(a0), x1=cx+r*Math.cos(a1), y1=cy+r*Math.sin(a1);
-    const apostada=tmp.apuestas.some(x=>x.g===s.g&&x.crack===s.crack)&&!s.roja;
+    const apostada=!s.roja&&tmp.apuestas.some(x=>x.g===s.g&&x.crack===s.crack);
     const base=s.roja?"#7A1F1F":s.crack?"#7A4A12":(i%2?"#132219":"#2E3F38");
     out+=`<path d="M${cx} ${cy} L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z"
-      fill="${apostada?(s.crack?'#F2B33D':'#4FBF7F'):base}" stroke="#070D0A" stroke-width="1.5"/>`;
+      fill="${apostada?(s.crack?'#F2B33D':'#A6F03C'):base}" stroke="#070D0A" stroke-width="1.5"/>`;
     const am=(a0+a1)/2, tx=cx+(r*0.72)*Math.cos(am), ty=cy+(r*0.72)*Math.sin(am);
     const deg=am*180/Math.PI;
     out+=`<text x="${tx}" y="${ty+3.5}" text-anchor="middle" font-size="10.5" font-weight="700"
       fill="${apostada?'#070D0A':s.roja?'#FFB3A7':(s.crack?'#F0C98A':'#DDE6E0')}"
-      transform="rotate(${deg+90} ${tx} ${ty})">${lblRul(s,true)}</text>`;
+      transform="rotate(${deg+90} ${tx} ${ty})">${lblRul(s,true)}${s.extra?"²":""}</text>`;
   });
-  out+=`<circle cx="${cx}" cy="${cy}" r="${ri}" fill="#070D0A" stroke="#4FBF7F" stroke-width="2"/>
-    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="22" font-weight="800" fill="#E4E8E1" font-family="Archivo" font-stretch="62%">18</text>
-    <text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="10" fill="#8A9A91">${t3("casillas","casas","slots")}</text></svg>`;
+  out+=`</svg>`;
   return out;
+}
+// el centro NO gira: ahí aparece el resultado
+function centroRuleta(){
+  const rr=tmp.rulRes;
+  if(!rr) return `<div class="rul-centro"><b>${tmp.apuestas.length?chanceDe()+"%":"18"}</b><span>${tmp.apuestas.length?t3("de chance","de chance","chance"):t3("casillas","casas","slots")}</span></div>`;
+  const s=rr.seg, col=s.roja?"var(--rojo)":rr.acerto?(s.crack?"var(--ambar)":"var(--verde)"):"var(--tenue)";
+  return `<div class="rul-centro sale" style="border-color:${col}"><b style="color:${col};font-size:${s.roja?26:20}px">${lblRul(s,true)}</b>
+    <span>${s.roja?t3("se va uno","sai um","one leaves"):rr.acerto?t3("¡le pegaste!","acertou!","you hit it!"):t3("no apostaste","não apostou","no bet")}</span></div>`;
 }
 function pintarRuleta(){
   const usadas=fichasUsadas();
   const opcion=(g,crack)=>{
-    const on=tmp.apuestas.some(x=>x.g===g&&x.crack===crack);
-    const costo=crack?2:1, casillas=RUL.filter(s=>s.g===g&&s.crack===crack).length;
-    const puede=on||(usadas+costo<=2);
-    return `<button class="ficha-btn ${on?'on':''} ${crack?'crack':''}" ${tmp.girada||!puede?'disabled':''}
-      onclick="ponerFicha('${g}',${crack})">
-      <div class="fb-n">${lblRul({g,crack})}</div>
-      <div class="fb-c">${"●".repeat(costo)} ${costo} ${t3(costo>1?"fichas":"ficha",costo>1?"fichas":"ficha",costo>1?"chips":"chip")}</div>
-      <div class="fb-p">${casillas}/18 · ${Math.round(casillas/18*100)}%</div></button>`;
+    const k=fichasEn(g,crack), on=k>0;
+    const costo=crack?2:1;
+    // común: se puede poner una segunda ficha encima (doble chance); crack: una sola
+    const puede=(usadas+costo<=2)&&(crack?k===0:k<2);
+    return `<button class="ficha-btn ${on?'on':''} ${k>=2?'doble':''} ${crack?'crack':''}" ${tmp.girada||(!puede&&!on)?'disabled':''}
+      onclick="ponerFicha('${g}',${crack},${puede?1:0})">
+      <div class="fb-n">${lblRul({g,crack})}${k>=2?" ×2":""}</div>
+      <div class="fb-c">${on?"●".repeat(k*costo)+` ${t3("puesta","colocada","placed")}${k>1?"s":""}`:"●".repeat(costo)+" "+costo+" "+t3(costo>1?"fichas":"ficha",costo>1?"fichas":"ficha",costo>1?"chips":"chip")}</div>
+      <div class="fb-p">${crack?"1/18 · 6%":(k>=2?"6/18 · 33%":"3/18 · 17%")}</div>
+      ${!crack&&k===1&&usadas<2&&!tmp.girada?`<div class="fb-mas">+1 ${t3("ficha = doble chance","ficha = chance dobrada","chip = double chance")}</div>`:""}</button>`;
   };
+  const rr=tmp.rulRes;
   $("#s-ruleta").innerHTML=`
     <h2 class="disp">${T("ruleta")}</h2>
-    <p class="mini">${t3("Tenés <b>2 fichas</b>. Un puesto común cuesta 1 ficha; un crack, 2. Si la bocha cae donde apostaste, te llevás al jugador. Si no, nada. Y ojo con las casillas rojas: se te va uno del plantel.",
-      "Você tem <b>2 fichas</b>. Uma posição comum custa 1 ficha; um craque, 2. Se a bola cair onde apostou, leva o jogador. Se não, nada. E cuidado com as casas vermelhas: sai um do elenco.",
-      "You have <b>2 chips</b>. A regular slot costs 1 chip; a star costs 2. If the ball lands on your bet, you sign the player. Otherwise, nothing. Watch the red slots: you lose a squad player.")}</p>
+    <p class="mini">${t3("Tenés <b>2 fichas</b>. Un puesto común cuesta 1 ficha; un crack, 2. <b>Podés poner las dos en el mismo puesto</b> y duplicás la chance. Si la bocha cae donde apostaste, te llevás al jugador. Ojo con las rojas: se te va uno del plantel.",
+      "Você tem <b>2 fichas</b>. Uma posição comum custa 1; um craque, 2. <b>Pode colocar as duas na mesma posição</b> e dobra a chance. Se a bola cair onde apostou, leva o jogador. Cuidado com as vermelhas: sai um do elenco.",
+      "You have <b>2 chips</b>. A regular slot costs 1; a star costs 2. <b>Stack both on the same slot</b> to double your chance. If the ball lands on your bet, you sign him. Watch the red slots: you lose a squad player.")}</p>
     ${panelPlantel()}
     <div class="ruleta-wrap">
-      <div style="font-size:22px;color:var(--ambar);line-height:1">▼</div>
-      ${svgRuleta()}
+      <div class="rul-flecha">▼</div>
+      <div class="rul-rueda">${svgRuleta()}<div id="rulCentro">${centroRuleta()}</div></div>
       <div class="fichas-restan">${[0,1].map(i=>`<span class="chip-f ${i<usadas?'usada':''}"></span>`).join("")}
-        <span class="mini">${2-usadas} ${t3("fichas libres","fichas livres","chips left")}</span></div>
+        <span class="mini">${2-usadas} ${t3("fichas libres","fichas livres","chips left")}</span>
+        <span class="mini" style="margin-left:10px">↻ ${S.reTiros||0} ${t3("re-tiro","nova rodada","re-spin")}${(S.reTiros||0)===1?"":"s"}</span></div>
     </div>
     <div class="rul-grid">
-      <div><div class="lbl-sel">${t3("Comunes · 1 ficha","Comuns · 1 ficha","Regular · 1 chip")}</div>
+      <div><div class="lbl-sel">${t3("Comunes · 1 ficha (apilables)","Comuns · 1 ficha (empilháveis)","Regular · 1 chip (stackable)")}</div>
         <div class="fichas">${ZONAS_RUL.map(g=>opcion(g,false)).join("")}</div></div>
       <div><div class="lbl-sel" style="color:var(--ambar)">${t3("Cracks · 2 fichas","Craques · 2 fichas","Stars · 2 chips")}</div>
         <div class="fichas">${ZONAS_RUL.map(g=>opcion(g,true)).join("")}</div></div>
     </div>
-    <p class="mini"><span style="color:#FF8A78">✖ ${t3("2 casillas rojas (11%): se te va un jugador al azar.","2 casas vermelhas (11%): sai um jogador ao acaso.","2 red slots (11%): a random player leaves.")}</span>
-      ${tmp.apuestas.length?` · ${t3("Chance de llevarte a alguien","Chance de levar alguém","Chance of signing someone")}: <b>${Math.round(tmp.apuestas.reduce((a,x)=>a+RUL.filter(s=>s.g===x.g&&s.crack===x.crack).length,0)/18*100)}%</b>`:""}</p>
+    <p class="mini"><span style="color:#FF8A78">✖ ${(()=>{const n=rulEfectiva().filter(s=>s.roja).length;return n?t3(`${n} casillas rojas: se te va un jugador al azar.`,`${n} casas vermelhas: sai um jogador ao acaso.`,`${n} red slots: a random player leaves.`):t3("Con la doble tapaste las rojas: no se te va nadie.","Com a dobrada você cobriu as vermelhas.","Your double covered the red slots.");})()}</span>
+      ${tmp.apuestas.length?` · ${t3("Chance de llevarte a alguien","Chance de levar alguém","Chance of signing someone")}: <b>${chanceDe()}%</b>`:""}</p>
     <div class="acciones">
       <button class="btn" id="btnGirar" onclick="girar()" ${tmp.apuestas.length&&!tmp.girada?'':'disabled'}>${T("girar")}</button>
       <button class="btn sec" onclick="siguienteDecision()" ${tmp.girada?'disabled':''}>${t3("No juego esta vez","Não jogo desta vez","Sit this one out")}</button></div>
     <div id="salida"></div>`;
 }
-function ponerFicha(g,crack){
+function ponerFicha(g,crack,puede){
   if(tmp.girada) return;
-  const k=tmp.apuestas.findIndex(x=>x.g===g&&x.crack===crack);
-  if(k>=0) tmp.apuestas.splice(k,1);
-  else if(fichasUsadas()+(crack?2:1)<=2) tmp.apuestas.push({g,crack});
+  const k=fichasEn(g,crack);
+  if(puede){ tmp.apuestas.push({g,crack}); }
+  else if(k>0){ // sacar todas las de ese puesto
+    tmp.apuestas=tmp.apuestas.filter(x=>!(x.g===g&&x.crack===crack));
+  }
+  pintarRuleta();
+}
+function reTirar(){
+  if(!(S.reTiros>0)) return;
+  S.reTiros--;
+  tmp.apuestas=[]; tmp.girada=false; tmp.rulRes=null;
   pintarRuleta();
 }
 function girar(){
   if(tmp.girada||!tmp.apuestas.length) return;
   tmp.girada=true;
-  const gan=R.e(0,RUL.length-1), seg=RUL[gan];
-  const grados=360*5+(360-(gan+0.5)*(360/RUL.length));
+  const R2=rulEfectiva();
+  const gan=R.e(0,R2.length-1), seg=R2[gan];
+  const grados=360*5+(360-(gan+0.5)*(360/R2.length));
   const el=$("#ruleta");
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(el&&!reduce) el.style.transform=`rotate(${grados}deg)`;
@@ -522,34 +585,44 @@ function girar(){
   document.querySelectorAll(".ficha-btn").forEach(x=>x.disabled=true);
   const b=$("#btnGirar"); if(b) b.disabled=true;
   setTimeout(()=>{
+    tmp.rulRes={seg,acerto};
+    const cc=$("#rulCentro"); if(cc) cc.innerHTML=centroRuleta();
     const s=$("#salida"); if(!s) return;
+    const reTiro=(S.reTiros>0&&!j)?`<button class="btn sec" onclick="reTirar()">↻ ${t3("Volver a tirar","Girar de novo","Spin again")} (${S.reTiros})</button>`:"";
     if(j){
       const im=impactoDe(j);
       const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
       window.__ofrecido=j;
       s.innerHTML=`<div class="card premio" style="cursor:default;border-color:${seg.crack?'var(--ambar)':'var(--verde)'}">
         <b>${t3("¡Le pegaste! Salió ","Acertou! Saiu ","You hit it! It's ")}${lblRul(seg).toLowerCase()}</b>
-        <div class="sub">${j.nom} · ${j.ed} ${T("anios")}</div>
+        <div class="sub">${j.nom} · ${tGrupo(j.g)} · ${j.ed} ${T("anios")}</div>
         <div class="rt-grande">${j.rt}</div>
         <div class="efecto">${util.length?t3("Entra al once: ","Entra no time: ","Walks into the XI: ")+util.join(" · "):t3("Hoy iría al banco.","Hoje iria para o banco.","He'd start on the bench today.")}</div>
         <div class="acciones" style="margin-top:12px">
           <button class="btn" onclick="aceptarRuleta(true)">${T("loSumo")}</button>
           <button class="btn sec" onclick="aceptarRuleta(false)">${T("paso")}</button></div></div>`;
     } else if(seVa){
-      S.plantel=S.plantel.filter(x=>x!==seVa); S.fijos=(S.fijos||[]).filter(x=>x!==seVa);
-      S.presupuesto=clamp(S.presupuesto+cobro,0,120); cabecera();
+      // el re-tiro también salva de la roja: el jugador no se va si volvés a tirar
+      window.__seVa={seVa,cobro};
       s.innerHTML=`<div class="card" style="cursor:default;border-color:var(--rojo)">
         <b style="color:#FF8A78">✖ ${t3("Casilla roja: se te va un jugador","Casa vermelha: sai um jogador","Red slot: a player leaves")}</b>
         <div class="sub">${seVa.nom} · ${tGrupo(seVa.g)} · ${t3("nivel","nível","level")} ${seVa.rt}</div>
-        <div class="efecto">${t3(`Lo compra otro club. Entran ${cobro} de presupuesto: algo es algo.`,`Outro clube compra. Entram ${cobro} de orçamento.`,`Another club buys him. You get ${cobro} in budget.`)}</div>
-        <div class="acciones"><button class="btn" onclick="siguienteDecision()">${T("seguir")}</button></div></div>`;
+        <div class="efecto">${t3(`Lo compra otro club. Entran ${cobro} de presupuesto: algo es algo.`,`Outro clube compra. Entram ${cobro} de orçamento.`,`Another club buys him. You get ${cobro} in budget.`)}
+          ${S.reTiros>0?`<br>${t3("Si usás el re-tiro, se queda.","Se usar a nova rodada, ele fica.","Use your re-spin and he stays.")}`:""}</div>
+        <div class="acciones">${reTiro}<button class="btn" onclick="confirmarRoja()">${T("seguir")}</button></div></div>`;
     } else {
       s.innerHTML=`<div class="card" style="cursor:default">
         <b>${t3("Salió ","Saiu ","It's ")}${lblRul(seg).toLowerCase()}</b>
         <div class="sub">${t3("No apostaste ahí: esta vez no viene nadie.","Você não apostou aí: desta vez não vem ninguém.","You didn't bet on it: nobody comes this time.")}</div>
-        <div class="acciones"><button class="btn" onclick="siguienteDecision()">${T("seguir")}</button></div></div>`;
+        <div class="acciones">${reTiro}<button class="btn" onclick="siguienteDecision()">${T("seguir")}</button></div></div>`;
     }
   }, reduce?60:4300);
+}
+function confirmarRoja(){
+  const x=window.__seVa; window.__seVa=null;
+  if(x){ S.plantel=S.plantel.filter(j=>j!==x.seVa); S.fijos=(S.fijos||[]).filter(j=>j!==x.seVa);
+    S.presupuesto=clamp(S.presupuesto+x.cobro,0,120); cabecera(); }
+  siguienteDecision();
 }
 function aceptarRuleta(si){
   if(si&&window.__ofrecido){ S.plantel.push(window.__ofrecido); }
@@ -572,6 +645,8 @@ function opcionesValidas(d){
 }
 function situacionAplica(d){
   if(S.esSeleccion&&(d[0]==="Mercado"||d[0]==="Directiva")) return false;
+  // ya sos el DT de una selección: que la prensa no te "instale como candidato"
+  if(S.esSeleccion&&/selecci[oó]n|club más grande/i.test(d[1])) return false;
   if(S.division<3&&d[0]==="Mercado") return false;
   return true;
 }
@@ -640,6 +715,16 @@ function tomar(i){
     once.slice(0,6).forEach(x=>{x.jug.rt=clamp(x.jug.rt+(res>0?1:-1),20,94);});
   }
   const nuevaEtiqueta = S.etiqueta && (!antes || antes.id!==S.etiqueta.id);
+  // si la decisión sube a un pibe, el pibe existe: nombre, puesto y nivel (playtest v7)
+  let pibe=null;
+  const txtEs=(S.decs[S.decIdx][2][i]||[])[0]||"";
+  if(!S.esSeleccion&&/ascend[eé]s a un juvenil|^El juvenil$|Lo hacés debutar|Le das 15 minutos/i.test(txtEs)){
+    const g=R.el(["DEF","MED","ATA","MED","ATA"]);
+    const mios=S.plantel.filter(x=>x.g===g).map(x=>x.rt).sort((a,b)=>b-a);
+    const ref=mios.length?mios[Math.min(2,mios.length-1)]:nivelBaseDe(S.club.niv,S.division);
+    pibe=nuevoJugador(g,ref+(/debutar/i.test(txtEs)?R.e(0,4):R.e(-6,0))+(S.arq.id==="formador"?3:0),S.division,R.e(17,19),S.club.p);
+    pibe.nuevo=true; pibe.canterano=true; prepJug(pibe); S.plantel.push(pibe);
+  }
   $("#s-decision").innerHTML=`
     <h2 class="disp">${T("decision",S.decIdx+1,S.decs.length)}</h2>
     <div class="ficha-sit"><div class="cat">${d[0]}</div><p>${d[1]}</p></div>
@@ -651,6 +736,12 @@ function tomar(i){
       <span class="d ${cd(dir)}">Directiva ${sg(Math.round(dir))}</span>
       <span class="d ${cd(hin)}">Hinchada ${sg(Math.round(hin))}</span>
       <span class="d ${cd(ves)}">Vestuario ${sg(Math.round(ves))}</span></div>
+    ${pibe?`<div class="card premio" style="cursor:default;border-color:var(--verde)">
+      <b>${t3("Sube de la cantera","Sobe da base","Up from the academy")}</b>
+      <div class="sub">${pibe.nom} · ${tGrupo(pibe.g)} · ${pibe.ed} ${T("anios")}</div>
+      <div class="rt-grande">${pibe.rt}</div>
+      <div class="efecto">${(()=>{const im=impactoDe(pibe);const u=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
+        return u.length?t3("Ya pelea un lugar: ","Já briga por vaga: ","Already pushing for a place: ")+u.join(" · "):t3("Arranca en el banco. Con minutos, crece.","Começa no banco. Com minutos, cresce.","Starts on the bench. With minutes, he grows.");})()}</div></div>`:""}
     ${nuevaEtiqueta?`<div class="etiqueta-nueva">
       <b>Te empiezan a llamar ${tEtiq(S.etiqueta,"n")}</b>
       <div>${tEtiq(S.etiqueta,"desc")}</div></div>`:""}
@@ -696,7 +787,17 @@ function pintarPlan(){
         ${TT.copa?`<div class="compe">${trofeo(TT.copa.tipo==="conti"?"conti":TT.copa.tipo==="sel"?"sel":"copa",26)}<div><b>${TT.copa.nombre}</b>
           <span>${TT.copa.equipos.length} ${t3("equipos, eliminación directa","times, mata-mata","teams, knockout")}</span></div></div>`:""}
       </div>
-      ${TT.equipos.length?`<p class="mini" style="margin:6px 0 2px">${t3("Cómo juegan tus rivales:","Como jogam seus rivais:","How your opponents play:")}</p><div class="chips-est">${resumenLiga()}</div>`:""}
+      ${TT.equipos.length?`<p class="mini" style="margin:6px 0 2px">${t3("Cómo juegan tus rivales:","Como jogam seus rivais:","How your opponents play:")}</p><div class="chips-est">${resumenLiga()}</div>
+        <details class="para-que"><summary>${t3("¿Para qué me sirve esto?","Para que serve isso?","Why does this matter?")}</summary>
+          <p class="mini">${t3("Tu plan se juega contra todos, no sólo contra el clásico. Cada estilo castiga cosas distintas:",
+            "Seu plano é jogado contra todos, não só o clássico. Cada estilo castiga coisas diferentes:","Your plan is played against everyone, not just the derby. Each style punishes different things:")}</p>
+          <ul class="mini">
+            <li><b>${tEstilo("Presion alta")}</b>: ${t3("te muerden la salida. Saltar líneas o salir de tres rinde; laterales altos es una trampa.","mordem sua saída. Pular linhas ou sair de três rende.","they bite your build-up. Skipping lines or building with three pays off.")}</li>
+            <li><b>${tEstilo("Bloque bajo / Repliegue")}</b>: ${t3("no hay espacio a la espalda. Centros y cambios de frente; el pase filtrado choca.","não há espaço nas costas. Cruzamentos e inversões.","there's no space in behind. Crosses and switches; through balls get blocked.")}</li>
+            <li><b>${tEstilo("Posesion")}</b>: ${t3("te van a tener corriendo. Presionarlos alto o cerrar el centro.","vão te fazer correr. Pressionar alto ou fechar o meio.","they'll make you chase. Press them high or shut the middle.")}</li>
+            <li><b>${tEstilo("Contraataque / Directo")}</b>: ${t3("viven de tu espalda. Bloque medio o repliegue; si presionás, te saltan.","vivem das suas costas. Bloco médio ou recuo.","they live off the space behind you. Mid-block or drop off; press and they bypass you.")}</li>
+          </ul>
+          <p class="mini">${t3("Si la mayoría de la liga juega igual, armá el plan para ellos.","Se a maioria joga igual, monte o plano para eles.","If most of the league plays the same way, build your plan for them.")}</p></details>`:""}
       <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
       <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===tmp.f?'on':''}" onclick="tmp.f='${x}';tmp.res={};tmp.plan={};S.momentosOk=0;pintarPlan()">${x}${x===S.sistemaPref?' ★':''}</button>`).join("")}</div>
       <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
@@ -708,7 +809,7 @@ function pintarPlan(){
           <p>${cambia&&S.auto?t3(`Si cambiás la idea, tu equipo baja de ${S.auto} a ${au}: lo que aprendió no sirve igual.`,`Se mudar a ideia, seu time cai de ${S.auto} para ${au}.`,`Change the idea and your team drops from ${S.auto} to ${au}.`)
             :t3(`${au} de 100. Cada temporada con esta misma idea, suben.`,`${au} de 100. Cada temporada com a mesma ideia, sobem.`,`${au} out of 100. Every season with the same idea, it grows.`)}</p></div>
       </div>
-      ${barras(yoParaPlan().attrs)}
+      ${barras(yoParaPlan().attrs,null,true)}
       <div class="rival-card">${escudo(rv.club,40)}<div><div class="mini">${S.rivalPlan.clasico?t3("Tu clásico","Seu clássico","Your derby"):t3("El rival más fuerte","O rival mais forte","The strongest rival")}</div>
         <b>${rv.club.n}</b><div class="mini">${rv.f} · ${tEstilo(rv.e)}</div></div></div>
       <p class="mini">${t3("Ahora vas a congelar tres momentos de un partido contra ellos. Lo que decidas es tu plan para toda la temporada.",
@@ -844,6 +945,7 @@ function pintarTicker(){
       <div class="tk-ctrl">
         ${[1,3,10].map(v=>`<button class="tkv ${tmp.vel===v?'on':''}" onclick="velTk(${v})">×${v}</button>`).join("")}
         <button class="tkv" id="tkPausa" onclick="pausaTk()">❚❚</button>
+        <button class="tkv" id="tkGes" onclick="pedirGestionTk()">${tmp.gestionPedida?"⏳":"⚙"} ${t3("Plantel y plan","Elenco e plano","Squad & plan")}</button>
         <button class="tkv" onclick="saltarTk()">${S.temp.j<S.temp.mitad?t3("Ir a la parada","Ir à parada","Skip to break"):t3("Ir al final","Ir ao final","Skip to end")} ⏭</button>
       </div>
     </div>
@@ -864,7 +966,8 @@ function tickerSiguiente(){
   const TT=S.temp;
   if(S.pant!=="temporada") return;
   if(TT.j>=TT.jornadas.length){ tmp.saltar=false; finTemporada(); return; }
-  if(TT.j===TT.mitad&&!TT.paro&&TT.j>0){ TT.paro=true; tmp.saltar=false; paradaMitad(); return; }
+  if(TT.j===TT.mitad&&!TT.paro&&TT.j>0){ TT.paro=true; tmp.saltar=false; tmp.gestionPedida=false; paradaMitad(); return; }
+  if(tmp.gestionPedida){ tmp.gestionPedida=false; tmp.saltar=false; abrirGestionTk(); return; }
   const jor=TT.jornadas[TT.j];
   jugarJornada(jor);
   animarJornada(jor,()=>{
@@ -891,18 +994,18 @@ function animarJornada(jor,fin){
         <span class="tk-mar" id="tkm-${i}">0 - 0</span>
         <span class="tk-eq der"><span>${p.B.club.n}</span>${escudo(p.B.club,18)}</span>
       </div>
-      <div class="tk-ev" id="tke-${i}"></div>
+      <div class="tk-ev" id="tke-${i}"><div class="ev-a" id="tke-${i}-a"></div><div class="ev-b" id="tke-${i}-b"></div></div>
     </div>`).join("");
   const marc=jor.res.map(()=>[0,0]);
   let m=0;
   const mostrar=(p,i,e)=>{
-    const ev=$("#tke-"+i), mk=$("#tkm-"+i);
+    const ev=$("#tke-"+i+"-"+(e.l==="b"?"b":"a")), mk=$("#tkm-"+i);
     if(e.t==="gol"){
       marc[i][e.l==="a"?0:1]++;
       if(mk) mk.textContent=`${marc[i][0]} - ${marc[i][1]}`;
       const box=$("#tkp-"+i); if(box&&!tmp.saltar){ box.classList.remove("gol"); void box.offsetWidth; box.classList.add("gol"); }
-      if(ev) ev.innerHTML+=`<span class="${e.l}">⚽ ${e.m}' ${e.nom}</span>`;
-    } else if(e.t==="roja"&&ev) ev.innerHTML+=`<span class="${e.l} roja">▮ ${e.m}' ${e.nom}</span>`;
+      if(ev) ev.innerHTML+=`<span>⚽ ${e.m}' ${e.nom}</span>`;
+    } else if(e.t==="roja"&&ev) ev.innerHTML+=`<span class="roja">▮ ${e.m}' ${e.nom}</span>`;
   };
   const cerrar=()=>{
     jor.res.forEach((p,i)=>{
@@ -999,6 +1102,61 @@ function pintarParada(){
 function seguirSegunda(){
   if(S.temp.ac) tmp.tabla="tabC";
   tmp.saltar=false; tmp.pausa=false; tmp.selBanco=null;
+  pintarTicker(); ir("temporada");
+  setTimeout(tickerSiguiente,300);
+}
+
+/* ---------- durante la temporada: tocar el once y el plan entre fecha y fecha ---------- */
+// Playtest v7: "si me va mal quiero poder cambiar", "el lesionado que se recupera no lo puedo usar",
+// "el refuerzo de mitad de año no lo puedo meter hasta fin de temporada". Ahora se puede entre fechas.
+function pedirGestionTk(){
+  tmp.gestionPedida=!tmp.gestionPedida;
+  const b=$("#tkGes"); if(b) b.innerHTML=(tmp.gestionPedida?"⏳ ":"⚙ ")+(tmp.gestionPedida?t3("Al terminar la fecha","Ao fim da rodada","After this round"):t3("Plantel y plan","Elenco e plano","Squad & plan"));
+  if(tmp.pausa) pausaTk();
+}
+function abrirGestionTk(){
+  tmp.selBanco=null; tmp.cambio={f:S.formacion,e:S.estilo};
+  pintarGestionTk(); ir("club");
+}
+function pintarGestionTk(){
+  const TT=S.temp, c=tmp.cambio;
+  const pos=TT.equipos.length?ordenTabla(TT.equipos,TT.ac&&TT.j>=TT.mitad?"tabC":TT.ac?"tabA":"tab").findIndex(x=>x.e.yo)+1:null;
+  const ult=TT.mis.slice(-5).map(m=>m.gf>m.gc?"G":m.gf===m.gc?"E":"P");
+  const cambia=c.f!==S.formacion||c.e!==S.estilo;
+  const fit=FIT[c.e][c.f];
+  $("#s-club").innerHTML=`
+    <h2 class="disp">${t3("Entre fecha y fecha","Entre uma rodada e outra","Between rounds")}</h2>
+    <p>${pos?`${t3("Vas","Você está","You're")} <b>${pos}º</b> · `:""}${t3("Últimos","Últimos","Last")} ${ult.length}: ${ult.map(r=>`<b class="forma-${r}">${r}</b>`).join(" ")||"—"}</p>
+    <div class="cambio-plan">
+      <h3 class="disp" style="font-size:18px;margin:0 0 4px">${t3("¿Cambiás el plan?","Muda o plano?","Change the plan?")}</h3>
+      <p class="mini">${t3("Cambiar a mitad de camino tiene un costo: lo que el equipo tenía automatizado se pierde a la mitad, y el vestuario lo nota. A veces vale la pena.",
+        "Mudar no meio do caminho custa: o que o time tinha automatizado cai pela metade, e o vestiário sente. Às vezes vale a pena.",
+        "Changing mid-way has a cost: half of what the team had automated is lost, and the dressing room notices. Sometimes it's worth it.")}</p>
+      <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
+      <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===c.f?'on':''}" onclick="tmp.cambio.f='${x}';pintarGestionTk()">${x}${x===S.formacion?' ·':''}</button>`).join("")}</div>
+      <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
+      <div class="pills">${ESTILOS.map(x=>`<button class="pill ${x===c.e?'on':''}" onclick="tmp.cambio.e='${x}';pintarGestionTk()">${tEstilo(x)}${x===S.estilo?' ·':''}</button>`).join("")}</div>
+      ${cambia?`<div class="alerta ${fit>=1.06?'ok':fit<1?'mal':''}" style="margin-top:8px">${encajeTxt(c.e,c.f)}
+        <br><b>${t3("Costo","Custo","Cost")}:</b> ${t3("automatismos","automatismos","automatisms")} ${S.auto||0} → ${Math.round((S.auto||0)*0.5)} · ${t3("vestuario","vestiário","dressing room")} −4</div>`:""}
+    </div>
+    ${vistaGestion(c.f,"pintarGestionTk")}
+    <div class="acciones">
+      <button class="btn" onclick="volverTk()">${cambia?t3("Cambiar y seguir jugando","Mudar e seguir jogando","Change and keep playing"):t3("Seguir jugando","Seguir jogando","Keep playing")}</button>
+      ${cambia?`<button class="btn sec" onclick="tmp.cambio={f:S.formacion,e:S.estilo};pintarGestionTk()">${t3("Dejar el plan como estaba","Deixar o plano como estava","Keep the plan as it was")}</button>`:""}</div>`;
+  cabecera();
+}
+function encajeTxt(e,f){
+  return (typeof porqueFit==="function"&&porqueFit(e,f))||(FIT[e][f]>=1.06?t3("El sistema y el modelo se entienden.","Sistema e modelo se entendem.","System and model fit together."):FIT[e][f]<1?t3("El sistema le juega en contra a este modelo.","O sistema joga contra esse modelo.","This system works against the model."):t3("Encaje correcto, sin más.","Encaixe correto.","A fair fit."));
+}
+function volverTk(){
+  const c=tmp.cambio;
+  if(c&&(c.f!==S.formacion||c.e!==S.estilo)){
+    S.formacion=c.f; S.estilo=c.e; S.auto=Math.round((S.auto||0)*0.5); S.autoPar=c.f+"|"+c.e;
+    if(!S.usadas.includes(c.f)) S.usadas.push(c.f);
+    S.vars.ves=clamp(S.vars.ves-4,0,100);
+    tmp.feed.unshift({txt:t3(`Cambio de plan: ${c.f} · ${tEstilo(c.e)}`,`Mudança de plano: ${c.f} · ${tEstilo(c.e)}`,`Plan change: ${c.f} · ${tEstilo(c.e)}`),c:"e",les:[]});
+  }
+  tmp.selBanco=null; tmp.pausa=false; tmp.saltar=false;
   pintarTicker(); ir("temporada");
   setTimeout(tickerSiguiente,300);
 }
@@ -1342,11 +1500,19 @@ function final(){
       <div class="acciones" style="margin-top:0">
         <button class="btn" onclick="compararDuelo()">${T("comparar")}</button></div>
       <div id="comparacion"></div>`:""}
+    ${!S.duelo&&S.vars.dir>=20?`<div class="seguir-carrera">
+      <b>${t3("¿Colgás el buzo?","Pendura a prancheta?","Hang up the tracksuit?")}</b>
+      <p class="mini">${t3(`Todavía te quieren en ${S.club.n}. Podés seguir tres temporadas más: la nota se recalcula con la carrera completa.`,`Ainda te querem no ${S.club.n}. Pode seguir mais três temporadas: a nota é recalculada com a carreira completa.`,`${S.club.n} still want you. You can carry on for three more seasons: your grade is recalculated over the full career.`)}</p>
+      <button class="btn" onclick="seguirCarrera()">${t3("Seguir dirigiendo","Seguir treinando","Keep coaching")}</button></div>`:""}
     <div class="acciones">
       <button class="btn" onclick="copiar()">${T("copiarResultado")}</button>
       <button class="btn sec" onclick="portada()">${T("carreraNueva")}</button></div>
     <p class="mini" id="av"></p>`;
   ir("final");
+}
+function seguirCarrera(){
+  S.temporadasTotal=tempTotal()+3;
+  abrirTemporada();
 }
 function parseDuelo(txt){
   const m=(txt||"").match(/#DUELO\s+([^|]+)\|([^|]*)\|(\d+)\|([SABCD])\|(\d+)\|(\d+)\|([^|]*)\|(.*)/);
