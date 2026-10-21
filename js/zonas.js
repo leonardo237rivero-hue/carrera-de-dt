@@ -273,3 +273,67 @@ function patronesDelModelo(m){
         "A zona 14 é a entrada da área rival, pelo centro: a que mais dá gols e que todos fecham. Contra cada rival você vai ver quais padrões rendem e por quê.",
         "Zone 14 is the area just outside their box, centrally: it yields the most goals and everyone shuts it. Against each opponent you'll see which patterns work and why.")}</p></div></div>`;
 }
+
+/* ---------- dominio por zona: quién manda en cada una de las 18 ---------- */
+// cada jugador se ubica en su zona (los rivales espejados); el bloque de cada uno lo corre.
+// el poder de una zona = puntajes de los que están ahí + la mitad de los de las zonas vecinas.
+function zonaDeJugador(x,y){ return zonaNum(carril(x),clamp(Math.ceil(y/16.67),1,6)); }
+function corrimientoBloque(m){ return m&&m.def==="alto"?7:m&&m.def==="bajo"?-8:0; }
+function dominioZonas(yo,el,mYo,mEl,ajuste){
+  const Z=[...Array(19)].map(()=>({mios:[],suyos:[],pA:0,pB:0}));
+  const dy=corrimientoBloque(mYo), dyE=corrimientoBloque(mEl);
+  (yo.once||[]).forEach(o=>{ const y=o.rol==="POR"?o.y:clamp(o.y+dy,3,97); Z[zonaDeJugador(o.x,y)].mios.push(o); });
+  (el.once||[]).forEach(o=>{ const y=o.rol==="POR"?o.y:clamp(o.y+dyE,3,97); Z[zonaDeJugador(100-o.x,100-y)].suyos.push(o); });
+  const vecinas=z=>{ const f=Math.ceil(z/3), c=(z-1)%3, v=[]; [[1,0],[-1,0],[0,1],[0,-1]].forEach(([df,dc])=>{ const ff=f+df, cc=c+dc; if(ff>=1&&ff<=6&&cc>=0&&cc<=2) v.push(zonaNum(cc,ff)); }); return v; };
+  const suma=l=>l.reduce((a,o)=>a+o.rt,0);
+  for(let z=1;z<=18;z++){
+    let pA=suma(Z[z].mios), pB=suma(Z[z].suyos);
+    vecinas(z).forEach(v=>{ pA+=0.45*suma(Z[v].mios); pB+=0.45*suma(Z[v].suyos); });
+    Z[z].pA=pA; Z[z].pB=pB;
+    Z[z].dom=pA+pB>0?(pA-pB)/(pA+pB):0;
+    if(ajuste&&ajuste[z]) Z[z].dom=clamp(Z[z].dom+ajuste[z],-1,1);
+  }
+  return Z;
+}
+// colores de los dos clubes que se distingan entre sí sobre el pasto
+function hexRgb(h){ h=h.replace("#",""); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function distColor(a,b){ const x=hexRgb(a), y=hexRgb(b); return Math.hypot(x[0]-y[0],x[1]-y[1],x[2]-y[2]); }
+function coloresDuelo(miClub,suClub){
+  const vis=c=>{ const [c1,c2]=c.c; return luz(c1)<60?c2:c1; };
+  let a=vis(miClub), b=vis(suClub);
+  if(luz(a)<60) a="#A6F03C";
+  if(distColor(a,b)<150){
+    const alt=suClub.c.find(c=>distColor(c,a)>=150&&luz(c)>=60);
+    b=alt||["#E9EEF0","#4DA3FF","#F2B33D","#A6F03C","#B07CFF"].find(c=>distColor(c,a)>=150)||"#E9EEF0";
+  }
+  return {a,b};
+}
+// tablero de dominio: cada zona del color de quien la manda, con las fichas y su puntaje
+function svgDominio(Z,o){
+  o=o||{}; const W=o.ancho||300, H=o.alto||400, m=8, cw=(W-2*m)/3, rh=(H-2*m)/6;
+  const A=hexRgb(o.colA||"#A6F03C"), B=hexRgb(o.colB||"#F05A4A");
+  const txtSobre=h=>luz(h)>150?"#0A0F0C":"#FFFFFF";
+  let out=`<svg class="zonas dominio" viewBox="0 0 ${W} ${H}" role="img" aria-label="${t3("Quién manda en cada zona","Quem manda em cada zona","Who controls each zone")}">
+    <rect width="${W}" height="${H}" rx="8" fill="#0D1F15"/>`;
+  for(let f=1;f<=6;f++) for(let c=0;c<3;c++){
+    const z=zonaNum(c,f), x=m+c*cw, y=H-m-f*rh, d=Z[z].dom, col=d>=0?A:B, al=(0.08+Math.min(1,Math.abs(d)*1.6)*0.55).toFixed(2);
+    out+=`<rect x="${x+1}" y="${y+1}" width="${cw-2}" height="${rh-2}" rx="3" fill="rgba(${col.join(",")},${al})" stroke="${z===14?'#F4F7F0':'rgba(222,255,210,.14)'}" stroke-width="${z===14?1.6:1}"/>
+      <text x="${x+5}" y="${y+12}" class="z-num" fill="rgba(244,247,240,${z===14?.95:.5})">${z}</text>`;
+    // fichas: arriba las tuyas, abajo las de ellos (hasta 3 por fila)
+    const fila=(l,yy,hex)=>{ const n=Math.min(3,l.length), paso=Math.min(22,(cw-14)/Math.max(1,n));
+      return l.slice(0,3).map((p,i)=>{ const cx=x+cw/2+(i-(n-1)/2)*paso;
+        return `<circle cx="${cx}" cy="${yy}" r="9.5" fill="${hex}" stroke="#070D0A" stroke-width="1.5"/><text x="${cx}" y="${yy+3.6}" text-anchor="middle" class="z-rt" fill="${txtSobre(hex)}">${p.rt}</text>`; }).join("")
+        +(l.length>3?`<text x="${x+cw-6}" y="${yy+4}" text-anchor="end" class="z-rt" fill="#F4F7F0">+${l.length-3}</text>`:""); };
+    out+=fila(Z[z].mios,y+rh*0.42,o.colA||"#A6F03C")+fila(Z[z].suyos,y+rh*0.78,o.colB||"#F05A4A");
+    if(o.gol===z) out+=`<rect x="${x+3}" y="${y+3}" width="${cw-6}" height="${rh-6}" rx="4" fill="none" stroke="#F4F7F0" stroke-width="2.5" class="z-gol"/><text x="${x+cw/2}" y="${y+rh/2+6}" text-anchor="middle" font-size="18">⚽</text>`;
+    const nA=Z[z].mios.length, nB=Z[z].suyos.length;
+    if(nA||nB) out+=`<text x="${x+cw-5}" y="${y+12}" text-anchor="end" class="z-cnt" fill="${nA>nB?o.colA||'#A6F03C':nB>nA?o.colB||'#F05A4A':'#F4F7F0'}">${nA}v${nB}</text>`;
+  }
+  out+=`<line x1="${m}" y1="${H/2}" x2="${W-m}" y2="${H/2}" stroke="rgba(222,255,210,.3)" stroke-dasharray="4 4"/>
+    <rect x="${m+cw*0.45}" y="${m}" width="${cw*2.1}" height="${rh*0.72}" fill="none" stroke="rgba(222,255,210,.3)"/>
+    <rect x="${m+cw*0.45}" y="${H-m-rh*0.72}" width="${cw*2.1}" height="${rh*0.72}" fill="none" stroke="rgba(222,255,210,.3)"/></svg>`;
+  return out;
+}
+function leyendaDominio(o,miClub,suClub){
+  return `<div class="leyenda dom-ley"><span><i class="pt" style="background:${o.a}"></i> ${t3("manda","manda","controls")} ${miClub.n}</span><span><i class="pt" style="background:${o.b}"></i> ${t3("manda","manda","controls")} ${suClub.n}</span><span class="mini">${t3("los números son los puntajes; arriba de cada zona, cuántos son de cada lado","os números são as notas; no alto, quantos são de cada lado","numbers are ratings; top corner: players on each side")}</span></div>`;
+}

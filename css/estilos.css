@@ -618,3 +618,25 @@ svg.zonas .z-mk{font:800 12px 'Barlow Condensed',sans-serif;letter-spacing:.04em
 .tk-ev i.pat{font-style:normal;font-size:10px;color:var(--verde);opacity:.9}
 .pm-item .n{width:20px;height:20px;border-radius:50%;background:var(--verde);color:#0A1A0C;font:800 12px 'Barlow Condensed',sans-serif;display:inline-flex;align-items:center;justify-content:center;flex:none}
 .pm-item .z{margin-left:auto}
+svg.zonas .z-rt{font:700 9px 'Barlow Condensed',sans-serif}
+svg.zonas .z-cnt{font:800 10px 'Barlow Condensed',sans-serif;letter-spacing:.04em}
+svg.zonas .z-gol{animation:cdt-parpadeo 1s ease-in-out 3}
+.dom-ley{flex-wrap:wrap;gap:4px 12px}.dom-ley .mini{width:100%;font-size:11px}
+.pv-grid,.vivo-grid{grid-template-columns:260px 1fr}
+@media(max-width:600px){.pv-grid,.vivo-grid{grid-template-columns:1fr}.pv-grid>div:first-child,.vivo-grid>div:first-child{max-width:320px;margin:0 auto;width:100%}}
+/* final del partido: fundido en el centro de la pantalla */
+.vivo-final{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:18px;
+  background:rgba(4,8,6,.78);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);animation:vf-fondo .5s ease both}
+.vf-caja{width:min(420px,100%);max-height:calc(100dvh - 36px);overflow:auto;background:var(--panel);border:2px solid var(--borde);border-radius:14px;
+  padding:20px 18px;text-align:center;animation:vf-entra .7s cubic-bezier(.2,.8,.2,1) .15s both}
+.vivo-final.bien .vf-caja{border-color:var(--verde);box-shadow:0 0 40px rgba(166,240,60,.25)}
+.vivo-final.mal .vf-caja{border-color:var(--rojo)}.vivo-final.emp .vf-caja{border-color:var(--ambar)}
+.vf-tit{font:900 46px var(--disp);font-stretch:62%;line-height:1;letter-spacing:.02em}
+.vivo-final.bien .vf-tit{color:var(--verde)}.vivo-final.mal .vf-tit{color:#FF8A78}.vivo-final.emp .vf-tit{color:var(--ambar)}
+.vf-marc{display:flex;align-items:center;justify-content:center;gap:16px;margin:10px 0 4px}.vf-marc b{font:900 44px var(--disp);font-stretch:62%}
+.vf-pen{font-weight:700;margin-bottom:4px}
+.vf-analisis{text-align:left;margin:14px 0 6px;display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.vf-analisis .ok{color:var(--verde)}.vf-analisis .mal{color:#FF8A78}.vf-analisis i{color:var(--tenue);font-style:normal}
+@keyframes vf-fondo{from{opacity:0}to{opacity:1}}
+@keyframes vf-entra{from{opacity:0;transform:translateY(24px) scale(.96);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+@media (prefers-reduced-motion: reduce){.vivo-final,.vf-caja{animation:none}}
