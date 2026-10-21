@@ -46,17 +46,25 @@ function nuevoJugador(g,base,div,edad,pais){
 }
 // cada plantel tiene un perfil: fuerte en una linea, flojo en otra.
 // eso es lo que hace que elegir sistema importe de verdad.
-// nombres reales: se reparten por línea en el orden de la fuente (titulares primero)
+// planteles reales: [nombre, edad, puntaje] (o sólo el nombre si la fuente no trae puntaje)
 function nombresDe(club){ return (typeof PLANTELES!=="undefined"&&club&&PLANTELES[club])||null; }
+function datoReal(e){ return Array.isArray(e)?{nom:e[0],ed:e[1]||null,rt:e[2]||null}:{nom:e,ed:null,rt:null}; }
+// el puntaje real se lleva a la escala del juego: los pibes sin rodaje no bajan de 42
+function rtReal(r){ return clamp(Math.round(r),42,94); }
 // un jugador real de otro club del mismo país (para el mercado); null si no hay
-function realDeLiga(g,pais,excluir){
+function realDeLiga(g,pais,excluir,cerca){
   if(typeof PLANTELES==="undefined"||typeof CLUBES==="undefined") return null;
   const usados=new Set((S&&S.plantel||[]).map(j=>j.nom));
   const cl=R.mz(CLUBES.filter(c=>c.p===pais&&c.n!==excluir&&PLANTELES[c.n]));
-  for(const c of cl){ const op=(PLANTELES[c.n][g]||[]).filter(n=>!usados.has(n)); if(op.length) return {nom:R.el(op),de:c.n}; }
+  for(const c of cl){
+    let op=(PLANTELES[c.n][g]||[]).map(datoReal).filter(x=>!usados.has(x.nom));
+    if(cerca!=null){ const ok=op.filter(x=>x.rt&&Math.abs(x.rt-cerca)<=7); if(ok.length) op=ok; else continue; }
+    if(op.length) return Object.assign(R.el(op),{de:c.n});
+  }
   return null;
 }
-function generarPlantel(base,div,perfil,pais,club){
+const CUPO_REAL={POR:2,DEF:7,MED:7,ATA:5};
+function generarPlantel(base,div,perfil,pais,club,extra){
   const p=[];
   const reales=div===3?nombresDe(club):null;
   const sesgo = perfil || (()=>{
@@ -67,11 +75,15 @@ function generarPlantel(base,div,perfil,pais,club){
     return s;
   })();
   [["POR",2],["DEF",5],["MED",6],["ATA",3]].forEach(([g,n])=>{
-    for(let i=0;i<n;i++){
+    const lista=reales&&reales[g]?reales[g].map(datoReal):[];
+    const conPuntaje=lista.length&&lista[0].rt!=null;
+    const cupo=conPuntaje?Math.max(n,Math.min(CUPO_REAL[g],lista.length)):n;
+    for(let i=0;i<cupo;i++){
       // el titular del puesto es mejor que el suplente
       const escalon = i===0?4 : i===1?0 : -6;
       const j=nuevoJugador(g,base+sesgo[g]+escalon,div,null,pais);
-      if(reales&&reales[g]&&reales[g][i]){ j.nom=reales[g][i]; j.real=true; }
+      const r=lista[i];
+      if(r){ j.nom=r.nom; j.real=true; if(r.ed) j.ed=r.ed; if(r.rt!=null) j.rt=clamp(rtReal(r.rt)+(extra||0),30,94); }
       p.push(j);
     }
   });
@@ -123,3 +135,23 @@ function mejorFormacion(plantel){
 // cuántas temporadas dura la carrera según el modo elegido
 function tempTotal(){ return (S && S.temporadasTotal) ? S.temporadasTotal : TEMPORADAS; }
 
+
+// con planteles reales, la jerarquía de cada club sale de su plantel (no de la historia):
+// se ordena cada liga por fuerza y se reparte el nivel 1-5. Los clubes sin datos quedan como estaban.
+function fuerzaReal(club){
+  const d=nombresDe(club.n); if(!d) return null;
+  const top=(g,k)=>(d[g]||[]).map(datoReal).filter(x=>x.rt!=null).map(x=>x.rt).sort((a,b)=>b-a).slice(0,k);
+  const v=[].concat(top("POR",1),top("DEF",4),top("MED",4),top("ATA",2));
+  return v.length>=9?v.reduce((a,b)=>a+b,0)/v.length:null;
+}
+(function ajustarNiveles(){
+  if(typeof CLUBES==="undefined"||typeof PLANTELES==="undefined") return;
+  const porLiga={};
+  CLUBES.forEach(c=>{ c.nivHist=c.nivHist||c.niv; const f=fuerzaReal(c); c.fuerza=f;
+    (porLiga[c.p]=porLiga[c.p]||[]).push(c); });
+  Object.values(porLiga).forEach(l=>{
+    const con=l.filter(c=>c.fuerza!=null).sort((a,b)=>b.fuerza-a.fuerza);
+    const n=con.length;
+    con.forEach((c,i)=>{ const q=i/n, r=q<0.15?5:q<0.35?4:q<0.65?3:q<0.85?2:1; c.niv=Math.round((r*2+c.nivHist)/3); });
+  });
+})();

@@ -20,7 +20,7 @@ function carrera(bueno,seed,temps,clubIdx){
   S=nuevo(); S.rng=mul32(hashS(seed)); S.arq=ARQ[1]; S.temporadasTotal=temps;
   const mez=R.mz(CLUBES); const ofs=[{c:mez.find(c=>c.niv>=5),d:0},{c:mez.find(c=>c.niv===3||c.niv===4),d:3},{c:mez.find(c=>c.niv<=2),d:3}];
   const o=ofs[clubIdx]; S.club=o.c; S.division=o.d;
-  S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p);
+  S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p,S.club.n);
   S.vars={res:50,dir:55,hin:55,ves:55}; S.auto=30; S.temporada=1;
   const par=mejorPar(); let tit=0;
   for(;S.temporada<=temps;S.temporada++){
@@ -34,7 +34,7 @@ function carrera(bueno,seed,temps,clubIdx){
     const res=cerrarCalculoTemporada(); aplicarCierre(res); tit+=res.titulos.length; GDMAX.push(Math.max(...S.temp.equipos.map(e=>Math.abs(e.tab.gf-e.tab.gc)))/Math.max(1,S.temp.nFechas)); REL.push([bueno,S.club.niv,S.division,res.pos,res.exp,res.equipos]);
     // envejecer / ascenso simple
     S.plantel.forEach(j=>{j.ed++; if(j.ed>31) j.rt=clamp(j.rt-2,28,94);});
-    if(res.sube){ S.division=Math.min(3,S.division+res.sube); S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p); }
+    if(res.sube){ S.division=Math.min(3,S.division+res.sube); S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p,S.club.n); }
     // mercado simple: el bueno suma un jugador mejor que su peor titular
     if(bueno){ const g=R.el(["DEF","MED","ATA"]); S.plantel.push(nuevoJugador(g,nivelBaseDe(S.club.niv,S.division)+S.temporada*2+8,S.division,null,S.club.p)); }
   }

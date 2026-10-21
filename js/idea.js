@@ -116,14 +116,15 @@ function pipsFit(fit){
   return `<span class="pips">${[1,2,3,4,5].map(i=>`<i class="${i<=n?(n>=4?'ok':n===3?'med':'mal'):''}"></i>`).join("")}</span>`;
 }
 // forma del equipo según el modelo: sin pelota y con pelota
-function formaIdea(f,e,fase){
-  const me=MID[e];
+function formaIdea(f,e,fase,m){
+  let me=MID[e];
+  if(m) me=fase==="sin"?({alto:"pre",medio:"med",bajo:"blo"})[m.def]:(m.ofe==="posicional"?"pos":"con");
   return ONCE[f].map(s=>{
     let x=s[1], y=s[2], Y;
     if(s[0]==="POR") return {rol:s[0],x,Y:fase==="sin"?5:(me==="pre"||me==="pos"?12:7)};
     if(fase==="sin"){
-      const [a,b]={pre:[40,.5],pos:[28,.52],con:[16,.52],blo:[3,.48]}[me]; Y=a+b*y;
-      if(me==="blo"||me==="con") x=50+(x-50)*0.82;
+      const [a,b]={pre:[40,.5],pos:[28,.52],med:[20,.5],con:[16,.52],blo:[3,.48]}[me]; Y=a+b*y;
+      if(me==="blo"||me==="con"||me==="med") x=50+(x-50)*0.82;
     } else {
       if(me==="pos"){ Y=24+0.66*y; if(/^(LT|CA)/.test(s[0])){Y+=16;x=x<50?5:95;} if(/^EX/.test(s[0]))x=x<50?10:90;
         // el 5 baja a recibir y los interiores se adelantan: así se arma el triángulo del medio
@@ -137,8 +138,10 @@ function formaIdea(f,e,fase){
 }
 const IW=380, IH=420;
 function camIdea(){ return camara({ancho:IW,top:22,bot:404,hw:206}); }
-function svgIdea(f,e,fase){
-  const P=camIdea(), pts=formaIdea(f,e,fase), me=MID[e];
+function svgIdea(f,e,fase,m){
+  const P=camIdea(), pts=formaIdea(f,e,fase,m);
+  let me=MID[e];
+  if(m) me=fase==="sin"?({alto:"pre",medio:"con",bajo:"blo"})[m.def]:(m.ofe==="posicional"?"pos":(m.tofe==="contra"?"con":"blo"));
   const campo=pts.filter(p=>p.rol!=="POR");
   let extra="", pelota=null, cartel="";
   if(fase==="con"&&(me==="pos"||me==="pre")){
@@ -157,7 +160,7 @@ function svgIdea(f,e,fase){
   if(fase==="sin"&&(me==="blo"||me==="con")){
     const y0=me==="blo"?6:16, y1=me==="blo"?40:52;
     extra=`<path d="${poliD(P,[[4,y0],[96,y0],[96,y1],[4,y1]])}" fill="rgba(111,168,220,.12)" stroke="#6FA8DC" stroke-dasharray="5 5" stroke-width="1.4"/>`;
-    const q=P(6,y1); cartel=`<text x="${q.x+4}" y="${q.y+14}" class="ficha-et" fill="#9CC3E8">${t3("BLOQUE COMPACTO","BLOCO COMPACTO","COMPACT BLOCK")}</text>`;
+    const q=P(6,y1); cartel=`<text x="${q.x+4}" y="${q.y+14}" class="ficha-et" fill="#9CC3E8">${me==="blo"?t3("BLOQUE BAJO","BLOCO BAIXO","LOW BLOCK"):t3("BLOQUE MEDIO","BLOCO MÉDIO","MID BLOCK")}</text>`;
   }
   if(fase==="con"&&me==="con"){
     extra=campo.filter(p=>ROL[p.rol].g==="ATA").map(p=>flecha([p.x,p.Y-24],[p.x,p.Y+10],"#F2B33D")).join("");
@@ -166,8 +169,8 @@ function svgIdea(f,e,fase){
     const dc=campo.filter(p=>p.rol==="DC")[0]||campo[campo.length-1], cen=campo.find(p=>p.rol==="DFC");
     extra=flecha([cen.x,cen.Y],[dc.x,dc.Y],"#F2B33D","8 6");
   }
-  if(fase==="sin"&&me==="pos"){
-    extra=campo.filter(p=>p.Y>44).map(p=>{const q=P(p.x,p.Y); const r=24*escFicha(q.s);
+  if(fase==="sin"&&(m?m.tdef==="presion":me==="pos")){
+    extra+=campo.filter(p=>p.Y>(m&&m.def==="bajo"?30:44)).map(p=>{const q=P(p.x,p.Y); const r=24*escFicha(q.s);
       return `<ellipse cx="${q.x}" cy="${q.y}" rx="${r}" ry="${r*.62}" fill="none" stroke="#F05A4A" stroke-width="1.6" stroke-dasharray="3 4" opacity=".8"/>`;}).join("");
     const q=P(50,93); cartel=`<g transform="translate(${q.x},${q.y})"><rect x="-74" y="-9" width="148" height="17" rx="3" fill="#0B1710" stroke="#F05A4A" stroke-width="1.2"/>
       <text y="4" text-anchor="middle" class="ficha-et" fill="#F5A79C">${t3("PRESIÓN TRAS PÉRDIDA","PRESSÃO PÓS-PERDA","COUNTER-PRESS")}</text></g>`;
@@ -195,6 +198,7 @@ function lineasIdea(P,campo,fase){
     ${fase==="sin"?`<text x="${Math.min(IW-10,P(97,def).x)}" y="${a.y+13}" text-anchor="end" class="ficha-et" fill="#9CC3E8">${t3("BLOQUE","BLOCO","BLOCK")} ${alto}</text>`:""}</g>`;
 }
 function pintarIdea(){
+  tmp.m=tmp.m||modeloDeEstilo(tmp.e||"Posesion"); tmp.e=estiloDeModelo(tmp.m);
   const f=tmp.f, e=tmp.e, me=MID[e], fit=FIT[e][f], ga=GANA_ARRIESGA[me];
   $("#s-idea").innerHTML=`
     <h2 class="disp">${t3("Tu idea de juego","Sua ideia de jogo","Your game idea")}</h2>
@@ -203,15 +207,17 @@ function pintarIdea(){
       "The system is where your players stand. The model is what they do with and without the ball. They must speak the same language.")}</p>
     <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
     <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===f?'on':''}" onclick="tmp.f='${x}';pintarIdea()">${x}</button>`).join("")}</div>
-    <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
-    <div class="pills">${ESTILOS.map(x=>`<button class="pill ${x===e?'on':''}" onclick="tmp.e='${x}';pintarIdea()">${tEstilo(x)}</button>`).join("")}</div>
+    <div class="lbl-sel">${t3("Modelo: los cuatro momentos del juego","Modelo: os quatro momentos do jogo","Model: the four moments of the game")}</div>
+    ${selectorModelo(tmp.m,"elegirMomentoIdea")}
+    <p class="mini">${t3("Tu modelo se parece a","Seu modelo se parece com","Your model looks like")} <b>${tEstilo(e)}</b>.</p>
     <div class="idea-grid">
       <div>
         <div class="tabs">
           <button class="${tmp.fase==='sin'?'on':''}" onclick="cambiarFaseIdea('sin')">${t3("Sin pelota","Sem bola","Out of possession")}</button>
           <button class="${tmp.fase==='con'?'on':''}" onclick="cambiarFaseIdea('con')">${t3("Con pelota","Com bola","In possession")}</button>
         </div>
-        <div id="ideaCancha">${svgIdea(f,e,tmp.fase)}</div>
+        <div id="ideaCancha">${svgIdea(f,e,tmp.fase,tmp.m)}</div>
+        ${patronesDelModelo(tmp.m)}
       </div>
       <div>
         <div class="encaje"><div class="lbl-sel" style="margin:0">${t3("Encaje sistema + modelo","Encaixe sistema + modelo","System + model fit")}</div>
@@ -234,16 +240,17 @@ function pintarIdea(){
       <button class="btn" onclick="confirmarIdea()">${T("buscarClub")}</button>
       <button class="btn sec" onclick="identidad()">${T("volver")}</button></div>`;
 }
+function elegirMomentoIdea(mid,oid){ tmp.m[mid]=oid; tmp.e=estiloDeModelo(tmp.m); pintarIdea(); }
 function cambiarFaseIdea(fz){
   tmp.fase=fz;
-  const pts=formaIdea(tmp.f,tmp.e,fz), P=camIdea();
+  const pts=formaIdea(tmp.f,tmp.e,fz,tmp.m), P=camIdea();
   // se mueven las fichas (transición) y después se redibujan las ayudas visuales
   pts.forEach((p,i)=>{const g=document.getElementById("ij-"+i); if(g) g.style.transform=fichaTransform(P,p.x,p.Y);});
   document.querySelectorAll("#s-idea .tabs button").forEach((b,i)=>b.classList.toggle("on",(i===0)===(fz==="sin")));
-  setTimeout(()=>{ if(tmp.fase===fz){ const c=$("#ideaCancha"); if(c) c.innerHTML=svgIdea(tmp.f,tmp.e,fz); } },720);
+  setTimeout(()=>{ if(tmp.fase===fz){ const c=$("#ideaCancha"); if(c) c.innerHTML=svgIdea(tmp.f,tmp.e,fz,tmp.m); } },720);
 }
 function confirmarIdea(){
-  S.sistemaPref=tmp.f; S.estiloPref=tmp.e;
+  S.sistemaPref=tmp.f; S.estiloPref=tmp.e; S.modelo=Object.assign({},tmp.m); S.modeloPref=Object.assign({},tmp.m);
   S.auto=30; S.autoPar=tmp.f+"|"+tmp.e;
   verOfertas();
 }

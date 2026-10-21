@@ -65,7 +65,7 @@ function escalaRivales(){
 function equipoRival(club,div){
   const id=identidadRival(club);
   const base=(club.sel?nivelBaseDe(club.niv,3)+8:nivelBaseDe(club.niv,div))+escalaRivales();
-  const pl=generarPlantel(base,div,null,club.p,club.n);
+  const pl=generarPlantel(base,div,null,club.p,club.n,Math.round(escalaRivales()));
   const once=armarOnce(pl,id.f);
   return {club,f:id.f,e:id.e,attrs:atributosDe(once),once,auto:40,coh:1,emp:0};
 }
@@ -78,6 +78,11 @@ function miEquipo(rival){
   const plan=planContra(S.plan,{f:yo.f,e:yo.e,attrs},{f:rival.f,e:rival.e,attrs:rival.attrs},yo.auto);
   let mult=plan.mult*((S.prensa&&S.prensa.mult)||1);
   if(rival.clasico&&S.momentosOk) mult*=1+0.02*S.momentosOk;
+  // el modelo en cuatro momentos contra el rival, leído por sectores (js/zonas.js)
+  const mYo=S.modelo||modeloDeEstilo(yo.e), mEl=rival.modelo||modeloDeEstilo(rival.e);
+  const an=analizarPartido(yo,rival,mYo,mEl,yo.auto,rival.auto);
+  if(S.enfasis&&S.enfasis.rival===rival.club.n) aplicarEnfasis(an,S.enfasis);
+  mult*=an.mult; yo.an=an;
   yo.mult=mult; yo.plan=plan;
   return yo;
 }
@@ -115,8 +120,13 @@ function jugarPartido(A,B,neutral,knock){
     }
   });
   const ga=poisson(la), gb=poisson(lb);
-  for(let i=0;i<ga;i++){ const o=goleador(A.once); ev.push({m:R.e(1,90),l:"a",t:"gol",nom:apellido(o.jug.nom),jug:o.jug}); }
-  for(let i=0;i<gb;i++){ const o=goleador(B.once); ev.push({m:R.e(1,90),l:"b",t:"gol",nom:apellido(o.jug.nom),jug:o.jug}); }
+  // si juego yo, cada gol sale de un patrón (los míos o los suyos) y se cuenta cómo fue
+  const an=A.an||B.an, patA=an?(A.an?an.mis:an.sus):null, patB=an?(B.an?an.mis:an.sus):null;
+  const gol=(E,l,pats,m)=>{ const o=goleador(E.once); const e={m:m||R.e(1,90),l,t:"gol",nom:apellido(o.jug.nom),jug:o.jug};
+    if(pats){ e.pat=elegirPatron(pats); e.txt=narrarGol(e.pat,E.once,o); e.zona=(PATRONES.find(p=>p.id===e.pat)||{zona:14}).zona; }
+    ev.push(e); };
+  for(let i=0;i<ga;i++) gol(A,"a",patA);
+  for(let i=0;i<gb;i++) gol(B,"b",patB);
   let pen=null;
   if(knock&&ga===gb){
     let pa=0,pb=0;
@@ -236,6 +246,8 @@ function armarTemporada(){
   }
   TT.mitad=TT.nFechas?TT.jornadas.findIndex(j=>j.t==="liga"&&j.k===TT.nFechas/2):Math.floor(TT.jornadas.length/2);
   if(TT.mitad<0) TT.mitad=Math.floor(TT.jornadas.length/2);
+  // la vara de la temporada: el plantel en papel (sin forma ni lesiones) contra los rivales
+  { const a=atributosDe(armarOnce(S.plantel,S.formacion||S.sistemaPref||"4-3-3",[])); TT.fuerzaMia=a.reduce((x,y)=>x+y,0)/a.length; }
   S.temp=TT;
   return TT;
 }
@@ -258,7 +270,7 @@ function jugarJornada(jor){
     jor.partidos.forEach(p=>{
       const A0=TT.equipos[p.a], B0=TT.equipos[p.b];
       const A=armar(A0,B0), B=armar(B0,A0);
-      const r=jugarPartido(A,B,false,false);
+      const r=(jor.forzado&&(A0.yo||B0.yo))?jor.forzado:jugarPartido(A,B,false,false);
       sumarTabla(A0.tab,r.ga,r.gb); sumarTabla(B0.tab,r.gb,r.ga);
       if(TT.ac){ const h=segunda?"tabC":"tabA"; sumarTabla(A0[h],r.ga,r.gb); sumarTabla(B0[h],r.gb,r.ga); }
       const fila={A:A0,B:B0,ga:r.ga,gb:r.gb,ev:r.ev,yo:A0.yo||B0.yo};
@@ -271,7 +283,7 @@ function jugarJornada(jor){
     for(let i=0;i<v.length;i+=2){
       const A0=C.equipos[v[i]], B0=C.equipos[v[i+1]];
       const A=armar(A0,B0), B=armar(B0,A0);
-      const r=jugarPartido(A,B,v.length===2,true);
+      const r=(jor.forzado&&(A0.yo||B0.yo))?jor.forzado:jugarPartido(A,B,v.length===2,true);
       const ganaA=r.ga>r.gb||(r.pen&&r.pen[0]>r.pen[1]);
       nuevos.push(ganaA?v[i]:v[i+1]);
       const fila={A:A0,B:B0,ga:r.ga,gb:r.gb,ev:r.ev,pen:r.pen,yo:A0.yo||B0.yo,gana:ganaA?"a":"b"};
@@ -292,7 +304,10 @@ function jugarJornada(jor){
 function registrarMio(yo,rival,soyA,r,comp,jor){
   const gf=soyA?r.ga:r.gb, gc=soyA?r.gb:r.ga;
   jor.lesionados=despuesDelPartido(yo.once,gf,gc,r.ev,soyA);
+  const lado=soyA?"a":"b";
   S.temp.mis.push({rival:rival.club,rf:rival.f,re:rival.e,local:soyA,gf,gc,comp,copa:jor.t==="copa",
+    pats:(r.ev||[]).filter(e=>e.t==="gol"&&e.l===lado&&e.pat).map(e=>[e.pat,e.zona]),
+    patsC:(r.ev||[]).filter(e=>e.t==="gol"&&e.l!==lado&&e.pat).map(e=>[e.pat,e.zona]),
     dF:(soyA?r.Fa-r.Fb:r.Fb-r.Fa),plan:yo.plan,pen:r.pen?(soyA?r.pen:[r.pen[1],r.pen[0]]):null,clasico:!!rival.clasico});
 }
 
@@ -300,10 +315,11 @@ function registrarMio(yo,rival,soyA,r,comp,jor){
    CIERRE: posiciones, títulos, premios
    ========================================================== */
 function posEsperada(){
-  const eqs=S.temp.equipos;
-  const niv=e=>e.yo?S.club.niv:e.club.niv;
-  const mio=niv(eqs[0]);
-  const mejores=eqs.filter(e=>!e.yo&&niv(e)>mio).length, iguales=eqs.filter(e=>!e.yo&&niv(e)===mio).length;
+  // con planteles reales la expectativa sale de la fuerza de cada plantel, no del escudo
+  const eqs=S.temp.equipos, prom=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  const mio=S.temp.fuerzaMia!=null?S.temp.fuerzaMia:prom(atributosDe(onceTemporada(S.plantel,S.formacion||S.sistemaPref,S.fijos)));
+  const otros=eqs.filter(e=>!e.yo).map(e=>prom(e.attrs));
+  const mejores=otros.filter(f=>f>mio+1.5).length, iguales=otros.filter(f=>Math.abs(f-mio)<=1.5).length;
   return 1+mejores+Math.floor(iguales/2);
 }
 function cerrarCalculoTemporada(){

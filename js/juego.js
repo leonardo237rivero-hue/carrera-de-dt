@@ -312,8 +312,8 @@ function abrirMercado(){
   const nivelBase=nivelBaseDe(S.club.niv,S.division)+S.temporada*2;
   S.cartas=grupos.map(g=>{
     const j=nuevoJugador(g,nivelBase+R.e(2,12),S.division,null,S.club.p);
-    const real=S.division===3&&!S.esSeleccion?realDeLiga(g,S.club.p,S.club.n):null;
-    if(real){ j.nom=real.nom; j.de=real.de; j.real=true; }
+    const real=S.division===3&&!S.esSeleccion?realDeLiga(g,S.club.p,S.club.n,j.rt):null;
+    if(real){ j.nom=real.nom; j.de=real.de; j.real=true; if(real.ed) j.ed=real.ed; if(real.rt) j.rt=rtReal(real.rt); }
     return {j,costo:clamp(Math.round(Math.max(4,(j.rt-nivelBase+12))*1.6+R.e(-4,6)),4,70),estado:"libre",
             demora:Math.round(R.r(6000,14000))};
   });
@@ -764,9 +764,11 @@ function irPlanteo(){
   S.rivalPlan=TT.equipos.find(e=>e.clasico)||rivales.slice().sort((a,b)=>fuerzaDe(b)-fuerzaDe(a))[0];
   S.compe=TT.ligaNombre||TT.copa.nombre;
   tmp={f:S.formacion||S.sistemaPref,e:S.estilo||S.estiloPref,paso:0,plan:{},res:{},op:null};
+  tmp.m=Object.assign({},S.modelo||S.modeloPref||modeloDeEstilo(tmp.e)); tmp.e=estiloDeModelo(tmp.m);
   S.momentosOk=0;
   pintarPlan(); ir("planteo");
 }
+function elegirMomentoPlan(mid,oid){ tmp.m[mid]=oid; tmp.e=estiloDeModelo(tmp.m); tmp.res={}; tmp.plan={}; S.momentosOk=0; pintarPlan(); }
 function yoParaPlan(){
   const once=onceTemporada(S.plantel,tmp.f,S.fijos);
   return {f:tmp.f,e:tmp.e,attrs:atributosDe(once),once};
@@ -804,7 +806,7 @@ function pintarPlan(){
       <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
       <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===tmp.f?'on':''}" onclick="tmp.f='${x}';tmp.res={};tmp.plan={};S.momentosOk=0;pintarPlan()">${x}${x===S.sistemaPref?' ★':''}</button>`).join("")}</div>
       <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
-      <div class="pills">${ESTILOS.map(x=>`<button class="pill ${x===tmp.e?'on':''}" onclick="tmp.e='${x}';tmp.res={};tmp.plan={};S.momentosOk=0;pintarPlan()">${tEstilo(x)}${x===S.estiloPref?' ★':''}</button>`).join("")}</div>
+      ${selectorModelo(tmp.m,"elegirMomentoPlan")}
       <div class="plan-info">
         <div class="encaje"><div class="lbl-sel" style="margin:0">${t3("Encaje","Encaixe","Fit")}</div>${pipsFit(fit)}<p>${porqueFit(tmp.e,tmp.f)}</p></div>
         <div class="encaje"><div class="lbl-sel" style="margin:0">${t3("Automatismos","Automatismos","Automatisms")}</div>
@@ -932,7 +934,7 @@ function moralejaTxt(o){ return {t:L(o.t),v:L(o.v)}; }
    ========================================================== */
 const MS_MIN={1:42,3:14,10:4};
 function empezarTemporada(){
-  S.formacion=tmp.f; S.estilo=tmp.e; S.usadas.push(tmp.f); S.plan=Object.assign({},tmp.plan);
+  S.formacion=tmp.f; S.estilo=tmp.e; S.modelo=Object.assign({},tmp.m||modeloDeEstilo(tmp.e)); S.usadas.push(tmp.f); S.plan=Object.assign({},tmp.plan);
   const par=S.formacion+"|"+S.estilo;
   if(S.autoPar!==par){ S.auto=Math.round((S.auto||0)*0.3); S.autoPar=par; }
   S.autoAntes=S.auto;
@@ -972,7 +974,10 @@ function tickerSiguiente(){
   if(TT.j===TT.mitad&&!TT.paro&&TT.j>0){ TT.paro=true; tmp.saltar=false; tmp.gestionPedida=false; paradaMitad(); return; }
   if(tmp.gestionPedida){ tmp.gestionPedida=false; tmp.saltar=false; abrirGestionTk(); return; }
   const jor=TT.jornadas[TT.j];
+  // copas y clásicos: previa y partido en vivo (js/vivo.js)
+  if(!jor.visto&&typeof partidoGrande==="function"){ const info=partidoGrande(jor); if(info){ tmp.saltar=false; abrirPrevia(jor,info); return; } }
   jugarJornada(jor);
+  S.enfasis=null;
   animarJornada(jor,()=>{
     TT.j++;
     registrarFeed(jor);
@@ -1007,7 +1012,7 @@ function animarJornada(jor,fin){
       marc[i][e.l==="a"?0:1]++;
       if(mk) mk.textContent=`${marc[i][0]} - ${marc[i][1]}`;
       const box=$("#tkp-"+i); if(box&&!tmp.saltar){ box.classList.remove("gol"); void box.offsetWidth; box.classList.add("gol"); }
-      if(ev) ev.innerHTML+=`<span>⚽ ${e.m}' ${e.nom}</span>`;
+      if(ev) ev.innerHTML+=`<span>⚽ ${e.m}' ${e.nom}${e.pat&&p.yo?` <i class="pat">${nomPatron(e.pat)}</i>`:""}</span>`;
     } else if(e.t==="roja"&&ev) ev.innerHTML+=`<span class="roja">▮ ${e.m}' ${e.nom}</span>`;
   };
   const cerrar=()=>{
@@ -1022,7 +1027,7 @@ function animarJornada(jor,fin){
     const mn=$("#tkMin"), b=$("#tkBar"); if(mn) mn.textContent=t3("Final","Fim","FT"); if(b) b.style.width="100%";
     fin();
   };
-  if(tmp.saltar){ jor.res.forEach((p,i)=>p.ev.forEach(e=>mostrar(p,i,e))); cerrar(); return; }
+  if(tmp.saltar||jor.visto){ jor.res.forEach((p,i)=>p.ev.forEach(e=>mostrar(p,i,e))); cerrar(); return; }
   const paso=()=>{
     if(tmp.saltar){ jor.res.forEach((p,i)=>p.ev.filter(e=>e.m>m).forEach(e=>mostrar(p,i,e))); cerrar(); return; }
     if(tmp.pausa){ tmp.reanudar=paso; return; }
@@ -1118,14 +1123,15 @@ function pedirGestionTk(){
   if(tmp.pausa) pausaTk();
 }
 function abrirGestionTk(){
-  tmp.selBanco=null; tmp.cambio={f:S.formacion,e:S.estilo};
+  tmp.selBanco=null; tmp.cambio={f:S.formacion,e:S.estilo,m:Object.assign({},S.modelo||modeloDeEstilo(S.estilo))};
   pintarGestionTk(); ir("club");
 }
 function pintarGestionTk(){
   const TT=S.temp, c=tmp.cambio;
   const pos=TT.equipos.length?ordenTabla(TT.equipos,TT.ac&&TT.j>=TT.mitad?"tabC":TT.ac?"tabA":"tab").findIndex(x=>x.e.yo)+1:null;
   const ult=TT.mis.slice(-5).map(m=>m.gf>m.gc?"G":m.gf===m.gc?"E":"P");
-  const cambia=c.f!==S.formacion||c.e!==S.estilo;
+  const mAct=S.modelo||modeloDeEstilo(S.estilo);
+  const cambia=c.f!==S.formacion||MOMENTOS.some(M=>c.m[M.id]!==mAct[M.id]);
   const fit=FIT[c.e][c.f];
   $("#s-club").innerHTML=`
     <h2 class="disp">${t3("Entre fecha y fecha","Entre uma rodada e outra","Between rounds")}</h2>
@@ -1138,23 +1144,25 @@ function pintarGestionTk(){
       <div class="lbl-sel">${t3("Sistema","Sistema","System")}</div>
       <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===c.f?'on':''}" onclick="tmp.cambio.f='${x}';pintarGestionTk()">${x}${x===S.formacion?' ·':''}</button>`).join("")}</div>
       <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
-      <div class="pills">${ESTILOS.map(x=>`<button class="pill ${x===c.e?'on':''}" onclick="tmp.cambio.e='${x}';pintarGestionTk()">${tEstilo(x)}${x===S.estilo?' ·':''}</button>`).join("")}</div>
+      ${selectorModelo(c.m,"elegirMomentoTk")}
       ${cambia?`<div class="alerta ${fit>=1.06?'ok':fit<1?'mal':''}" style="margin-top:8px">${encajeTxt(c.e,c.f)}
         <br><b>${t3("Costo","Custo","Cost")}:</b> ${t3("automatismos","automatismos","automatisms")} ${S.auto||0} → ${Math.round((S.auto||0)*0.5)} · ${t3("vestuario","vestiário","dressing room")} −4</div>`:""}
     </div>
     ${vistaGestion(c.f,"pintarGestionTk")}
     <div class="acciones">
       <button class="btn" onclick="volverTk()">${cambia?t3("Cambiar y seguir jugando","Mudar e seguir jogando","Change and keep playing"):t3("Seguir jugando","Seguir jogando","Keep playing")}</button>
-      ${cambia?`<button class="btn sec" onclick="tmp.cambio={f:S.formacion,e:S.estilo};pintarGestionTk()">${t3("Dejar el plan como estaba","Deixar o plano como estava","Keep the plan as it was")}</button>`:""}</div>`;
+      ${cambia?`<button class="btn sec" onclick="abrirGestionTk()">${t3("Dejar el plan como estaba","Deixar o plano como estava","Keep the plan as it was")}</button>`:""}</div>`;
   cabecera();
 }
+function elegirMomentoTk(mid,oid){ tmp.cambio.m[mid]=oid; tmp.cambio.e=estiloDeModelo(tmp.cambio.m); pintarGestionTk(); }
 function encajeTxt(e,f){
   return (typeof porqueFit==="function"&&porqueFit(e,f))||(FIT[e][f]>=1.06?t3("El sistema y el modelo se entienden.","Sistema e modelo se entendem.","System and model fit together."):FIT[e][f]<1?t3("El sistema le juega en contra a este modelo.","O sistema joga contra esse modelo.","This system works against the model."):t3("Encaje correcto, sin más.","Encaixe correto.","A fair fit."));
 }
 function volverTk(){
   const c=tmp.cambio;
-  if(c&&(c.f!==S.formacion||c.e!==S.estilo)){
-    S.formacion=c.f; S.estilo=c.e; S.auto=Math.round((S.auto||0)*0.5); S.autoPar=c.f+"|"+c.e;
+  const mAct=S.modelo||modeloDeEstilo(S.estilo);
+  if(c&&(c.f!==S.formacion||MOMENTOS.some(M=>c.m[M.id]!==mAct[M.id]))){
+    S.formacion=c.f; S.estilo=c.e; S.modelo=Object.assign({},c.m); S.auto=Math.round((S.auto||0)*0.5); S.autoPar=c.f+"|"+c.e;
     if(!S.usadas.includes(c.f)) S.usadas.push(c.f);
     S.vars.ves=clamp(S.vars.ves-4,0,100);
     tmp.feed.unshift({txt:t3(`Cambio de plan: ${c.f} · ${tEstilo(c.e)}`,`Mudança de plano: ${c.f} · ${tEstilo(c.e)}`,`Plan change: ${c.f} · ${tEstilo(c.e)}`),c:"e",les:[]});
@@ -1180,6 +1188,19 @@ function barraCambio(n,a,d){
   return `<div class="bc"><span>${n}</span><div class="bc-bar"><i class="antes" style="width:${Math.min(b,c)}%"></i>
     <i class="${c>=b?'sube':'baja'}" style="left:${Math.min(b,c)}%;width:${Math.abs(c-b)}%"></i></div><b class="${c>b?'p':c<b?'n':''}">${c}${c!==b?` (${sg(c-b)})`:""}</b></div>`;
 }
+// cómo hiciste (y cómo te hicieron) los goles: el hilo entre tu modelo y lo que pasó en la cancha
+function golesPorPatron(){
+  const mis=S.temp.mis||[], a={}, c={}, za=Array(19).fill(0), zc=Array(19).fill(0);
+  mis.forEach(m=>{ (m.pats||[]).forEach(([p,z])=>{ a[p]=(a[p]||0)+1; za[z]++; }); (m.patsC||[]).forEach(([p,z])=>{ c[p]=(c[p]||0)+1; zc[espejoZona(z)]++; }); });
+  const ta=Object.entries(a).sort((x,y)=>y[1]-x[1]), tc=Object.entries(c).sort((x,y)=>y[1]-x[1]);
+  if(!ta.length&&!tc.length) return "";
+  const mx=Math.max(1,...za,...zc);
+  return `<h3 class="disp">${t3("Cómo hiciste los goles","Como fez os gols","How you scored")}</h3>
+    <div class="pv-grid"><div>${svgZonas({ancho:240,alto:310,calor:za.map(v=>v/mx),calor2:zc.map(v=>v/mx)})}</div>
+    <div>${ta.slice(0,4).map(([p,n])=>`<div class="pv-pat ok"><b>${nomPatron(p)} <span class="z">${n}</span></b></div>`).join("")}
+      ${tc.length?`<div class="lbl-sel" style="color:#FF8A78">${t3("Cómo te los hicieron","Como sofreu","How you conceded")}</div>${tc.slice(0,3).map(([p,n])=>`<div class="pv-pat mal"><b>${nomPatron(p)} <span class="z">${n}</span></b></div>`).join("")}`:""}
+      <p class="mini">${t3("Si un patrón tuyo casi no aparece, tu modelo lo pide pero el plantel o los rivales no te lo dejan hacer.","Se um padrão quase não aparece, o modelo pede mas o elenco ou os rivais não deixam.","If one of your patterns barely shows up, your model asks for it but your squad or rivals won't let you.")}</p></div></div>`;
+}
 function pintarReporte(){
   const c=S.calc, TT=S.temp, f=c.fig;
   const prom=j=>(j.st.nt/j.st.pj).toFixed(1);
@@ -1199,6 +1220,7 @@ function pintarReporte(){
       ${c.copa.rondas.map(r=>`<div class="cr ${r.gano?'ok':'mal'}">${r.ronda}: ${escudo(r.rival,16)} ${r.rival.n} ${r.gf}-${r.gc}${r.pen?` (${r.pen[0]}-${r.pen[1]} pen)`:""} ${r.gano?'✓':'✗'}</div>`).join("")}
       ${c.copa.campeon&&!c.copa.campeon.yo?`<div class="mini">${t3("Campeón","Campeão","Winner")}: ${c.copa.campeon.club.n}</div>`:""}</div>`:""}
 
+    ${golesPorPatron()}
     <h3 class="disp">${t3("Tu plan, fase por fase","Seu plano, fase a fase","Your plan, phase by phase")}</h3>
     ${c.lect.map(l=>`<div class="lect">
       <div class="lect-cab"><span>${L(l.F.n)}</span><b>${L(l.op.n)}</b></div>

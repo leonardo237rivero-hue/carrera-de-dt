@@ -83,7 +83,7 @@ function barras(attrs,previos,explicar){
    ========================================================== */
 function cabecera(){
   const c=$("#cab");
-  if(["portada","identidad","idea","duelo","ofertas"].includes(S.pant)){c.hidden=true;return;}
+  if(["portada","identidad","idea","duelo","ofertas","partido"].includes(S.pant)){c.hidden=true;fijarCabh(0);return;}
   c.hidden=false;
   if(!S.club){c.innerHTML="";return;}
   const med=(v,n,max)=>{
@@ -97,7 +97,10 @@ function cabecera(){
       ${med(S.vars.dir,T("directiva"))}${med(S.vars.hin,T("hinchada"))}
       ${med(S.vars.ves,T("vestuario"))}${S.esSeleccion?"":med(S.presupuesto,T("plata"),120)}
     </div>`;
+  fijarCabh(c.offsetHeight||0);
 }
+// alto de la cabecera fija: lo usan los elementos pegajosos (tu partido en vivo) para no quedar tapados
+function fijarCabh(h){ const r=document.documentElement; if(r&&r.style&&r.style.setProperty) r.style.setProperty("--cabh",(h||0)+"px"); }
 function ir(p){S.pant=p;document.querySelectorAll("section").forEach(x=>x.classList.remove("on"));
   $("#s-"+p).classList.add("on");cabecera();window.scrollTo({top:0,behavior:"instant"});}
 

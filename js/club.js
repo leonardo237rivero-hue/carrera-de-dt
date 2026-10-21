@@ -216,8 +216,15 @@ function colorVisible(club){ const [c1,c2]=club.c; return luz(c1)<60?c2:c1; }
 function aplicarTema(){
   const r=document.documentElement;
   if(!r||!r.style||!r.style.setProperty) return;
-  if(!S.club){ ["--club1","--club2","--clubv"].forEach(k=>r.style.removeProperty&&r.style.removeProperty(k)); return; }
+  const b=document.body;
+  if(!S.club){ ["--club1","--club2","--clubv","--escudo"].forEach(k=>r.style.removeProperty&&r.style.removeProperty(k)); if(b&&b.classList) b.classList.remove("con-club"); return; }
+  if(b&&b.classList) b.classList.add("con-club");
   const [c1,c2]=S.club.c;
+  const vis=colorVisible(S.club);
+  r.style.setProperty("--clubtxt",luz(vis)>150?"#0A0F0C":"#FFFFFF");
+  r.style.setProperty("--clubv-osc",alfa(vis,0.55));
+  r.style.setProperty("--clubv-sombra",alfa(luz(c1)<60?c1:c2,0.9));
+  r.style.setProperty("--escudo",`url("escudos/${S.club.sel?"seleccion-":""}${slugClub(S.club.n)}.png")`);
   r.style.setProperty("--club1",c1);
   r.style.setProperty("--club2",c2);
   r.style.setProperty("--clubv",colorVisible(S.club));
