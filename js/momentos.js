@@ -227,6 +227,22 @@ function porQue(fase,op,v,rivN){
    ========================================================== */
 const PRESION_RIVAL={pre:[42,.45],pos:[30,.5],con:[15.5,.53],blo:[3,.5]};
 const SALIDA_RIVAL={pos:[2,.45],pre:[4,.45],con:[10,.45],blo:[14,.45]};
+// la pregunta cambia según cómo juega el rival: no es la misma salida contra uno que presiona que contra uno que espera
+const CTX_RIVAL={
+ salida:{pre:{es:"Tu arquero tiene la pelota. Ellos suben a presionar hombre a hombre: cada pase es una moneda al aire.",pt:"Seu goleiro está com a bola. Eles pressionam homem a homem.",en:"Your keeper has the ball. They press man-to-man: every pass is a coin toss."},
+   blo:{es:"Tu arquero tiene la pelota. Ellos ni salen: te esperan en su campo. ¿Cómo la sacás sin regalarles la contra?",pt:"Seu goleiro está com a bola. Eles nem saem: esperam no campo deles.",en:"Your keeper has the ball. They don't come out at all: they wait in their half. How do you build without gifting them the counter?"},
+   pos:{es:"Tu arquero tiene la pelota. Ellos presionan cuando la pierden, después se ordenan.",pt:"Seu goleiro está com a bola. Eles pressionam na perda, depois se organizam.",en:"Your keeper has the ball. They press on losing it, then reorganise."},
+   con:{es:"Tu arquero tiene la pelota. Te esperan en bloque medio, con dos rápidos listos para salir.",pt:"Seu goleiro está com a bola. Esperam em bloco médio, com dois rápidos prontos.",en:"Your keeper has the ball. They sit in a mid-block with two quick players ready to break."}},
+ defensa:{pos:{es:"Ellos salen jugando corto desde el arquero, con el 5 entre los centrales. ¿Dónde los esperás?",pt:"Eles saem curto desde o goleiro, com o volante entre os zagueiros. Onde espera?",en:"They play short from the keeper, the 6 dropping between the centre-backs. Where do you meet them?"},
+   con:{es:"Ellos la quieren rápido: dos toques y pelota a la espalda. ¿Dónde los esperás?",pt:"Eles querem rápido: dois toques e bola nas costas. Onde espera?",en:"They want it quick: two touches and a ball in behind. Where do you meet them?"},
+   blo:{es:"Ellos no arriesgan: pelotazo al 9 y a pelear la segunda. ¿Dónde los esperás?",pt:"Eles não arriscam: bola longa no 9. Onde espera?",en:"They take no risks: long to the 9 and fight for the second ball. Where do you meet them?"},
+   pre:{es:"Ellos salen rápido para volver a presionar arriba. ¿Dónde los esperás?",pt:"Eles saem rápido para voltar a pressionar. Onde espera?",en:"They build fast so they can press again. Where do you meet them?"}},
+ llegada:{blo:{es:"Llegaste a tres cuartos y se meten los once atrás: no hay espacio a la espalda. ¿Cómo los rompés?",pt:"Chegou à intermediária e eles recuam os onze. Como furar?",en:"You're in the final third and all eleven drop deep: no space in behind. How do you break them?"},
+   pre:{es:"Llegaste a tres cuartos. Juegan con la línea alta: hay campo a la espalda si lo encontrás. ¿Cómo los rompés?",pt:"Chegou à intermediária. Linha alta: há campo nas costas. Como furar?",en:"You're in the final third. They hold a high line: there's room in behind if you find it. How do you break them?"},
+   pos:{es:"Llegaste a tres cuartos. Defienden lejos de su arco y basculan rápido. ¿Cómo los rompés?",pt:"Chegou à intermediária. Defendem longe do gol e basculam rápido. Como furar?",en:"You're in the final third. They defend high and shift quickly. How do you break them?"},
+   con:{es:"Llegaste a tres cuartos. Bloque medio, compactos por dentro, esperando tu error. ¿Cómo los rompés?",pt:"Chegou à intermediária. Bloco médio, compactos por dentro. Como furar?",en:"You're in the final third. A compact mid-block waiting for your mistake. How do you break them?"}}
+};
+function ctxMomento(F,e){ const c=CTX_RIVAL[F.id]&&CTX_RIVAL[F.id][MID[e]]; return L(c||F.ctx); }
 const BLOQUE_RIVAL={blo:[3,.5],con:[10,.52],pos:[22,.55],pre:[30,.5]};
 const DEF_MIA={presion:[40,.5],medio:[22,.55],repliegue:[3,.5]};
 

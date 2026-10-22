@@ -225,14 +225,15 @@ function vistaGestion(f,rep){
   const enOnce=new Set(once.map(o=>o.jug));
   const banco=S.plantel.filter(j=>!enOnce.has(j)).sort((a,b)=>disponible(b)-disponible(a)||efectivo(b)-efectivo(a));
   window.__banco=banco; window.__once=once; window.__rep=rep;
-  const fuera=once.filter(o=>o.fuera).length;
+  const fuera=once.filter(o=>o.fuera).length, adapta=once.filter(o=>o.adapta).length;
   const sel=tmp.selBanco;
   const mejorEnBanco=banco.filter(disponible).some(b=>once.some(o=>ROL[o.rol].g===b.g&&efectivo(b)>o.rt+1));
   return `<div class="lbl-sel" style="margin-top:6px">${t3("Lo que tu once le da al plan","O que seu time dá ao plano","What your XI gives the plan")}</div>
     ${barras(atributosDe(once),null,true)}
     <div class="plantel-grid">
       <div>${canchaGestion(once)}
-        ${fuera?`<p class="mini" style="color:var(--ambar)">${fuera} ${t3("fuera de puesto (−10)","fora de posição (−10)","out of position (−10)")}</p>`:""}</div>
+        ${fuera?`<p class="mini" style="color:var(--ambar)">${fuera} ${t3("fuera de su sector (−10)","fora do setor (−10)","out of their unit (−10)")}</p>`:""}
+        ${adapta?`<p class="mini" style="color:var(--azul)">${adapta} ${t3("en un puesto que no es el suyo (−4)","em posição que não é a sua (−4)","in a role that isn't theirs (−4)")}</p>`:""}</div>
       <div class="banco">
         <h3 class="disp" style="font-size:18px;margin:0 0 6px">${T("banco")}</h3>
         <p class="mini" style="margin-bottom:8px">${sel?T("bancoAyuda2"):T("bancoAyuda")}</p>
@@ -241,7 +242,7 @@ function vistaGestion(f,rep){
           <button class="sup ${sel===j?'sel':''} ${nd?'nodisp':''}" ${nd?'disabled':''} onclick="elegirBanco(${i})">
             <span class="sup-rt ${efectivo(j)>j.rt?'arriba':efectivo(j)<j.rt?'abajo':''}">${efectivo(j)}</span>
             <span class="sup-nom">${j.nom}${j.nuevo?` <em class="nuevo">${t3("NUEVO","NOVO","NEW")}</em>`:""}</span>
-            <span class="sup-pos">${tGrupo(j.g)} · ${j.ed} · ${t3("nivel","nível","level")} ${j.rt}</span>
+            <span class="sup-pos"><b class="pos-s">${posTxt(j)}</b> · ${j.ed} · ${t3("nivel","nível","level")} ${j.rt}</span>
             <span class="sup-est">${estadoChips(j)}</span>
           </button>`;}).join("")}
         ${S.fijos&&S.fijos.length?`<button class="btn sec" style="margin-top:10px;font-size:13px"
@@ -264,14 +265,14 @@ function canchaGestion(once){
     <rect x="${W/2-62}" y="${H-46}" width="124" height="40" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
     ${once.map((o,i)=>{
       const px=(o.x/100)*W, py=H-margen-(o.y/100)*span, j=o.jug;
-      const marcado=tmp.selBanco&&ROL[o.rol].g===tmp.selBanco.g;
+      const marcado=tmp.selBanco&&(ROL[o.rol].g===tmp.selBanco.g||posDe(tmp.selBanco).includes(o.rol));
       const fat=clamp(j.fat||0,0,100), colFat=fat>=70?"#F05A4A":fat>=50?"#F2B33D":"#A6F03C";
       const flecha=j.forma>=2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#A6F03C">▲</text>`
         :j.forma<=-2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#F05A4A">▼</text>`:"";
       return `<g style="cursor:pointer" onclick="reemplazar(${i})">
         ${j.nuevo?`<circle cx="${px}" cy="${py}" r="21" fill="none" stroke="#F2B33D" stroke-width="2" stroke-dasharray="4 3"/>`:""}
         <circle cx="${px}" cy="${py}" r="16" fill="${marcado?'#F2B33D':fc.fill}"
-          stroke="${o.fuera?'#F2B33D':fc.stroke}" stroke-width="2.5"/>
+          stroke="${o.fuera?'#F2B33D':o.adapta?'#6FA8DC':fc.stroke}" stroke-width="2.5" ${o.adapta?'stroke-dasharray="5 3"':''}/>
         <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="13"
           fill="${marcado?'#111':fc.txt}" pointer-events="none">${o.rt}</text>
         ${flecha}
@@ -296,7 +297,8 @@ function elegirBanco(i){
 function reemplazar(i){
   if(!tmp.selBanco) return;
   const sale=window.__once[i].jug, entra=tmp.selBanco;
-  if(ROL[window.__once[i].rol].g!==entra.g&&!window.__once[i].fuera) return; // mismo puesto
+  // entra si es del mismo sector, si sabe hacer ese puesto, o si el que estaba ya jugaba fuera de lugar
+  if(ROL[window.__once[i].rol].g!==entra.g&&!posDe(entra).includes(window.__once[i].rol)&&!window.__once[i].fuera) return;
   S.fijos=(S.fijos||[]).filter(x=>x!==sale&&x!==entra);
   // el once queda "a mano": los titulares actuales pasan a ser fijos, salvo el que sale
   window.__once.forEach(o=>{ if(o.jug!==sale&&!S.fijos.includes(o.jug)) S.fijos.push(o.jug); });
@@ -308,6 +310,7 @@ function reemplazar(i){
 
 /* ---------- mercado de pases ---------- */
 function abrirMercado(){
+  if(S.esSeleccion&&typeof abrirConvocatoria==="function"){ abrirConvocatoria(); return; }
   const grupos=R.mz(["POR","DEF","MED","ATA","DEF","MED","ATA"]).slice(0,3);
   const nivelBase=nivelBaseDe(S.club.niv,S.division)+S.temporada*2;
   S.cartas=grupos.map(g=>{
@@ -323,29 +326,33 @@ function impactoDe(jugador){
   const f=S.formacion||S.sistemaPref;
   const antes=atributosDe(armarOnce(S.plantel,f,S.fijos));
   const desp=atributosDe(armarOnce(S.plantel.concat([jugador]),f,S.fijos));
-  return {antes,desp,dif:desp.map((v,i)=>v-antes[i])};
+  // a quién le saca el puesto (y en qué puesto entra)
+  const onceA=armarOnce(S.plantel,f,S.fijos), onceB=armarOnce(S.plantel.concat([jugador]),f,S.fijos);
+  const entra=onceB.find(o=>o.jug===jugador), sale=entra?onceA.find(o=>!onceB.some(x=>x.jug===o.jug)):null;
+  return {antes,desp,dif:desp.map((v,i)=>v-antes[i]),entra,sale};
 }
 function pintarMercado(){
   $("#s-mercado").innerHTML=`
-    <h2 class="disp">${S.esSeleccion?"Convocatoria":(S.division<3?"Captación de juveniles":"Mercado de pases")}</h2>
-    <p class="mini">${S.esSeleccion?"Otro cuerpo técnico mira los mismos nombres.":"Otro DT mira la misma lista."} El primero que se tira, se lo lleva.
-    Debajo de cada uno ves cuánto te cambia el equipo con tu sistema actual.</p>
+    <h2 class="disp">${S.esSeleccion?T("convocatoria"):(S.division<3?T("captacion"):T("mercado"))}</h2>
+    <p class="mini">${S.esSeleccion?t3("Otro cuerpo técnico mira los mismos nombres.","Outra comissão olha os mesmos nomes.","Another staff is watching the same names."):t3("Otro DT mira la misma lista.","Outro técnico olha a mesma lista.","Another manager is watching the same list.")}
+    ${t3("El primero que se tira, se lo lleva. Debajo de cada uno ves cuánto te cambia el equipo con tu sistema actual.","Quem se lançar primeiro, leva. Embaixo de cada um você vê quanto muda o time no seu sistema.","First to move gets him. Under each one you see how he changes your team in your current system.")}</p>
     <div class="reloj"><i id="rbar"></i></div>
     <div class="grid3">${S.cartas.map((k,i)=>{
       const im=impactoDe(k.j);
-      const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
+      const util=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
       const costo=S.esSeleccion?0:k.costo;
       return `<button class="jug" ${k.estado!=="libre"||costo>S.presupuesto?"disabled":""} onclick="piquear(${i})">
         <div class="rt">${k.j.rt}</div>
         <div class="nm">${k.j.nom}</div>${k.j.de?`<div class="ps" style="opacity:.8">${t3("viene de","vem do","from")} ${k.j.de}</div>`:""}
-        <div class="ps">${tGrupo(k.j.g)} · ${k.j.ed} años · ${S.esSeleccion?"convocable":"cuesta "+k.costo}</div>
+        <div class="ps"><b class="pos-s">${posTxt(k.j)}</b> · ${k.j.ed} ${t3("años","anos","y/o")} · ${S.esSeleccion?t3("convocable","convocável","available"):t3("cuesta","custa","costs")+" "+k.costo}</div>
+        ${im.entra?`<div class="entra">${t3("Entra de","Entra de","Comes in at")} <b>${siglaRol(im.entra.rol)}</b>${im.sale?` ${t3("por","no lugar de","for")} ${apellido(im.sale.jug.nom)} (${im.sale.rt})`:""}${im.entra.adapta?` · ${t3("fuera de su puesto","fora de posição","out of position")}`:""}</div>`:""}
         <div class="imp">${util.length?util.map(t=>`<div style="color:var(--verde)">${t}</div>`).join(""):
-          `<span style="color:var(--tenue)">No entra al once. No te cambia nada hoy.</span>`}
-          ${costo>S.presupuesto?'<div style="color:var(--rojo)">No te alcanza</div>':''}</div>
-        ${k.estado==="rival"?'<div class="sello">SE LO LLEVÓ EL OTRO DT</div>':''}
+          `<span style="color:var(--tenue)">${t3("No entra al once. No te cambia nada hoy.","Não entra no time. Não muda nada hoje.","Doesn't make your XI. Changes nothing today.")}</span>`}
+          ${costo>S.presupuesto?`<div style="color:var(--rojo)">${t3("No te alcanza","Não dá","Can't afford")}</div>`:''}</div>
+        ${k.estado==="rival"?`<div class="sello">${t3("SE LO LLEVÓ EL OTRO DT","O OUTRO TÉCNICO LEVOU","THE OTHER MANAGER GOT HIM")}</div>`:''}
         ${k.estado==="libre"&&costo>S.presupuesto?`<div class="sello" style="color:var(--ambar);font-size:14px">
-          NO TE ALCANZA<tspan></tspan><br><span style="font-size:11px;font-weight:400">te faltan ${Math.ceil(costo-S.presupuesto)}</span></div>`:''}
-        ${k.estado==="mio"?'<div class="sello" style="color:var(--verde)">FICHADO</div>':''}
+          ${t3("NO TE ALCANZA","NÃO DÁ","CAN'T AFFORD")}<br><span style="font-size:11px;font-weight:400">${t3("te faltan","faltam","short by")} ${Math.ceil(costo-S.presupuesto)}</span></div>`:''}
+        ${k.estado==="mio"?`<div class="sello" style="color:var(--verde)">${t3("FICHADO","CONTRATADO","SIGNED")}</div>`:''}
       </button>`;}).join("")}</div>
     <div class="acciones"><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>
     ${panelPlantel(true)}`;
@@ -388,7 +395,7 @@ function persuasion(){
 }
 function pintarPersuasion(){
   const p=S.persuade, im=impactoDe(p.j);
-  const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
+  const util=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
   $("#s-persuasion").innerHTML=`
     <h2 class="disp">Hay uno que duda</h2>
     <p>Está al alcance del club, pero no se decide. La plata sola no lo trae:
@@ -455,7 +462,7 @@ function lblRul(s,corto){
 function abrirRuleta(){
   tmp.apuestas=[]; tmp.girada=false; tmp.rulRes=null;
   // re-tiros: 1 por temporada; +1 si venís en racha (ganaste el último título o la hinchada te banca)
-  if(S.rulTemp!==S.temporada){ S.rulTemp=S.temporada; S.reTiros=1+((S.vars.hin>=70||S.vars.res>=70)?1:0); }
+  if(S.rulTemp!==S.temporada){ S.rulTemp=S.temporada; S.reTiros=1+((S.vars.hin>=70||S.vars.res>=70)?1:0); S.rulPagos=0; }
   pintarRuleta(); ir("ruleta");
 }
 function fichasUsadas(){ return tmp.apuestas.reduce((a,x)=>a+(x.crack?2:1),0); }
@@ -555,6 +562,14 @@ function ponerFicha(g,crack,puede){
   }
   pintarRuleta();
 }
+// cuando no quedan re-tiros, la plata que sobró del mercado compra otro (cada vez más caro)
+function costoReTiro(){ return 8+6*(S.rulPagos||0); }
+function puedePagarReTiro(){ return !S.esSeleccion&&!(S.reTiros>0)&&S.presupuesto>=costoReTiro(); }
+function reTirarPago(){
+  if(!puedePagarReTiro()) return;
+  S.presupuesto-=costoReTiro(); S.rulPagos=(S.rulPagos||0)+1; S.reTiros=1; cabecera();
+  reTirar();
+}
 function reTirar(){
   if(!(S.reTiros>0)) return;
   S.reTiros--;
@@ -591,10 +606,11 @@ function girar(){
     tmp.rulRes={seg,acerto};
     const cc=$("#rulCentro"); if(cc) cc.innerHTML=centroRuleta();
     const s=$("#salida"); if(!s) return;
-    const reTiro=(S.reTiros>0&&!j)?`<button class="btn sec" onclick="reTirar()">↻ ${t3("Volver a tirar","Girar de novo","Spin again")} (${S.reTiros})</button>`:"";
+    const reTiro=(S.reTiros>0&&!j)?`<button class="btn sec" onclick="reTirar()">↻ ${t3("Volver a tirar","Girar de novo","Spin again")} (${S.reTiros})</button>`
+      :(!j&&puedePagarReTiro())?`<button class="btn sec" onclick="reTirarPago()">↻ ${t3("Volver a tirar","Girar de novo","Spin again")} · ${t3("cuesta","custa","costs")} ${costoReTiro()}</button>`:"";
     if(j){
       const im=impactoDe(j);
-      const util=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
+      const util=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
       window.__ofrecido=j;
       s.innerHTML=`<div class="card premio" style="cursor:default;border-color:${seg.crack?'var(--ambar)':'var(--verde)'}">
         <b>${t3("¡Le pegaste! Salió ","Acertou! Saiu ","You hit it! It's ")}${lblRul(seg).toLowerCase()}</b>
@@ -611,7 +627,7 @@ function girar(){
         <b style="color:#FF8A78">✖ ${t3("Casilla roja: se te va un jugador","Casa vermelha: sai um jogador","Red slot: a player leaves")}</b>
         <div class="sub">${seVa.nom} · ${tGrupo(seVa.g)} · ${t3("nivel","nível","level")} ${seVa.rt}</div>
         <div class="efecto">${t3(`Lo compra otro club. Entran ${cobro} de presupuesto: algo es algo.`,`Outro clube compra. Entram ${cobro} de orçamento.`,`Another club buys him. You get ${cobro} in budget.`)}
-          ${S.reTiros>0?`<br>${t3("Si usás el re-tiro, se queda.","Se usar a nova rodada, ele fica.","Use your re-spin and he stays.")}`:""}</div>
+          ${S.reTiros>0||puedePagarReTiro()?`<br>${t3("Si volvés a tirar, se queda.","Se girar de novo, ele fica.","Spin again and he stays.")}`:""}</div>
         <div class="acciones">${reTiro}<button class="btn" onclick="confirmarRoja()">${T("seguir")}</button></div></div>`;
     } else {
       s.innerHTML=`<div class="card" style="cursor:default">
@@ -678,7 +694,7 @@ function siguienteDecision(){
   const ops=opcionesValidas(d);
   S.opsActuales=ops;
   $("#s-decision").innerHTML=`
-    <h2 class="disp">Decisión ${S.decIdx+1} de ${S.decs.length}</h2>
+    <h2 class="disp">${t3("Decisión","Decisão","Decision")} ${S.decIdx+1} ${t3("de","de","of")} ${S.decs.length}</h2>
     <div class="ficha-sit"><div class="cat">${d[0]}</div><p>${d[1]}</p></div>
     ${ops.map((o,i)=>`<button class="card" onclick="tomar(${i})"><b style="font-size:17px">${o[0]}</b></button>`).join("")}`;
   ir("decision");
@@ -743,7 +759,7 @@ function tomar(i){
       <b>${t3("Sube de la cantera","Sobe da base","Up from the academy")}</b>
       <div class="sub">${pibe.nom} · ${tGrupo(pibe.g)} · ${pibe.ed} ${T("anios")}</div>
       <div class="rt-grande">${pibe.rt}</div>
-      <div class="efecto">${(()=>{const im=impactoDe(pibe);const u=im.dif.map((d,x)=>d?`${ATRIBUTOS[x]} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
+      <div class="efecto">${(()=>{const im=impactoDe(pibe);const u=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]} → ${im.desp[x]}`:null).filter(Boolean);
         return u.length?t3("Ya pelea un lugar: ","Já briga por vaga: ","Already pushing for a place: ")+u.join(" · "):t3("Arranca en el banco. Con minutos, crece.","Começa no banco. Com minutos, cresce.","Starts on the bench. With minutes, he grows.");})()}</div></div>`:""}
     ${nuevaEtiqueta?`<div class="etiqueta-nueva">
       <b>Te empiezan a llamar ${tEtiq(S.etiqueta,"n")}</b>
@@ -833,7 +849,7 @@ function pintarPlan(){
     $("#s-planteo").innerHTML=`
       <div class="paso-mom">${[1,2,3].map(k=>`<span class="${k<tmp.paso?'ok':k===tmp.paso?'on':''}">${k}</span>`).join("")}</div>
       <h2 class="disp">${L(F.n)}</h2>
-      <p class="mini">${L(F.ctx)} <b>${rv.club.n}</b> · ${rv.f} · ${tEstilo(rv.e)}</p>
+      <p class="mini">${ctxMomento(F,rv.e)} <b>${rv.club.n}</b> · ${rv.f} · ${tEstilo(rv.e)}</p>
       <div class="mom-grid">
         <div>${svgMomento(F.id,opVer,yo,el,yo.once,rv.once,fichaColores(S.club))}
           <div class="leyenda"><span><i class="pt pro"></i>${S.club.n}</span>
@@ -975,7 +991,9 @@ function tickerSiguiente(){
   if(tmp.gestionPedida){ tmp.gestionPedida=false; tmp.saltar=false; abrirGestionTk(); return; }
   const jor=TT.jornadas[TT.j];
   // copas y clásicos: previa y partido en vivo (js/vivo.js)
-  if(!jor.visto&&typeof partidoGrande==="function"){ const info=partidoGrande(jor); if(info){ tmp.saltar=false; abrirPrevia(jor,info); return; } }
+  if(!jor.visto&&typeof partidoGrande==="function"){ const info=partidoGrande(jor); if(info){ tmp.saltar=false; abrirPrevia(jor,info); return; }
+    // los grandes que no entran en el cupo se juegan acá, con aviso
+    if(typeof esGrandeMio==="function"&&esGrandeMio(jor)) jor.aviso=t3("Partido grande sin previa: las noches en vivo de la temporada ya se usaron.","Jogo grande sem prévia: as noites ao vivo da temporada já foram usadas.","Big game, no build-up: this season's live nights are used up."); }
   jugarJornada(jor);
   S.enfasis=null;
   animarJornada(jor,()=>{
@@ -992,7 +1010,7 @@ function tituloJornada(jor){
   return `${seg} · ${t3("Fecha","Rodada","Round")} ${jor.k+1} ${t3("de","de","of")} ${TT.nFechas}`;
 }
 function animarJornada(jor,fin){
-  const f=$("#tkFecha"); if(f) f.innerHTML=tituloJornada(jor);
+  const f=$("#tkFecha"); if(f) f.innerHTML=tituloJornada(jor)+(jor.aviso?`<span class="tk-aviso">${jor.aviso}</span>`:"");
   const cont=$("#tkPartidos");
   if(!cont){ fin(); return; }
   cont.innerHTML=jor.res.map((p,i)=>`
@@ -1145,8 +1163,17 @@ function pintarGestionTk(){
       <div class="pills">${FORMACIONES.map(x=>`<button class="pill ${x===c.f?'on':''}" onclick="tmp.cambio.f='${x}';pintarGestionTk()">${x}${x===S.formacion?' ·':''}</button>`).join("")}</div>
       <div class="lbl-sel">${t3("Modelo","Modelo","Model")}</div>
       ${selectorModelo(c.m,"elegirMomentoTk")}
-      ${cambia?`<div class="alerta ${fit>=1.06?'ok':fit<1?'mal':''}" style="margin-top:8px">${encajeTxt(c.e,c.f)}
-        <br><b>${t3("Costo","Custo","Cost")}:</b> ${t3("automatismos","automatismos","automatisms")} ${S.auto||0} → ${Math.round((S.auto||0)*0.5)} · ${t3("vestuario","vestiário","dressing room")} −4</div>`:""}
+      ${cambia?`<div class="alerta ${fit>=1.06?'ok':fit<1?'mal':''}" style="margin-top:8px">${encajeTxt(c.e,c.f)}</div>
+        <div class="lbl-sel">${t3("¿Quién se adapta?","Quem se adapta?","Who adapts?")} · ${t3("quedan","faltam","left")} ${TT.jornadas.length-TT.j} ${t3("partidos","jogos","games")}</div>
+        <div class="pv-ops adapta-ops">
+          <button class="card ${c.via==='ellos'?'sel':''}" onclick="tmp.cambio.via='ellos';pintarGestionTk()"><b>${t3("Que se adapten ellos","Que eles se adaptem","They adapt")}</b>
+            <div class="sub">${t3("Se entrena el sistema nuevo de cero. Cuesta ahora, rinde después.","Treina o sistema novo do zero. Custa agora, rende depois.","Train the new system from scratch. Costs now, pays later.")}</div>
+            <div class="costo">${t3("automatismos","automatismos","automatisms")} ${S.auto||0} → ${Math.round((S.auto||0)*0.5)} · ${t3("vestuario","vestiário","dressing room")} −4</div></button>
+          <button class="card ${c.via==='yo'?'sel':''}" onclick="tmp.cambio.via='yo';pintarGestionTk()"><b>${t3("Me adapto yo","Eu me adapto","I adapt")}</b>
+            <div class="sub">${t3("Armás el sistema nuevo con lo que ya saben hacer. Se pierde poco, pero las primeras fechas sale a medias.","Monta o sistema novo com o que já sabem. Perde pouco, mas as primeiras rodadas saem pela metade.","Build the new system on what they already know. Little lost, but the first few games are half-baked.")}</div>
+            <div class="costo">${t3("automatismos","automatismos","automatisms")} ${S.auto||0} → ${Math.round((S.auto||0)*0.85)} · ${t3("4 partidos a media máquina","4 jogos em meia marcha","4 games at half speed")}</div></button>
+        </div>
+        <p class="mini">${t3("Si queda mucho, conviene que aprendan; si queda poco, adaptate vos.","Se falta muito, vale que aprendam; se falta pouco, adapte-se você.","With plenty left, let them learn; with little left, you adapt.")}</p>`:""}
     </div>
     ${vistaGestion(c.f,"pintarGestionTk")}
     <div class="acciones">
@@ -1162,9 +1189,10 @@ function volverTk(){
   const c=tmp.cambio;
   const mAct=S.modelo||modeloDeEstilo(S.estilo);
   if(c&&(c.f!==S.formacion||MOMENTOS.some(M=>c.m[M.id]!==mAct[M.id]))){
-    S.formacion=c.f; S.estilo=c.e; S.modelo=Object.assign({},c.m); S.auto=Math.round((S.auto||0)*0.5); S.autoPar=c.f+"|"+c.e;
+    S.formacion=c.f; S.estilo=c.e; S.modelo=Object.assign({},c.m); S.autoPar=c.f+"|"+c.e;
     if(!S.usadas.includes(c.f)) S.usadas.push(c.f);
-    S.vars.ves=clamp(S.vars.ves-4,0,100);
+    if(c.via==="yo"){ S.auto=Math.round((S.auto||0)*0.85); S.adapta=4; }
+    else { S.auto=Math.round((S.auto||0)*0.5); S.vars.ves=clamp(S.vars.ves-4,0,100); S.adapta=0; }
     tmp.feed.unshift({txt:t3(`Cambio de plan: ${c.f} · ${tEstilo(c.e)}`,`Mudança de plano: ${c.f} · ${tEstilo(c.e)}`,`Plan change: ${c.f} · ${tEstilo(c.e)}`),c:"e",les:[]});
   }
   tmp.selBanco=null; tmp.pausa=false; tmp.saltar=false;
@@ -1259,7 +1287,8 @@ function cerrarTemporada(){
   // juveniles del formador
   if(S.arq.id==="formador") S.plantel.filter(j=>j.ed<=23).forEach(j=>{j.rt=clamp(j.rt+4,28,94);});
   // los que jugaron bien crecen, los viejos bajan
-  S.plantel.forEach(j=>{
+  const todos=S.esSeleccion&&S.baseSel?[...new Set(S.plantel.concat(S.baseSel))]:S.plantel;
+  todos.forEach(j=>{
     j.ed++; delete j.nuevo;
     if(j.ed>31) j.rt=clamp(j.rt-2,28,94);
     if(j.st&&j.st.pj>=4&&j.ed<=24&&j.st.nt/j.st.pj>=6.8) j.rt=clamp(j.rt+2,28,94);
@@ -1419,7 +1448,8 @@ function tomarSeleccion(si){
   if(si){
     const sel=window.__sel;
     S.exClub=S.club; S.club=sel; S.esSeleccion=true; S.division=3; S.selT=0; S.fijos=[];
-    S.plantel=generarPlantel(nivelBaseDe(sel.niv,3)+8,3,null,sel.p);
+    S.baseSel=generarBaseSel(sel); S.baseT=S.temporada;
+    { const g=x=>S.baseSel.filter(j=>j.g===x).sort((a,b)=>b.rt-a.rt); S.plantel=g("POR").slice(0,3).concat(g("DEF").slice(0,8),g("MED").slice(0,8),g("ATA").slice(0,4)); }
     S.presupuesto=0; S.vars.dir=58; S.vars.hin=52;
     S.hist.push({t:S.temporada,club:t3("Selección de ","Seleção de ","")+sel.n,div:"Selección",f:"",pos:t3("Asumís","Assume","Takes over"),pts:0});
     aplicarTema();

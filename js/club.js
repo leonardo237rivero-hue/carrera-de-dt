@@ -304,11 +304,32 @@ function introClub(sigue){
     ${glo?`<div class="gloria">${trofeo(c.sel?"sel":"conti",26)}<div><div class="cat">${t3("Su gloria","Sua glória","Their glory")}</div>${glo}</div></div>`:""}
     ${cul?`<p class="mini" style="margin-top:10px">${cul}</p>`:""}
     ${meta?`<div class="deuda"><div class="cat">${t3("Lo que te piden","O que te pedem","What they expect")}</div>${meta}</div>`:""}
+    ${tableroLlegada()}
     ${!glo&&!meta?`<p>${t3(`Club de ${c.p}. Nadie espera milagros, pero todos miran la tabla.`,
       `Clube de ${c.p}. Ninguém espera milagres, mas todos olham a tabela.`,
       `A club from ${c.p}. Nobody expects miracles, but everyone watches the table.`)}</p>`:""}
     <div class="acciones"><button class="btn" onclick="const f=window.__sigueIntro;window.__sigueIntro=null;f&&f()">${t3("Asumir el cargo","Assumir o cargo","Take charge")}</button></div>`;
   ir("club");
+}
+// con qué te encontrás al llegar: los cuatro poderes del club y el plantel, explicados
+function tableroLlegada(){
+  if(!S.vars) return "";
+  const v=S.vars, tono=x=>x>=60?"ok":x<40?"mal":"med";
+  const P=[
+    {k:"dir",n:T("directiva"),v:v.dir,d:x=>x>=60?t3("Te bancan: hay margen para equivocarse.","Te bancam: há margem para errar.","They back you: there's room for mistakes."):x<40?t3("Te miran de reojo. Dos malas y estás afuera.","Te olham de lado. Duas ruins e você está fora.","They're wary. Two bad runs and you're out."):t3("Esperan resultados, sin apuro.","Esperam resultados, sem pressa.","They want results, no rush.")},
+    {k:"hin",n:T("hinchada"),v:v.hin,d:x=>x>=60?t3("La tribuna está con vos: empuja de local.","A torcida está com você: empurra em casa.","The stands are with you: a push at home."):x<40?t3("Desconfían. De local, la tribuna pesa en contra.","Desconfiam. Em casa, a torcida pesa contra.","They doubt you. At home, the crowd weighs against."):t3("Expectantes. Te van a juzgar por el juego.","Expectantes. Vão te julgar pelo jogo.","Waiting. They'll judge you by the football.")},
+    {k:"ves",n:T("vestuario"),v:v.ves,d:x=>x>=60?t3("El grupo te compra: rinde un poco más.","O grupo te compra: rende um pouco mais.","The squad buys in: they give a little more."):x<40?t3("Grupo partido: el rendimiento se resiente.","Grupo rachado: o rendimento cai.","A split squad: performance suffers."):t3("Te escuchan. Hay que ganárselos.","Te escutam. Precisa conquistá-los.","They listen. You have to win them over.")}];
+  if(!S.esSeleccion) P.push({k:"pl",n:T("plata"),v:Math.round(S.presupuesto/1.2),txt:S.presupuesto,d:()=>S.presupuesto>=40?t3("Hay para traer refuerzos de verdad.","Dá para trazer reforços de verdade.","Enough for real signings."):S.presupuesto<15?t3("Casi nada: se arma con lo que hay y con los pibes.","Quase nada: monta com o que tem e com a base.","Almost nothing: make do with what you have and the kids."):t3("Para uno o dos retoques.","Para um ou dois retoques.","Enough for one or two tweaks.")});
+  const pl=S.plantel||[], fig=pl.slice().sort((a,b)=>b.rt-a.rt)[0], pibe=pl.filter(j=>j.ed<=21).sort((a,b)=>b.rt-a.rt)[0];
+  const prom=pl.length?Math.round(pl.slice().sort((a,b)=>b.rt-a.rt).slice(0,11).reduce((s,j)=>s+j.rt,0)/Math.min(11,pl.length)):0;
+  return `<div class="llegada">
+    <div class="cat">${t3("Con qué te encontrás","O que você encontra","What you walk into")}</div>
+    <div class="ll-grid">${P.map(p=>`<div class="ll ${tono(p.v)}"><div class="ll-top"><span>${p.n}</span><b>${p.txt!=null?p.txt:Math.round(p.v)}</b></div>
+      <div class="hbar"><i style="width:${clamp(p.v,0,100)}%"></i></div><p>${p.d(p.v)}</p></div>`).join("")}</div>
+    ${pl.length?`<div class="ll-plantel">${fig?`<div><span>${t3("La figura","O craque","The star")}</span><b>${fig.nom}</b> <i>${fig.rt} · ${posTxt(fig)}</i></div>`:""}
+      ${pibe?`<div><span>${t3("La promesa","A promessa","The prospect")}</span><b>${pibe.nom}</b> <i>${pibe.rt} · ${pibe.ed} ${t3("años","anos","y/o")}</i></div>`:""}
+      <div><span>${t3("Nivel del once","Nível do time","XI level")}</span><b>${prom}</b></div></div>`:""}
+  </div>`;
 }
 function badgesClub(club,div){
   if(club.sel) return `<span class="badge pro">${t3("SELECCIÓN","SELEÇÃO","NATIONAL TEAM")}</span>${estrellas(club.niv)}`;

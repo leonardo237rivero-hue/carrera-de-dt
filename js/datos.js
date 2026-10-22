@@ -100,7 +100,7 @@ const DIVISIONES=[
 /* nombres de jugadores, por pais */
 const NOMBRES={
  "Uruguay":{n:["Rodrigo","Matías","Sebastián","Nicolás","Facundo","Gastón","Bruno","Emiliano","Thiago","Joaquín","Diego","Agustín","Federico","Santiago","Maximiliano","Ramiro"],
-   a:["Cabrera","Núñez","Da Silva","Ferreira","Olivera","Bentancur","Rodríguez","Sosa","Viera","Méndez","Acuña","Píriz","Techera","Falero","Lemos","Cardozo"]},
+   a:["Cabrera","Núñez","Da Silva","Ferreira","Olivera","Bermúdez","Rodríguez","Sosa","Viera","Méndez","Acuña","Píriz","Techera","Falero","Lemos","Cardozo"]},
  "Argentina":{n:["Lucas","Julián","Valentín","Tomás","Ignacio","Franco","Lautaro","Mateo","Nahuel","Gonzalo","Leandro","Iván","Cristian","Álvaro"],
    a:["Gutiérrez","Romero","Quiroga","Peralta","Barrios","Alfaro","Rojas","Medina","Ojeda","Vázquez","Salgado","Ibarra","Bustos","Zárate"]},
  "Brasil":{n:["João","Lucas","Gabriel","Matheus","Rafael","Bruno","Thiago","Vinícius","Caio","Douglas","Felipe","Wesley","Igor","Éder","Rodrigo","Murilo"],

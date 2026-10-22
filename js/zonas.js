@@ -235,12 +235,31 @@ function flechaZonas(z1,z2,color,o){ const a=centroZona(z1,o), b=centroZona(z2,o
   return `<path d="M${a.x} ${a.y} L${b.x} ${b.y}" stroke="${color}" stroke-width="2.6" fill="none" stroke-linecap="round" marker-end="url(#fz)"/>`; }
 
 // el énfasis de la previa o del entretiempo: cargar un patrón tuyo o cerrar uno de ellos
+// toda opción cobra algo: cargar un sector deja otro descubierto; cerrar uno le saca gente al ataque
+const LADO_PAT={bandaI:0,tercer:1,pared:1,robo:1,bandaD:2,cambio:2,ruptura:1,segunda:1,contra:1};
+function costoEnfasis(tipo,id){
+  if(tipo==="cargar"){
+    if(id==="bandaI"||id==="bandaD") return {es:"Costo: el lateral de ese lado sube y a su espalda queda campo para el contraataque.",pt:"Custo: o lateral sobe e sobra campo nas costas para o contra-ataque.",en:"Cost: that full-back pushes up and leaves space behind for the counter."};
+    if(id==="tercer"||id==="pared"||id==="robo") return {es:"Costo: juntás gente por dentro y te quedan los costados abiertos.",pt:"Custo: junta gente por dentro e os lados ficam abertos.",en:"Cost: you crowd the middle and leave the flanks open."};
+    if(id==="ruptura"||id==="segunda"||id==="contra") return {es:"Costo: jugás más largo y la pelota vuelve más rápido; sufren tus volantes.",pt:"Custo: joga mais longo e a bola volta mais rápido.",en:"Cost: you go longer and the ball comes back faster; your midfield suffers."};
+    return {es:"Costo: alguien deja su puesto para sumarse.",pt:"Custo: alguém deixa a posição.",en:"Cost: someone leaves his post to join in."};
+  }
+  return {es:"Costo: el que cierra deja de atacar; tu mejor jugada pierde un hombre.",pt:"Custo: quem fecha deixa de atacar.",en:"Cost: whoever covers stops attacking; your best move loses a man."};
+}
 function aplicarEnfasis(an,enf){
-  (enf.cargar||[]).forEach(id=>{ const p=an.mis.find(x=>x.id===id); if(p) p.v=clamp(p.v+0.28,-1,1); });
+  const sube=(l,f,v)=>l.filter(f).forEach(p=>p.v=clamp(p.v+v,-1,1));
+  (enf.cargar||[]).forEach(id=>{ const p=an.mis.find(x=>x.id===id); if(!p) return; p.v=clamp(p.v+0.28,-1,1);
+    // el costo: lo que ellos ganan cuando vos cargás ese sector
+    if(id==="bandaI") sube(an.sus,x=>x.id==="bandaD"||x.id==="contra",0.12);
+    else if(id==="bandaD") sube(an.sus,x=>x.id==="bandaI"||x.id==="contra",0.12);
+    else if(id==="tercer"||id==="pared"||id==="robo") sube(an.sus,x=>x.id==="bandaI"||x.id==="bandaD"||x.id==="cambio",0.09);
+    else sube(an.sus,x=>x.id==="robo"||x.id==="tercer"||x.id==="pared",0.1); });
   (enf.cerrar||[]).forEach(id=>{ const p=an.sus.find(x=>x.id===id); if(p) p.v=clamp(p.v-0.32,-1,1);
     // cerrar un sector cuesta: alguien deja de atacar
-    if(an.mis[0]) an.mis[0].v=clamp(an.mis[0].v-0.07,-1,1); });
-  if(enf.riesgo){ an.mis.forEach(p=>p.v=clamp(p.v+0.12,-1,1)); an.sus.forEach(p=>p.v=clamp(p.v+0.1,-1,1)); }
+    if(an.mis[0]) an.mis[0].v=clamp(an.mis[0].v-0.1,-1,1); });
+  if(enf.riesgo){ an.mis.forEach(p=>p.v=clamp(p.v+0.12,-1,1)); an.sus.forEach(p=>p.v=clamp(p.v+0.12,-1,1)); }
+  if(enf.rivalCierra){ const p=an.mis.find(x=>x.id===enf.rivalCierra); if(p) p.v=clamp(p.v-0.24,-1,1); }
+  if(enf.arenga){ const k=enf.arenga; an.mis.forEach(p=>p.v=clamp(p.v+k,-1,1)); }
   an.mis.sort((a,b)=>b.v-a.v); an.sus.sort((a,b)=>b.v-a.v);
   const top=l=>l.length?(l[0].v+(l[1]?l[1].v:l[0].v))/2:0;
   const coh=an.mult/(1+0.045*an.ventaja);

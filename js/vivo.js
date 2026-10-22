@@ -4,26 +4,46 @@
 // y un entretiempo para corregir lo que no se está dando.
 
 /* ---------- ¿es un partido grande mío? ---------- */
+// No todos: máximo 2 por temporada, elegidos por lo que hay en juego (la final siempre).
+// El resto de las copas y clásicos se juegan en el ticker con un aviso.
 function partidoGrande(jor){
-  const TT=S.temp;
+  const TT=S.temp; TT.grandes=TT.grandes||0;
+  const cupo=n=>TT.grandes<n;
   if(jor.t==="copa"){
     const C=TT.copa; if(!C||C.eliminado) return null;
     const v=C.vivos, k=v.indexOf(0); if(k<0) return null;
     const par=k%2?k-1:k+1; if(v[par]==null) return null;
-    const soyA=k%2===0;
-    return {tipo:"copa",rival:C.equipos[v[par]],soyA,neutral:v.length===2,knock:true,
+    const soyA=k%2===0, finalCopa=v.length===2, semi=v.length===4;
+    if(!(finalCopa||(semi&&cupo(2))||(C.tipo==="sel"&&cupo(3)))) return null;
+    return {tipo:finalCopa?"final":"copa",rival:C.equipos[v[par]],soyA,neutral:finalCopa,knock:true,
+      historico:finalCopa&&(C.tipo==="conti"||C.tipo==="sel")&&S.club.niv<=4,
       titulo:`${C.nombre} · ${nombreRonda(v.length)}`};
   }
   const p=jor.partidos.find(x=>x.a===0||x.b===0); if(!p) return null;
   const riv=TT.equipos[p.a===0?p.b:p.a];
-  if(!riv.clasico) return null;
-  return {tipo:"clasico",rival:riv,soyA:p.a===0,neutral:false,knock:false,
-    titulo:`${tituloJornada(jor).replace(/<[^>]+>/g,"").trim()} · ${t3("Clásico","Clássico","Derby")}`};
+  // definición: últimas dos fechas con el título a 3 puntos o menos
+  const campo=TT.ac&&jor.k>=TT.nFechas/2?"tabC":TT.ac?"tabA":"tab";
+  const tabla=ordenTabla(TT.equipos,campo), lider=tabla[0].e[campo].pts, mio=TT.equipos[0][campo].pts;
+  const resta=(TT.ac?TT.nFechas/2:TT.nFechas)-1-(TT.ac?jor.k%(TT.nFechas/2):jor.k);
+  const definicion=(resta<=1&&lider-mio<=3&&jor.k>2)||(TT.mundial&&jor.k===TT.nFechas-1);
+  // el clásico de la segunda rueda (o el único, si es el último cupo que queda)
+  const clasico=riv.clasico&&jor.k>=TT.nFechas/2;
+  if(!((definicion&&cupo(2))||(clasico&&cupo(2)))) return null;
+  return {tipo:definicion?"definicion":"clasico",rival:riv,soyA:p.a===0,neutral:false,knock:false,
+    titulo:`${tituloJornada(jor).replace(/<[^>]+>/g,"").trim()} · ${definicion?(TT.mundial?t3("Se define el grupo","Define o grupo","Group decider"):t3("Se define el campeonato","Define o campeonato","Title decider")):t3("Clásico","Clássico","Derby")}`};
 }
 
+// ¿es una copa o un clásico mío? (para avisar cuando no entra en el cupo de partidos en vivo)
+function esGrandeMio(jor){
+  const TT=S.temp;
+  if(jor.t==="copa"){ const C=TT.copa; return !!(C&&!C.eliminado&&!C.pendiente&&C.vivos.includes(0)); }
+  const p=(jor.partidos||[]).find(x=>x.a===0||x.b===0); if(!p) return false;
+  const riv=TT.equipos[p.a===0?p.b:p.a]; return !!(riv&&riv.clasico);
+}
 /* ---------- la previa ---------- */
 function espejoZona(z){ const f=Math.ceil(z/3), c=(z-1)%3; return zonaNum(2-c,7-f); }
 function abrirPrevia(jor,info){
+  S.temp.grandes=(S.temp.grandes||0)+1;
   tmp.vivo={jor,info,enf:{rival:info.rival.club.n,cargar:[],cerrar:[]},sel:null};
   S.enfasis=null;
   const yo=miEquipo(info.rival); tmp.vivo.an0=yo.an;
@@ -34,19 +54,21 @@ function razones(p){ return p.r.map(x=>L(x)).join(" · "); }
 function semaforo(v){ return v>0.18?"ok":v<-0.05?"mal":"med"; }
 function pintarPrevia(){
   const V=tmp.vivo, info=V.info, rv=info.rival, an=V.an0, fig=figuraDe(rv);
-  const misTop=an.mis.slice(0,3), susTop=an.sus.slice(0,2);
+  // de ellos se sabe una sola cosa: lo demás se descubre jugando (aparece en el entretiempo)
+  const misTop=an.mis.slice(0,3), susTop=an.sus.slice(0,1);
   const calorMio=calorZonas(an.mis.slice(0,4));
   const calorSuyo=Array(19).fill(0); calorZonas(an.sus.slice(0,4)).forEach((v,z)=>{ if(z) calorSuyo[espejoZona(z)]=v; });
   const ops=[
-    ...misTop.slice(0,2).map(p=>({k:"c:"+p.id,t:t3("Cargar","Carregar","Load")+": "+L(p.p.n),d:razones(p),v:p.v})),
-    ...susTop.slice(0,1).map(p=>({k:"x:"+p.id,t:t3("Cerrar","Fechar","Shut")+": "+L(p.p.n),d:t3("Le sacás su arma, pero alguien deja de atacar.","Tira a arma deles, mas alguém deixa de atacar.","You take away their weapon, but someone stops attacking."),v:-p.v}))];
+    ...misTop.slice(0,2).map(p=>({k:"c:"+p.id,t:t3("Cargar","Carregar","Load")+": "+L(p.p.n),d:razones(p),costo:L(costoEnfasis("cargar",p.id)),v:p.v})),
+    ...susTop.slice(0,1).map(p=>({k:"x:"+p.id,t:t3("Cerrar","Fechar","Shut")+": "+L(p.p.n),d:t3("Le sacás su arma.","Tira a arma deles.","You take away their weapon."),costo:L(costoEnfasis("cerrar",p.id)),v:-p.v}))];
   V.ops=ops;
   const yoEq=miEquipo(rv), cols=coloresDuelo(S.club,rv.club); V.cols=cols;
   const mYo=S.modelo||modeloDeEstilo(S.estilo), mEl=rv.modelo||modeloDeEstilo(rv.e);
   const Zp=dominioZonas(yoEq,rv,mYo,mEl,ajusteEnfasis(V.sel!=null?V.ops[V.sel]:null,an));
   $("#s-partido").innerHTML=`
-    <div class="previa">
-      <div class="pv-se">${t3("SE VIENE","VEM AÍ","COMING UP")}</div>
+    <div class="previa ${info.historico?'historica':''}">
+      <div class="pv-se">${info.historico?t3("NOCHE HISTÓRICA","NOITE HISTÓRICA","A HISTORIC NIGHT"):t3("SE VIENE","VEM AÍ","COMING UP")}</div>
+      ${info.historico?`<p class="pv-hist">${t3(`Para un club como ${S.club.n}, una noche así es para toda la vida. La ciudad no habla de otra cosa.`,`Para um clube como o ${S.club.n}, uma noite assim é para a vida toda.`,`For a club like ${S.club.n}, a night like this lasts a lifetime. The whole city talks of nothing else.`)}</p>`:""}
       <div class="pv-tit">${info.titulo}</div>
       <div class="pv-vs">${escudo(S.club,64)}<span>vs</span>${escudo(rv.club,64)}</div>
       <div class="pv-eq"><b>${S.club.n}</b><b>${rv.club.n}</b></div>
@@ -61,12 +83,13 @@ function pintarPrevia(){
         ${misTop.map(p=>`<div class="pv-pat ${semaforo(p.v)}"><b>${L(p.p.n)} <span class="z">${t3("zona","zona","zone")} ${p.zona}</span></b><span>${razones(p)}</span></div>`).join("")}
         <div class="lbl-sel" style="color:#FF8A78">${t3("Por dónde te lastiman","Por onde te machucam","Where they hurt you")}</div>
         ${susTop.map(p=>`<div class="pv-pat ${p.v>0.15?'mal':'med'}"><b>${L(p.p.n)} <span class="z">${t3("tu zona","sua zona","your zone")} ${espejoZona(p.zona)}</span></b><span>${razones(p)}</span></div>`).join("")}
+        <p class="mini">${t3("Es lo que se sabe de ellos. Lo que traen guardado se ve en la cancha: el entretiempo es para eso.","É o que se sabe deles. O resto aparece em campo.","That's what's known about them. What they're hiding shows on the pitch: that's what half-time is for.")}</p>
       </div>
     </div>
     <h3 class="disp">${t3("¿Qué le pedís al equipo?","O que pede ao time?","What do you ask of the team?")}</h3>
-    <div class="pv-ops">${ops.map((o,i)=>`<button class="card ${V.sel===i?'sel':''}" onclick="tmp.vivo.sel=${i};pintarPrevia()"><b>${o.t}</b><div class="sub">${o.d}</div></button>`).join("")}</div>
-    <div class="acciones"><button class="btn" onclick="arrancarVivo()" ${V.sel==null?'disabled':''}>${t3("Salir a la cancha","Entrar em campo","Walk out")}</button>
-      <button class="btn sec" onclick="tmp.vivo.sel=null;arrancarVivo()">${t3("Que jueguen como siempre","Que joguem como sempre","Play as usual")}</button></div>`;
+    <div class="pv-ops">${ops.map((o,i)=>`<button class="card ${V.sel===i?'sel':''}" onclick="tmp.vivo.sel=${i};pintarPrevia()"><b>${o.t}</b><div class="sub">${o.d}</div>${o.costo?`<div class="costo">${o.costo}</div>`:""}</button>`).join("")}</div>
+    <div class="acciones"><button class="btn" onclick="abrirArenga()" ${V.sel==null?'disabled':''}>${t3("Salir a la cancha","Entrar em campo","Walk out")}</button>
+      <button class="btn sec" onclick="tmp.vivo.sel=null;abrirArenga()">${t3("Que jueguen como siempre","Que joguem como sempre","Play as usual")}</button></div>`;
   cabecera();
 }
 
@@ -96,11 +119,13 @@ function arrancarVivo(){
   const V=tmp.vivo, o=V.sel!=null?V.ops[V.sel]:null;
   V.enf={rival:V.info.rival.club.n,cargar:[],cerrar:[]};
   if(o){ const [k,id]=o.k.split(":"); (k==="c"?V.enf.cargar:V.enf.cerrar).push(id); }
+  if(V.arengaV) V.enf.arenga=V.arengaV;
   S.enfasis=V.enf;
   const {A,B}=equiposVivo(); V.A=A; V.B=B;
   V.cols=V.cols||coloresDuelo(S.club,V.info.rival.club);
   V.p1=jugarMitad(A,B,V.info.neutral,1,45);
   V.ev=[]; V.marc=[0,0]; V.min=0; V.zonasA=Array(19).fill(0); V.zonasB=Array(19).fill(0);
+  if(V.arengaTxt!=null) V.ev.push({m:0,t:"nota",txt:V.arengaTxt>0.15?t3("Salen encendidos del vestuario.","Saem ligados do vestiário.","They come out fired up."):V.arengaTxt<-0.1?t3("Salen tensos, mirando el piso.","Saem tensos.","They come out tense."):t3("Salen a la cancha.","Entram em campo.","Out they come.")});
   pintarVivo(); ir("partido");
   correrVivo(V.p1.ev,1,45,()=>entretiempo());
 }
@@ -109,7 +134,7 @@ function pintarVivo(){
   const V=tmp.vivo, rv=V.info.rival, yoA=V.info.soyA;
   const local=yoA?S.club:rv.club, visita=yoA?rv.club:S.club;
   $("#s-partido").innerHTML=`
-    <div class="vivo-cab"><div class="mini">${V.info.titulo}</div>
+    <div class="vivo-cab ${V.info.historico?'historica':''}"><div class="mini">${V.info.titulo}</div>
       <div class="vivo-marc">${escudo(local,34)}<span class="eq">${local.n}</span><b id="vvM">${V.marc[0]} - ${V.marc[1]}</b><span class="eq">${visita.n}</span>${escudo(visita,34)}</div>
       <div class="tk-reloj"><span id="vvMin">${V.min}'</span><div class="tk-barra"><i id="vvBar" style="width:${V.min/90*100}%"></i></div></div></div>
     <div class="vivo-grid">
@@ -156,7 +181,22 @@ function statsVivo(){
     ${fila(t3("Llegadas","Chegadas","Attacks"),mios,suyos)}
     ${fila(t3("Por izquierda","Pela esquerda","Down the left"),mc[0],sc[0])}
     ${fila(t3("Por el centro","Pelo centro","Through the middle"),mc[1],sc[1])}
-    ${fila(t3("Por derecha","Pela direita","Down the right"),mc[2],sc[2])}`;
+    ${fila(t3("Por derecha","Pela direita","Down the right"),mc[2],sc[2])}
+    ${V.info.historico?notasVivo():""}`;
+}
+// en una noche histórica se sigue a cada uno: la nota en vivo de tus once
+function notasVivo(){
+  const V=tmp.vivo, yo=soyLado(), el=yo==="a"?"b":"a", eq=yo==="a"?V.A:V.B;
+  const lleg=l=>V.ev.filter(e=>e.l===l&&(e.t==="llegada"||e.t==="gol")).length, dif=lleg(yo)-lleg(el);
+  const gc=V.ev.filter(e=>e.t==="gol"&&e.l===el).length;
+  const nota=o=>{ const g=ROL[o.rol].g, goles=V.ev.filter(e=>e.t==="gol"&&e.l===yo&&e.jug===o.jug).length;
+    let n=6+(hashTxt(o.jug.nom+V.min)%7-3)/20+goles*1.2+(o.rt-75)/40;
+    n+=g==="ATA"||g==="MED"?dif*0.06:(-gc*0.35+(dif>0?0.15:0));
+    if(g==="POR") n+=(lleg(el)-gc*3)*0.04;
+    return clamp(Math.round(n*10)/10,3,10); };
+  const l=(eq.once||[]).map(o=>({o,n:nota(o)})).sort((a,b)=>b.n-a.n);
+  return `<div class="notas-vivo"><div class="lbl-sel">${t3("Notas en vivo","Notas ao vivo","Live ratings")}</div>
+    ${l.map(x=>`<span class="${x.n>=7?'ok':x.n<5.5?'mal':''}">${apellido(x.o.jug.nom)} <b>${x.n.toFixed(1)}</b></span>`).join("")}</div>`;
 }
 function pintarFeedVivo(){
   const V=tmp.vivo, c=$("#vvFeed"); if(!c) return;
@@ -182,7 +222,7 @@ function correrVivo(evs,desde,hasta,fin){
     const mn=$("#vvMin"), b=$("#vvBar"); if(mn) mn.textContent=m+"'"; if(b) b.style.width=(m/90*100)+"%";
     if(m%3===0||evs.some(e=>e.m===m)){ const z=$("#vvZonas"); if(z) z.innerHTML=zonasVivo(); const st=$("#vvStats"); if(st) st.innerHTML=statsVivo(); }
     if(m>=hasta){ fin(); return; }
-    setTimeout(paso,reduce?5:(V.rapido?25:180));
+    setTimeout(paso,reduce?5:(V.rapido?25:(V.info.historico?260:180))); // la noche histórica va más lenta
   };
   paso();
 }
@@ -201,6 +241,14 @@ function entretiempo(){
   if(otro) ops.push({k:"c:"+otro.id,t:t3("Probar","Tentar","Try")+": "+L(otro.p.n),d:razones(otro)});
   ops.push(gf<=gc?{k:"r:1",t:t3("Ir con todo","Ir com tudo","Go for it"),d:t3("Adelantás el bloque y metés uno más arriba: más llegadas para los dos.","Adianta o bloco: mais chegadas para os dois lados.","Push the block up and add a forward: more chances at both ends.")}
     :{k:"k:1",t:t3("Cuidar el resultado","Segurar o resultado","Protect the lead"),d:t3("Bajás el bloque y cerrás la zona 14: llegan menos, llegás menos.","Baixa o bloco e fecha a zona 14: chegam menos, chega menos.","Drop the block and shut zone 14: fewer chances either way.")});
+  ops.forEach(o=>{ const [k,id]=o.k.split(":"); o.costo=L(k==="c"?costoEnfasis("cargar",id):k==="x"?costoEnfasis("cerrar",id)
+    :k==="r"?{es:"Costo: atrás quedan dos contra dos.",pt:"Custo: atrás ficam dois contra dois.",en:"Cost: two-on-two at the back."}
+    :{es:"Costo: le regalás la pelota y el campo.",pt:"Custo: entrega a bola e o campo.",en:"Cost: you hand them the ball and the pitch."}); });
+  // el rival también corrige: si le estás ganando con algo, en el segundo tiempo te lo cierra
+  V.rivalCierra=(fuerte&&fuerte[0]!=="pelota"&&gf>=gc&&fuerte[1]>=3)?fuerte[0]:null;
+  // lo que no se veía en la previa: su segundo recurso, si lo usó
+  const oculto=(V.A.an||V.B.an).sus[1];
+  V.revelado=oculto&&suyas.some(e=>e.pat===oculto.id)?oculto:null;
   V.ops2=ops; V.sel2=null;
   V.ev.push({m:45,t:"nota",txt:t3("Entretiempo","Intervalo","Half-time")+` · ${V.marc[0]}-${V.marc[1]}`});
   pintarFeedVivo();
@@ -212,7 +260,9 @@ function pintarEntretiempo(peligro,fuerte){
     <h3 class="disp">${t3("Entretiempo","Intervalo","Half-time")}</h3>
     <p>${peligro?t3(`Te están llegando sobre todo con <b>${nomPatron(peligro[0])}</b>.`,`Estão chegando sobretudo com <b>${nomPatron(peligro[0])}</b>.`,`They're mostly getting in through <b>${nomPatron(peligro[0])}</b>.`):t3("Casi no te llegaron.","Quase não chegaram.","They've barely threatened.")}
       ${fuerte?t3(` Lo tuyo que mejor funciona: <b>${nomPatron(fuerte[0])}</b>.`,` O que melhor funciona: <b>${nomPatron(fuerte[0])}</b>.`,` Your best weapon so far: <b>${nomPatron(fuerte[0])}</b>.`):t3(" No encontraste por dónde.","Não achou por onde."," You haven't found a way through.")}</p>
-    <div class="pv-ops">${V.ops2.map((o,i)=>`<button class="card ${V.sel2===i?'sel':''}" onclick="tmp.vivo.sel2=${i};pintarEntretiempo(${peligro?`['${peligro[0]}']`:"null"},${fuerte?`['${fuerte[0]}']`:"null"})"><b>${o.t}</b><div class="sub">${o.d}</div></button>`).join("")}</div>
+    ${V.revelado?`<div class="alerta">${t3(`Lo que no se veía: también te buscan con <b>${L(V.revelado.p.n)}</b> (tu zona ${espejoZona(V.revelado.zona)}).`,`O que não se via: também buscam com <b>${L(V.revelado.p.n)}</b>.`,`What you couldn't see: they also come at you with <b>${L(V.revelado.p.n)}</b>.`)}</div>`:""}
+    ${V.rivalCierra?`<div class="alerta mal">${t3(`En el otro vestuario ya lo vieron: van a cerrar <b>${nomPatron(V.rivalCierra)}</b>. Si insistís, chocás; si probás otra cosa, los agarrás corrigiendo.`,`No outro vestiário já viram: vão fechar <b>${nomPatron(V.rivalCierra)}</b>.`,`The other dressing room has seen it: they'll shut <b>${nomPatron(V.rivalCierra)}</b>. Insist and you hit a wall; try something else and you catch them adjusting.`)}</div>`:""}
+    <div class="pv-ops">${V.ops2.map((o,i)=>`<button class="card ${V.sel2===i?'sel':''}" onclick="tmp.vivo.sel2=${i};pintarEntretiempo(${peligro?`['${peligro[0]}']`:"null"},${fuerte?`['${fuerte[0]}']`:"null"})"><b>${o.t}</b><div class="sub">${o.d}</div>${o.costo?`<div class="costo">${o.costo}</div>`:""}</button>`).join("")}</div>
     <div class="acciones"><button class="btn" onclick="segundoTiempo()">${V.sel2==null?t3("Seguir igual","Seguir igual","No changes"):t3("Volver a la cancha","Voltar ao campo","Back out")}</button></div></div>`;
   const p=$("#vvPanel"); if(p) p.scrollIntoView({behavior:"smooth",block:"start"});
 }
@@ -223,6 +273,8 @@ function segundoTiempo(){
     if(k==="r") V.enf.riesgo=true;
     if(k==="k") V.enf.cerrar.push(...(V.A.an||V.B.an).sus.slice(0,2).map(p=>p.id));
     V.ev.push({m:46,t:"nota",txt:"↻ "+o.t}); }
+  if(V.rivalCierra){ V.enf.rivalCierra=V.rivalCierra; V.ev.push({m:46,t:"nota",txt:t3("Ellos cierran ","Eles fecham ","They shut ")+nomPatron(V.rivalCierra)}); }
+  if(V.enf.arenga) V.enf.arenga=Math.round(V.enf.arenga*500)/1000; // la charla se gasta: la mitad en el segundo tiempo
   S.enfasis=V.enf;
   const {A,B}=equiposVivo(); V.A=A; V.B=B;
   V.p2=jugarMitad(A,B,V.info.neutral,46,90);
@@ -233,9 +285,9 @@ function finVivo(){
   const V=tmp.vivo, ga=V.marc[0], gb=V.marc[1];
   let pen=null;
   if(V.info.knock&&ga===gb){
-    let pa=0,pb=0; for(let i=0;i<5;i++){ if(S.rng()<0.76)pa++; if(S.rng()<0.76)pb++; }
-    let g=0; while(pa===pb&&g<10){ g++; if(S.rng()<0.72)pa++; if(S.rng()<0.72)pb++; } if(pa===pb) pa++;
-    pen=[pa,pb];
+    // empate en eliminación: la tanda se juega (js/vestuario.js) y vuelve acá con el resultado
+    if(!V.penRes){ abrirPenales(); return; }
+    pen=V.penRes;
   }
   const ev=V.ev.filter(e=>e.t==="gol");
   V.res={ga,gb,ev,pen,Fa:(V.p1.Fa+V.p2.Fa)/2,Fb:(V.p1.Fb+V.p2.Fb)/2};
@@ -278,6 +330,9 @@ function resumenVivo(gf,gc){
 function cerrarVivo(){
   const V=tmp.vivo;
   V.jor.forzado=V.res; V.jor.visto=true;
+  // rodaje: cada partido grande jugado cuenta (la próxima tanda o final, ya sabe lo que es)
+  const mio=soyLado()==="a"?V.A:V.B; (mio&&mio.once||[]).forEach(o=>{ o.jug.gr=(o.jug.gr||0)+1; });
+  S.plantel.forEach(j=>{ delete j._ar; });
   tmp.vivo=null;
   pintarTicker(); ir("temporada");
   // la jornada se juega con este resultado y la tabla se actualiza

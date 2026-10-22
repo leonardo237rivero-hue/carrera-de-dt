@@ -3,7 +3,7 @@ const fs=require('fs'), path=require('path');
 const raiz=path.join(__dirname,'..');
 const ORDEN=['tactica','decisiones','datos','planteles',
   'i18n/core','i18n/textos','i18n/datos-i18n','i18n/pool-pt','i18n/pool-en','i18n/pool-extra','i18n/aplicar',
-  'nucleo','cancha','ui','club','momentos','zonas','temporada','idea','vivo','juego'];
+  'nucleo','cancha','ui','club','momentos','zonas','temporada','seleccion','idea','vivo','vestuario','juego'];
 function codigo(){
   return ORDEN.filter(f=>fs.existsSync(path.join(raiz,'js',f+'.js')))
     .map(f=>fs.readFileSync(path.join(raiz,'js',f+'.js'),'utf8')).join('\n')

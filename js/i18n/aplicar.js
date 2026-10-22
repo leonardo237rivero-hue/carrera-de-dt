@@ -56,6 +56,14 @@ function coArq(a){ return IDIOMA==="es"?a.co : (DATOS_I18N.arq[a.id]?.[IDIOMA]?.
 function tPrensa(p,campo){ return IDIOMA==="es"?p[campo] : (DATOS_I18N.prensa[p.id]?.[IDIOMA]?.[campo]||p[campo]); }
 function tModo(m,campo){ return IDIOMA==="es"?m[campo] : (DATOS_I18N.modo[m.id]?.[IDIOMA]?.[campo]||m[campo]); }
 function tRol(r){ return IDIOMA==="es"?ROL[r].n : (DATOS_I18N.rol[r]?.[IDIOMA]||ROL[r].n); }
+// sigla del puesto, como se escribe en una planilla de cada idioma
+const ROL_SIGLA={es:{POR:"ARQ",DFC:"DFC",LTD:"LD",LTI:"LI",MCD:"MCD",MC:"MC",MCO:"ENG",MD:"VD",MI:"VI",CAD:"CAD",CAI:"CAI",EXD:"ED",EXI:"EI",DC:"DC"},
+  pt:{POR:"GOL",DFC:"ZAG",LTD:"LD",LTI:"LE",MCD:"VOL",MC:"MC",MCO:"MEI",MD:"MD",ME:"ME",MI:"ME",CAD:"ALD",CAI:"ALE",EXD:"PD",EXI:"PE",DC:"CA"},
+  en:{POR:"GK",DFC:"CB",LTD:"RB",LTI:"LB",MCD:"DM",MC:"CM",MCO:"AM",MD:"RM",MI:"LM",CAD:"RWB",CAI:"LWB",EXD:"RW",EXI:"LW",DC:"ST"}};
+function siglaRol(r){ return (ROL_SIGLA[IDIOMA]||ROL_SIGLA.es)[r]||r; }
+function posTxt(j){ return (typeof posDe==="function"?posDe(j):[]).map(siglaRol).join(" · "); }
+const ATR_I18N={pt:["Ataque","Criação","Defesa","Pressão"],en:["Attack","Creation","Defence","Pressing"]};
+function tAtr(i){ return (ATR_I18N[IDIOMA]||ATRIBUTOS)[i]; }
 function tGrupo(g){ const es={POR:"Arquero",DEF:"Defensa",MED:"Mediocampo",ATA:"Ataque"};
   return IDIOMA==="es"?es[g] : (DATOS_I18N.grupo[g]?.[IDIOMA]||es[g]); }
 function tDiv(n){ return IDIOMA==="es"?n : (DATOS_I18N.div[n]?.[IDIOMA]||n); }

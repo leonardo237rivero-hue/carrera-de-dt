@@ -1,6 +1,6 @@
 // Service worker: guarda el juego en el teléfono para que abra rápido y funcione sin conexión.
 // Cambiar VERSION en cada publicación para que los teléfonos bajen la versión nueva.
-const VERSION = 'cdt-v8-d';
+const VERSION = 'cdt-v9-a';
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(['./', 'index.html', 'manifest.webmanifest'])).then(() => self.skipWaiting()));
 });

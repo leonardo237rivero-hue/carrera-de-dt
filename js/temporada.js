@@ -25,12 +25,13 @@ function onceTemporada(plantel,f,fijos){
   const disp=plantel.filter(disponible);
   const base=disp.length>=11?disp:plantel;
   const once=armarOnce(base,f,(fijos||[]).filter(disponible));
-  once.forEach(o=>{ const ef=efectivo(o.jug); o.ef=ef; o.rt=o.fuera?Math.max(28,ef-10):ef; });
+  once.forEach(o=>{ const ef=efectivo(o.jug); o.ef=ef; o.rt=Math.max(28,ef-(o.fuera?10:o.adapta?4:0)); });
   return once;
 }
 // cómo llega cada uno a la pretemporada: siempre hay alguna historia
 function pretemporada(){
-  S.plantel.forEach(j=>{ prepJug(j); j.fat=R.e(0,15); j.les=0; j.sus=0; j.forma=R.e(-2,2); j.st={g:0,pj:0,nt:0}; });
+  S.adapta=0;
+  S.plantel.forEach(j=>{ prepJug(j); j.fat=R.e(0,15); j.les=0; j.sus=0; j.forma=R.e(-2,2); j.st={g:0,pj:0,nt:0}; if(j.penE) j.penE--; });
   const orden=S.plantel.slice().sort((a,b)=>b.rt-a.rt);
   const figura=R.el(orden.slice(0,7).filter(j=>j.g!=="POR"));
   if(figura) figura.forma=-R.e(4,6);
@@ -77,6 +78,7 @@ function miEquipo(rival){
     coh:0.94+(S.vars.ves/100)*0.12, emp:(S.vars.hin-50)/50*2.5};
   const plan=planContra(S.plan,{f:yo.f,e:yo.e,attrs},{f:rival.f,e:rival.e,attrs:rival.attrs},yo.auto);
   let mult=plan.mult*((S.prensa&&S.prensa.mult)||1);
+  if(S.adapta>0) mult*=0.97; // "me adapto yo": el sistema nuevo sale a medias las primeras fechas
   if(rival.clasico&&S.momentosOk) mult*=1+0.02*S.momentosOk;
   // el modelo en cuatro momentos contra el rival, leído por sectores (js/zonas.js)
   const mYo=S.modelo||modeloDeEstilo(yo.e), mEl=rival.modelo||modeloDeEstilo(rival.e);
@@ -128,7 +130,9 @@ function jugarPartido(A,B,neutral,knock){
   for(let i=0;i<ga;i++) gol(A,"a",patA);
   for(let i=0;i<gb;i++) gol(B,"b",patB);
   let pen=null;
-  if(knock&&ga===gb){
+  if(knock&&ga===gb&&typeof tandaAuto==="function"&&A.once&&B.once){
+    pen=tandaAuto(A,B);
+  } else if(knock&&ga===gb){
     let pa=0,pb=0;
     for(let i=0;i<5;i++){ if(S.rng()<0.76)pa++; if(S.rng()<0.76)pb++; }
     let g=0; while(pa===pb&&g<10){ g++; if(S.rng()<0.72)pa++; if(S.rng()<0.72)pb++; }
@@ -189,14 +193,9 @@ function armarTemporada(){
   const div=S.esSeleccion?3:S.division;
   let clubesLiga=[], copa=null;
   if(S.esSeleccion){
-    S.selT=(S.selT||0)+1;
-    const otras=SELECCIONES.filter(s=>s.n!==S.club.n).map(s=>Object.assign({sel:true},s));
-    if(S.selT===1){ TT.ligaNombre="Eliminatorias"; clubesLiga=otras; }
-    else {
-      const nom=S.selT===2?"Copa América":"Copa del Mundo";
-      copa={nombre:nom,tipo:"sel",rivales:R.mz(otras).slice(0,7)};
-      TT.ligaNombre=null;
-    }
+    // eliminatorias de su confederación → copa continental → Mundial con grupos (js/seleccion.js)
+    const r=armarTemporadaSel(TT); clubesLiga=r.clubesLiga; copa=r.copa;
+    if(!clubesLiga.length) TT.ligaNombre=null;
   } else {
     const L=LIGAS[S.club.p];
     const otros=L.clubes.filter(c=>c.n!==S.club.n).map(c=>Object.assign({p:S.club.p},c));
@@ -232,10 +231,18 @@ function armarTemporada(){
       if(cla&&e.club.n===cla.n) e.clasico=true; });
   }
   TT.equipos=eqs;
-  const fechas=eqs.length?todosContraTodos(eqs.length):[];
+  let fechas=eqs.length?todosContraTodos(eqs.length):[];
+  if(TT.mundial) fechas=fechas.slice(0,eqs.length-1); // fase de grupos: una sola rueda
   TT.nFechas=fechas.length;
   fechas.forEach((f,k)=>TT.jornadas.push({t:"liga",k,partidos:f.map(([a,b])=>({a,b}))}));
-  if(copa){
+  if(copa&&copa.mundial){
+    // el cuadro de cuartos se arma cuando termina la fase de grupos
+    copa.equipos=[]; copa.vivos=[]; copa.rondas=[]; copa.pendiente=true;
+    TT.otrosGrupos=(TT.gruposClubes||[]).map(g=>g.map(c=>{ const e=equipoRival(Object.assign({},c),div); e.tab={pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}; return e; }));
+    const F=TT.jornadas.length;
+    for(let r=2;r>=0;r--) TT.jornadas.splice(F,0,{t:"copa",r});
+    TT.copa=copa;
+  } else if(copa){
     const part=[{club:S.club,yo:true}].concat(copa.rivales.map(c=>equipoRival(Object.assign({},c),div)));
     copa.equipos=part; copa.vivos=R.mz(part.map((_,i)=>i)); copa.rondas=[];
     const nR=Math.round(Math.log2(part.length));
@@ -277,6 +284,7 @@ function jugarJornada(jor){
       if(fila.yo){ yoJugue=true; registrarMio(A0.yo?A:B,A0.yo?B0:A0,A0.yo,r,TT.ligaNombre,jor); fila.les=jor.lesionados; }
       jor.res.push(fila);
     });
+    if(TT.mundial&&jor.k===TT.nFechas-1) armarCuartosMundial(TT);
   } else {
     const C=TT.copa, v=C.vivos, nuevos=[];
     jor.ronda=nombreRonda(v.length); jor.nombre=C.nombre;
@@ -304,6 +312,7 @@ function jugarJornada(jor){
 function registrarMio(yo,rival,soyA,r,comp,jor){
   const gf=soyA?r.ga:r.gb, gc=soyA?r.gb:r.ga;
   jor.lesionados=despuesDelPartido(yo.once,gf,gc,r.ev,soyA);
+  if(S.adapta>0) S.adapta--;
   const lado=soyA?"a":"b";
   S.temp.mis.push({rival:rival.club,rf:rival.f,re:rival.e,local:soyA,gf,gc,comp,copa:jor.t==="copa",
     pats:(r.ev||[]).filter(e=>e.t==="gol"&&e.l===lado&&e.pat).map(e=>[e.pat,e.zona]),
@@ -325,7 +334,7 @@ function posEsperada(){
 function cerrarCalculoTemporada(){
   const TT=S.temp, res={titulos:[],pos:null,equipos:TT.equipos.length};
   let pts=0,dRes=0,dDir=0,dHin=0,campeon=false,rel=0;
-  if(TT.equipos.length){
+  if(TT.equipos.length&&!TT.mundial){
     const tabla=ordenTabla(TT.equipos,"tab");
     const pos=tabla.findIndex(x=>x.e.yo)+1;
     const exp=posEsperada(); rel=exp-pos;
@@ -340,7 +349,8 @@ function cerrarCalculoTemporada(){
       if(tC[0].e.yo) res.titulos.push({comp:TT.ac.c,tipo:"media"});
       if(TT.ac.anual&&campeon) res.titulos.push({comp:TT.ac.anual,tipo:"liga"});
       if(!TT.ac.anual&&campeon) res.titulos.push({comp:t3("Tabla anual","Tabela anual","Annual table")+" "+TT.ligaNombre,tipo:"liga"});
-    } else if(campeon) res.titulos.push({comp:TT.ligaNombre,tipo:S.esSeleccion?"sel":"liga"});
+    } else if(campeon&&!S.esSeleccion) res.titulos.push({comp:TT.ligaNombre,tipo:"liga"});
+    // ganar las eliminatorias no es un título: es la clasificación (cuenta en los puntos)
     pts = campeon?10 : Math.max(pos===2?7:0, clamp(Math.round(4+rel*1.5),0,8));
     if(TT.ac&&!campeon&&(res.apertura.yo||res.clausura.yo)) pts=Math.max(pts,7);
     dRes=clamp(rel*4,-18,12); dDir=clamp(rel*4,-20,12); dHin=clamp(rel*4.5,-20,14);
@@ -354,7 +364,7 @@ function cerrarCalculoTemporada(){
     const llego=C.rondas.length, total=Math.round(Math.log2(C.equipos.length));
     const finalista=!gano&&llego===total;
     if(gano) res.titulos.push({comp:C.nombre,tipo:C.tipo==="sel"?"sel":C.tipo==="conti"?"conti":"copa"});
-    if(!TT.equipos.length){ // selección en torneo corto
+    if(!TT.equipos.length||TT.mundial){ // selección en torneo corto (el Mundial también: la fase de grupos no da título)
       pts=gano?10:finalista?7:llego>=total-1?4:llego>=1?1:0;
       const exp=S.club.niv>=5?2:1;
       dRes=(gano?16:finalista?9:llego>=total-1?2:-8); dDir=dRes; dHin=dRes+2;

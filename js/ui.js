@@ -44,7 +44,8 @@ function cancha(once,opts){
     const py=inv ? (o.y/100)*alto : alto-(o.y/100)*alto;
     const r=opts.rMin||15;
     const etiqueta = opts.mostrarRating!==false ? o.rt : "";
-    const alerta = o.fuera?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#F2B33D" stroke-width="2"/>`:"";
+    const alerta = o.fuera?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#F2B33D" stroke-width="2"/>`
+      :o.adapta?`<circle cx="${px}" cy="${py}" r="${r+3}" fill="none" stroke="#6FA8DC" stroke-width="2" stroke-dasharray="4 3"/>`:"";
     return `${alerta}<circle cx="${px}" cy="${py+2.5}" r="${r}" fill="rgba(0,0,0,.35)"/><circle cx="${px}" cy="${py}" r="${r}" fill="${col}"/>
       <text x="${px}" y="${py+5}" text-anchor="middle" class="pos-chip" font-size="14" fill="${opts.txt||'#0D1613'}">${etiqueta}</text>
       ${opts.mostrarNombre?`<text x="${px}" y="${py+r+12}" text-anchor="middle" font-size="9.5" fill="#CFDAD3">${(o.jug.nom||"").split(" ").pop()}</text>`:""}`;
@@ -71,7 +72,7 @@ const USO_ATRIB=[
 function barras(attrs,previos,explicar){
   return `<div class="attrs ${explicar?'con-uso':''}">${ATRIBUTOS.map((n,i)=>{
     const v=attrs[i], d=previos?v-previos[i]:0;
-    return `<div class="attr"><div class="l"><span>${n}</span>
+    return `<div class="attr"><div class="l"><span>${tAtr(i)}</span>
       <span><b>${v}</b>${d?` <span class="delta ${d<0?'n':''}">${sg(d)}</span>`:""}</span></div>
       <div class="bar"><i class="${v<45?'baja':''}" style="width:${clamp(v,0,100)}%"></i></div>
       ${explicar?`<div class="uso">${L(USO_ATRIB[i])}</div>`:""}</div>`;
@@ -122,7 +123,7 @@ function panelPlantel(abierto){
   const a=atributosDe(once);
   const fc=S.club?fichaColores(S.club):null;
   return `<details class="panel-plantel" ${abierto?"open":""}>
-    <summary>${T("verPlantel")} — ${f} · ${ATRIBUTOS.map((n,i)=>n[0]+a[i]).join(" ")}</summary>
+    <summary>${T("verPlantel")} — ${f} · ${ATRIBUTOS.map((n,i)=>tAtr(i)[0]+a[i]).join(" ")}</summary>
     <div class="pp-cuerpo">
       ${cancha(once,{mostrarNombre:true,alto:280,ancho:400,color:fc?fc.fill:undefined,txt:fc?fc.txt:undefined})}
       <h4 class="disp" style="font-size:16px;margin:12px 0 4px">${T("banco")}</h4>

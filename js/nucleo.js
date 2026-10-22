@@ -84,32 +84,48 @@ function generarPlantel(base,div,perfil,pais,club,extra){
       const j=nuevoJugador(g,base+sesgo[g]+escalon,div,null,pais);
       const r=lista[i];
       if(r){ j.nom=r.nom; j.real=true; if(r.ed) j.ed=r.ed; if(r.rt!=null) j.rt=clamp(rtReal(r.rt)+(extra||0),30,94); }
+      const PG=POS_GRUPO[g]; j.pos=armarPos(PG[i%PG.length],hashTxt(j.nom)>>3);
       p.push(j);
     }
   });
   p.perfil=sesgo;
   return p;
 }
-// arma el once para una formación: mejor jugador disponible por grupo; si falta, va fuera de posición (-10)
+// posiciones concretas: de 1 a 3 por jugador, la primera es la natural.
+// (los planteles reales no traen el puesto exacto: sale del orden de la lista y del nombre)
+function hashTxt(s){ let h=7; for(const c of String(s||"")) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
+const POS_GRUPO={POR:["POR"],DEF:["DFC","DFC","LTD","LTI","DFC","LTD","LTI"],MED:["MC","MCD","MCO","MD","MI","MC","MCD"],ATA:["DC","EXD","EXI","DC","EXI"]};
+const POS_SEG={DFC:["MCD","LTD"],LTD:["CAD","MD"],LTI:["CAI","MI"],MCD:["MC","DFC"],MC:["MCD","MCO"],MCO:["MC","EXD","EXI"],MD:["CAD","EXD"],MI:["CAI","EXI"],
+  CAD:["MD","LTD"],CAI:["MI","LTI"],EXD:["DC","MD"],EXI:["DC","MI"],DC:["MCO","EXD"]};
+function armarPos(prim,h){
+  const seg=POS_SEG[prim]||[], p=[prim];
+  if(seg.length&&h%3!==0) p.push(seg[h%seg.length]);
+  if(seg.length>1&&h%5===0) p.push(seg[(h+1)%seg.length]);
+  return [...new Set(p)];
+}
+function posDe(j){
+  if(!j.pos||!j.pos.length){ const h=hashTxt(j.nom), L=POS_GRUPO[j.g]||["MC"]; j.pos=armarPos(L[h%L.length],h>>3); }
+  return j.pos;
+}
+// 0: su puesto · 1: puesto que sabe hacer · 2: mismo sector, otro puesto (−4) · 3: fuera de su sector (−10)
+function encaje(j,rol){ const p=posDe(j); return p[0]===rol?0:p.includes(rol)?1:j.g===ROL[rol].g?2:3; }
+const AJUSTE_ENC=[0,0,4,10];
+// arma el once para una formación: el mejor disponible para cada puesto, prefiriendo al que lo sabe hacer
 function armarOnce(plantel,formacion,fijos){
   const slots=ONCE[formacion];
   const usados=new Set(); const once=[];
   const F=fijos||[];
-  slots.forEach((sl,i)=>{
-    const rol=ROL[sl[0]];
-    // primero los que el DT puso a mano
-    let cand=plantel.map((j,idx)=>({j,idx}))
-      .filter(o=>!usados.has(o.idx)&&o.j.g===rol.g&&F.includes(o.j))
-      .sort((a,b)=>b.j.rt-a.j.rt)[0];
-    if(!cand) cand=plantel.map((j,idx)=>({j,idx})).filter(o=>!usados.has(o.idx)&&o.j.g===rol.g)
-      .sort((a,b)=>b.j.rt-a.j.rt)[0];
-    let fuera=false;
-    if(!cand){
-      cand=plantel.map((j,idx)=>({j,idx})).filter(o=>!usados.has(o.idx)).sort((a,b)=>b.j.rt-a.j.rt)[0];
-      fuera=true;
-    }
+  slots.forEach(sl=>{
+    const rol=sl[0];
+    const pool=plantel.map((j,idx)=>({j,idx,n:encaje(j,rol)})).filter(o=>!usados.has(o.idx));
+    // para elegir, el que hace el puesto de memoria gana por un poco al que lo sabe hacer
+    const val=o=>o.j.rt-AJUSTE_ENC[o.n]-(o.n===1?3:0);
+    const mejor=l=>l.sort((a,b)=>val(b)-val(a)||a.n-b.n)[0];
+    let cand=mejor(pool.filter(o=>F.includes(o.j)&&o.n<3));   // primero los que el DT puso a mano
+    if(!cand) cand=mejor(pool.filter(o=>o.n<3));
+    if(!cand) cand=mejor(pool);
     usados.add(cand.idx);
-    once.push({rol:sl[0],x:sl[1],y:sl[2],jug:cand.j,rt:fuera?Math.max(28,cand.j.rt-10):cand.j.rt,fuera});
+    once.push({rol,x:sl[1],y:sl[2],jug:cand.j,rt:Math.max(28,cand.j.rt-AJUSTE_ENC[cand.n]),fuera:cand.n===3,adapta:cand.n===2});
   });
   return once;
 }
