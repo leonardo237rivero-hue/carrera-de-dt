@@ -1,0 +1,173 @@
+/* v10 — cuaderno, banco y diario. Arte original, interfaz de papel. */
+:root{--fondo:#f1ecdf;--panel:#faf7ef;--panel2:#e4e8dd;--borde:#cac9b8;--texto:#18372f;--tenue:#56665d;--verde:#245b48;--verde-osc:#173d31;--rojo:#a63e32;--ambar:#976124;--azul:#365f79;--cesped:#173b3b;--cesped2:#183634}
+
+body{background:#dedccf;font-size:16px}
+#app{max-width:1060px;box-shadow:0 0 70px #18372f12}
+main{padding:28px 34px}
+section.on{animation:hoja .2s ease-out}
+h2.disp{font-size:clamp(34px,5vw,54px);letter-spacing:-.03em}
+h3.disp{letter-spacing:-.02em}
+p{line-height:1.6}
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #b56836;outline-offset:3px}
+
+.btn{background:#245b48;color:#fff9ec;box-shadow:none;border-radius:3px;padding:14px 22px;font-size:17px;min-height:46px}
+.btn:hover{filter:brightness(.94)}
+.btn.sec{border-color:#829184;color:var(--texto)}
+.btn:active{box-shadow:none}
+.card,.jug{border-radius:3px;box-shadow:none}
+.card.sel{box-shadow:inset 4px 0 #245b48}
+.pill{border-radius:3px!important}
+.pill.on{background:var(--verde)!important;color:#fff9ec!important;border-color:var(--verde)!important}
+.etq{display:block;font:700 11px 'Barlow',sans-serif;letter-spacing:.18em;color:var(--tenue);margin-bottom:16px}
+.nota-dato{font-size:12px;color:var(--tenue);line-height:1.5;max-width:75ch;margin-top:10px}
+
+input,select,textarea{max-width:100%;background:#fffdf6!important;color:#18372f!important;border:1px solid #9caa99!important;border-radius:3px!important;padding:11px!important}
+textarea{display:block;width:100%;resize:vertical;margin:8px 0 14px}
+label{display:block;font-weight:600;font-size:14px}
+label select{display:block;width:100%;margin:7px 0 14px}
+details{border-top:1px solid var(--borde);padding:15px 0;margin:16px 0}
+summary{cursor:pointer;font-weight:700;min-height:36px}
+details[open]>summary{margin-bottom:15px}
+blockquote{border-left:3px solid var(--rojo);padding:10px 18px;font-family:Georgia,serif;font-size:19px}
+
+header{background:#faf7eff5;backdrop-filter:blur(8px);padding:12px 28px}
+.hbar,.attr .bar,.ll .hbar{background:#d5d8ca}
+.hstats{gap:18px}
+.dt-mini{margin-left:auto;display:flex;align-items:center;gap:9px;font-size:13px}
+.dt-mini span{display:grid}
+.dt-mini small{font-size:10px;color:var(--tenue)}
+.retrato-dt{flex-shrink:0;display:block}
+.cab-idea{font-size:11px;color:var(--tenue);margin-top:9px;border-top:1px solid var(--borde);padding-top:7px}
+
+body[data-pant=portada] main{padding:0}
+.nueva-portada{padding:0!important;text-align:left!important;max-width:none!important}
+.portada-arte{min-height:680px;position:relative;display:flex;align-items:center;background:linear-gradient(90deg,#102f3def 0%,#102f3dc9 37%,#102f3d00 75%),url('../assets/banco-del-sur.png') 62% center/cover;color:#f7f1df;border-bottom:6px solid #a74736}
+.portada-texto{padding:65px 7%;position:relative;width:68%}
+.portada-texto .etq{color:#aec9d0}
+.portada-texto h1{font-size:clamp(62px,8vw,100px);letter-spacing:-.045em;margin:30px 0 24px;line-height:.91}
+.portada-texto h1 em{font-style:normal;color:#e8a983}
+.portada-texto p{font-size:18px;max-width:34ch;color:#e2e8e0}
+.portada-texto .btn{background:#f0e7d2;color:#173b3b;margin-top:18px}
+.portada-pie{padding:26px 7%;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.portada-pie .nota-dato{flex-basis:100%}
+.portada-pie .idiomas{margin-left:auto}
+.lang{color:var(--texto)!important;background:transparent!important;border-color:var(--borde)!important}
+.lang.on{background:var(--panel2)!important}
+
+.opciones-carrera{display:grid;grid-template-columns:1fr 2fr;gap:20px;padding:20px 0;border-block:1px solid var(--borde);margin-top:24px}
+.opciones-carrera input{display:block;width:100%;margin-top:7px}
+.opciones-carrera .nota-dato{grid-column:1/-1;margin:0}
+.huella-idea{border-left:3px solid #a74736;padding:12px 17px;background:#e5e7db;margin:18px 0}
+.huella-idea b,.huella-idea span{display:block}
+.huella-idea span{font-size:13px;color:var(--tenue);margin-top:5px}
+.plan-base{display:grid;grid-template-columns:repeat(3,1fr);border-block:1px solid var(--borde);margin:24px 0}
+.plan-base>div{padding:20px 12px;border-right:1px solid var(--borde)}
+.plan-base>div:last-child{border:0}
+.plan-base span{display:block;font-size:12px;color:var(--tenue)}
+.plan-base b{font:700 24px var(--cond);display:block}
+.banco-hero{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#153746ee,#15374666),url('../assets/banco-del-sur.png') center 53%/cover;color:#fff6df;padding:30px;margin-bottom:28px;border-bottom:4px solid #a74736}
+.banco-hero span{font-size:10px;letter-spacing:.16em}
+.banco-hero h2{font-size:42px;margin:12px 0}
+.banco-hero p{color:#d8e1d9;margin:0}
+.aviso-cambio{color:var(--rojo);font-weight:600}
+.firma-dt{display:flex;align-items:center;gap:18px;margin:22px 0}
+.firma-dt p{font-size:13px;margin:5px 0 0}
+
+.voz-editor{background:var(--panel);padding:22px;border:1px solid var(--borde);margin:20px 0}
+.voz-controles{display:flex;flex-wrap:wrap;gap:10px}
+.voz-editor #voz-estado{font-size:13px;margin-top:14px}
+.voz-editor #discurso-revision{border-top:1px solid var(--borde);margin-top:16px;padding-top:16px}
+.voz-editor #discurso-revision:empty{display:none}
+.voz-editor #discurso-revision label{margin:12px 0}
+.discurso-libre{margin-top:24px}
+.via-rapida{margin-top:24px;border-top:1px solid var(--borde);padding-top:24px}
+.compacto{padding:6px 12px!important;min-height:38px;font-size:14px}
+.rutina-penales{border-top:1px solid var(--borde);padding-top:18px;margin-top:18px}
+.tapa-breve{padding:30px}
+.marcador-breve{font:900 72px var(--disp);padding:25px 0}
+
+.tapa-temporada{background:#f4efdf;padding:20px;border:1px solid #b5b9a5}
+.tapa-edicion{text-align:center;font:900 clamp(23px,4vw,40px) var(--disp);letter-spacing:-.02em;border-block:3px double #18372f;padding:15px 0;margin-bottom:26px}
+.tapa-cabecera h2.disp{font-size:clamp(48px,7vw,78px);margin:28px 0}
+.tapa-cabecera>.etq{text-align:center}
+.detalle-temporada{border-top:3px double #18372f;margin-top:30px}
+.tapa-temporada>.acciones{border-top:1px solid var(--borde);padding-top:20px}
+
+/* Las pizarras conservan tinta clara sobre el verde del campo. */
+.cancha{color:#f4efe0}
+.previa,.vivo-cab{background:#193d48;color:#faf5e7;border-radius:3px}
+.previa .pv-mini,.previa .pv-se,.pv-hist{color:#bcd3d5!important}
+.pv-pat{border-color:var(--borde)!important;background:var(--panel)!important;color:var(--texto)!important}
+.pv-pat b{color:var(--texto)!important}
+.pv-pat .z{color:var(--tenue)!important}
+.pv-figura .rt-grande{background:#dce3d6;color:var(--texto)}
+.alerta,.ficha-sit,.arenga,.pn-tiro{background:var(--panel);color:var(--texto);border-color:var(--borde)}
+.pn-pistas em.mal,.notas-vivo .mal b,.conv-cuenta span.falta{color:var(--rojo)}
+.pn-pistas em{background:#e5e7db}
+.vivo-cab .btn.sec{color:#f4efdf;border-color:#a7bbc1}
+.arq{background:var(--panel);color:var(--texto)}
+.arq.sel{background:var(--panel2)}
+.arq-ico{font:900 30px var(--disp);color:var(--rojo)}
+.identidad .input,.identidad input{background:var(--panel)}
+.modo button.on{background:var(--verde);color:#fff}
+.fit-alto{color:var(--verde)}
+
+.portada.nueva-portada{display:block;flex-direction:column;margin:0;width:100%;min-height:0}
+.etq{border:0;border-radius:0;padding:0}
+.portada .lang{padding:0 10px}
+
+body.con-club #app{background:var(--fondo)}
+body.con-club main::before{display:none}
+body.con-club .btn:not(.sec){background:#245b48;color:#fff9ec;box-shadow:none}
+body.con-club .lbl-sel{color:var(--tenue)}
+body.con-club h2.disp::after{display:none}
+.seg button.on,.seg button.on span{background:var(--verde);color:#fff9ec}
+.estrellas{color:#b0b5a5}
+.estrellas .on{color:#815d29}
+
+@keyframes hoja{from{opacity:.4;transform:translateY(4px)}
+to{opacity:1;transform:none}
+}
+
+.sup-rt.arriba,.est.fup{color:#245b48}
+.sup-rt.abajo,.est.fdn{color:#a63e32}
+.sup-pos .pos-s,.jug .ps .pos-s{color:#365b4b}
+.banco .sup,.pn-cand{border-color:#c0c6b5}
+.vivo-final.bien .vf-caja{box-shadow:none}
+.vf-caja{border-radius:3px}
+.vivo-final.mal .vf-tit{color:#a63e32}
+.pm-item .n{color:#fff9ec}
+.portada-texto .etq{background:transparent}
+
+@media(max-width:600px){main{padding:22px 16px}
+header{padding:10px 14px}
+.dt-mini{font-size:11px;gap:5px}
+.dt-mini svg{width:35px;height:35px}
+.hinfo b{font-size:18px}
+.hrow{gap:7px}
+.hstats{gap:9px}
+.hstat b{font-size:17px}
+.portada-arte{min-height:690px;background-position:58% center;background-image:linear-gradient(90deg,#102f3ded,#102f3d9c 60%,#102f3d22),url('../assets/banco-del-sur.png')}
+.portada-texto{padding:50px 7%;width:100%}
+.portada-texto h1{font-size:74px}
+.portada-texto p{font-size:16px;max-width:25ch}
+.portada-pie{padding:22px 7%}
+.portada-pie .idiomas{margin-left:0}
+.opciones-carrera{grid-template-columns:1fr;gap:12px}
+.plan-base{grid-template-columns:1fr}
+.plan-base>div{border-right:0;border-bottom:1px solid var(--borde);padding:14px}
+.banco-hero{padding:22px 17px}
+.banco-hero h2{font-size:33px}
+.banco-hero p{font-size:13px}
+.banco-hero svg{width:70px}
+.voz-editor{padding:15px}
+.voz-controles .btn{font-size:14px;padding:12px}
+.tapa-temporada{padding:14px}
+.firma-dt{gap:12px}
+.huella-idea{padding:11px 13px}
+}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}

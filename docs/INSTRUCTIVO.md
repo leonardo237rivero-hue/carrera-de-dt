@@ -2,6 +2,11 @@
 
 Dos partes: **cómo se juega** y **cómo se modifica**.
 
+> Actualización v10: iniciar con `node herramientas/servir.js 8767` y abrir
+> http://127.0.0.1:8767, o usar el enlace publicado del README. La preparación,
+> el aprendizaje, la voz y el guardado cambiaron: ver [reglas vigentes](V10_DISENO_Y_PLAYTEST.md).
+> Las instrucciones de doble clic de abajo corresponden a la edición monolítica antigua.
+
 ---
 
 # PARTE 1 — CÓMO SE JUEGA

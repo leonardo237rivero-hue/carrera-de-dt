@@ -1,21 +1,28 @@
 # Carrera de DT
 
-Juego de navegador donde dirigís un club durante seis temporadas. Peleás el mercado,
-manejás el vestuario y, sobre todo, elegís **cómo parar al equipo contra el sistema del rival**.
+Juego de navegador donde construís una carrera de entrenador de 3, 6 o 10 temporadas.
+Sostenés una idea, manejás el vestuario y elegís cómo intervenir en los partidos importantes.
+
+**v10.0.0:** dirección de arte cuaderno/banco/diario, ADN con aprendizaje persistente,
+charlas propias escritas o dictadas, consecuencias de prensa, edad visual del DT,
+rutinas de penales y guardado de pretemporada. [Diseño, cambios, pruebas y límites](docs/V10_DISENO_Y_PLAYTEST.md).
 
 No te premia por tener el mejor plantel: te premia por entender el que tenés.
 
 ## Jugar
 
-**Online:** https://USUARIO.github.io/carrera-de-dt/ (cambiar por tu URL una vez publicado)
+**Online:** https://leonardo237rivero-hue.github.io/carrera-de-dt/
 
 **Local:** hace falta un servidor chico porque el juego está dividido en varios archivos.
 
 ```bash
-python3 -m http.server 8000
+node herramientas/servir.js 8767
 ```
 
-Después abrí http://localhost:8000
+Después abrí http://127.0.0.1:8767. Verificación: `node herramientas/verificar-v10.js`.
+
+El dictado depende del navegador y puede usar su servicio de reconocimiento. Siempre se puede
+escribir y revisar el mensaje. La interpretación es local por vocabulario, no una IA semántica.
 
 ## Estructura
 

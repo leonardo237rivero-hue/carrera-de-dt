@@ -1,3 +1,5 @@
+> **v10.0.0 — 3/11/2026:** implementación, playtest y pendientes actuales en [V10_DISENO_Y_PLAYTEST.md](V10_DISENO_Y_PLAYTEST.md). El contenido de abajo conserva el historial de Claude.
+
 # Carrera de DT — Bitácora del proyecto
 
 Todo lo que aportaste y todo lo que se implementó, de principio a fin.

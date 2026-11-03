@@ -1,3 +1,5 @@
+> **v10.0.0 — 3/11/2026:** implementación, playtest y pendientes actuales en [V10_DISENO_Y_PLAYTEST.md](V10_DISENO_Y_PLAYTEST.md). El contenido de abajo conserva el historial de Claude.
+
 # Carrera de DT — Backlog priorizado v4
 
 > **Estado al cerrar la tanda 3-5.** Ya están implementados: todos los bugs de

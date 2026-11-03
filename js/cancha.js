@@ -2,8 +2,8 @@
 // Una sola cámara para la portada, "Tu idea de juego" y los momentos del partido.
 // Coordenadas de juego: x 0-100 (izquierda a derecha), Y 0-100 (de tu arco al del rival).
 
-const CANCHA_K = 0.85;            // cuánto se achica la cancha hacia el fondo
-const NEON = "#A6F03C", NEON_SOMBRA = "#4C7A16", RIVAL = "#E9EEF0", RIVAL_SOMBRA = "#8E989C";
+const CANCHA_K = 0;               // vista cenital: las distancias conservan su proporción
+const NEON = "#A6C9DA", NEON_SOMBRA = "#51778A", RIVAL = "#DB8065", RIVAL_SOMBRA = "#8F493B";
 
 // camara({ancho, top, bot, hw, y0, y1}) → P(x,Y) = {x, y, s}  (s = escala por profundidad)
 function camara(o){

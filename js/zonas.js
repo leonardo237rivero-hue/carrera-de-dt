@@ -67,7 +67,7 @@ function contradicciones(m){
   if(m.ofe==="posicional"&&m.def==="bajo"&&m.tofe==="contra") c.push({es:"Ataque posicional desde bloque bajo y a la contra: tenés que recorrer 80 metros para atacar como querés.",pt:"Ataque posicional desde bloco baixo e contra: precisa percorrer 80 metros.",en:"Positional attack from a low block and counter-attacking: 80 metres to attack the way you want."});
   return c;
 }
-function coherenciaModelo(m){ const n=contradicciones(m).length; return n?1-0.025*n:1.015; }
+function coherenciaModelo(m){ const n=contradicciones(m).length; return 1-0.01*n; }
 
 /* ---------- la grilla ---------- */
 function carril(x){ return x<33?0:x<67?1:2; }
@@ -274,8 +274,8 @@ function selectorModelo(m,fn){
       <div class="mom-n"><b>${L(M.n)}</b><span>${L(M.sub)}</span></div>
       <div class="mom-ops">${M.ops.map(o=>`<button class="pill ${m[M.id]===o.id?'on':''}" title="${L(o.d)}" onclick="${fn}('${M.id}','${o.id}')">${L(o.n)}</button>`).join("")}</div>
       <div class="mom-d">${L(opMomento(M.id,m[M.id]).d)}</div></div>`).join("")}
-    ${(()=>{const c=contradicciones(m); return c.length?`<div class="alerta mal">${c.map(x=>"⚠ "+L(x)).join("<br>")}</div>`
-      :`<div class="alerta ok">${t3("Los cuatro momentos hablan el mismo idioma: el equipo lo aprende más rápido.","Os quatro momentos falam a mesma língua: o time aprende mais rápido.","All four moments speak the same language: the team learns it faster.")}</div>`;})()}</div>`;
+    ${(()=>{const c=contradicciones(m); return c.length?`<details class="mini-det"><summary>${t3('Exigencias de coordinación del modelo','Exigências de coordenação','Coordination demands')}</summary><p>${t3('Son tensiones simplificadas del motor, no combinaciones prohibidas. El apoyo, las distancias y el plantel pueden hacerlas viables.','São tensões simplificadas, não combinações proibidas.','These are simplified engine tensions, not forbidden combinations.')}</p>${c.map(x=>L(x)).join('<br>')}</details>`
+      :`<p class="nota-dato">${t3('No aparecen tensiones básicas de coordinación. La cancha va a poner a prueba la idea.','Sem tensões básicas. O campo vai testar a ideia.','No basic coordination tensions. The pitch will test your idea.')}</p>`;})()}</div>`;
 }
 // qué patrones te da tu modelo y dónde terminan en las 18 zonas
 function patronesDelModelo(m){

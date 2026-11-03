@@ -44,7 +44,7 @@ function pintarIdentidad(){
       <button class="btn" onclick="irIdea()" ${tmp.arq?'':'disabled'}>${t3("Siguiente: tu idea de juego","Próximo: sua ideia de jogo","Next: your game idea")}</button>
       <button class="btn sec" onclick="portada()">${T("volver")}</button></div>`;
 }
-function guardarNom(){ const n=$("#nom"); if(n) S.nombre=n.value; const h=$("#hincha"); if(h) tmp.hincha=h.value; }
+function guardarNom(){ const n=$("#nom"); if(n) S.nombre=n.value.replace(/[^\p{L}\p{N} .'-]/gu,'').slice(0,24); const h=$("#hincha"); if(h) tmp.hincha=h.value; }
 function irIdea(){
   guardarNom();
   S.nombre=(S.nombre||"").trim()||t3("El DT","O Técnico","The Coach");

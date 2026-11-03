@@ -61,6 +61,7 @@ function pintarPrevia(){
   const ops=[
     ...misTop.slice(0,2).map(p=>({k:"c:"+p.id,t:t3("Cargar","Carregar","Load")+": "+L(p.p.n),d:razones(p),costo:L(costoEnfasis("cargar",p.id)),v:p.v})),
     ...susTop.slice(0,1).map(p=>({k:"x:"+p.id,t:t3("Cerrar","Fechar","Shut")+": "+L(p.p.n),d:t3("Le sacás su arma.","Tira a arma deles.","You take away their weapon."),costo:L(costoEnfasis("cerrar",p.id)),v:-p.v}))];
+  ops.sort((a,b)=>a.k.localeCompare(b.k));
   V.ops=ops;
   const yoEq=miEquipo(rv), cols=coloresDuelo(S.club,rv.club); V.cols=cols;
   const mYo=S.modelo||modeloDeEstilo(S.estilo), mEl=rv.modelo||modeloDeEstilo(rv.e);
@@ -313,7 +314,7 @@ function analisisVivo(gf,gc){
   const gm=V.ev.filter(e=>e.t==="gol"&&e.l===yo), gs=V.ev.filter(e=>e.t==="gol"&&e.l===el);
   if(gm.length) filas.push(`<div class="ok">⚽ ${gm.map(e=>`${e.m}' ${e.nom} <i>(${nomPatron(e.pat)})</i>`).join(" · ")}</div>`);
   if(gs.length) filas.push(`<div class="mal">⚽ ${gs.map(e=>`${e.m}' ${e.nom} <i>(${nomPatron(e.pat)})</i>`).join(" · ")}</div>`);
-  filas.push(`<div>${t3("Llegaste más por","Chegou mais por","You got in most down")} <b>${nomC[mejorC]}</b> (${lleg(yo).length} ${t3("llegadas","chegadas","attacks")}); ${t3("ellos, por","eles, por","they, down")} <b>${nomC[peorC]}</b> (${lleg(el).length}).</div>`);
+  filas.push(`<div>${t3("Llegaste más por","Chegou mais por","You got in most down")} <b>${nomC[mejorC]}</b> (${mc[mejorC]} ${t3("llegadas","chegadas","attacks")}); ${t3("ellos, por","eles, por","they, down")} <b>${nomC[peorC]}</b> (${sc[peorC]}).</div>`);
   const enf=V.enf||{}, pedidos=(enf.cargar||[]).concat(enf.cerrar||[]);
   if(pedidos.length){
     const cargo=(enf.cargar||[]).map(id=>{ const n=lleg(yo).filter(e=>e.pat===id).length; return `${nomPatron(id)}: ${n} ${t3("llegadas","chegadas","attacks")}`; });

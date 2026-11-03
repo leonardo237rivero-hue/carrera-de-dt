@@ -5,7 +5,7 @@
    RNG
    ========================================================== */
 function hashS(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return (h^(h>>>16))>>>0;}
-function mul32(a){return function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;}}
+function mul32(a){const r=function(){a|=0;a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return ((t^(t>>>14))>>>0)/4294967296;};r.estado=()=>a;return r;}
 const R={r:(a,b)=>a+S.rng()*(b-a),e:(a,b)=>Math.floor(a+S.rng()*(b-a+1)),el:a=>a[Math.floor(S.rng()*a.length)],
   mz:a=>{const x=a.slice();for(let i=x.length-1;i>0;i--){const j=Math.floor(S.rng()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x}};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));

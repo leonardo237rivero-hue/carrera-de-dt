@@ -23,7 +23,9 @@ function disponible(j){ return !(j.les>0)&&!(j.sus>0); }
 function onceTemporada(plantel,f,fijos){
   plantel.forEach(prepJug);
   const disp=plantel.filter(disponible);
-  const base=disp.length>=11?disp:plantel;
+  const base=disp.slice();
+  // Emergencia excepcional: completar con juveniles, nunca alinear lesionados.
+  while(base.length<11){const i=base.length;const j={nom:'Juvenil de emergencia '+(i+1),g:['POR','DEF','MED','ATA'][i%4],ed:18,rt:32,les:0,sus:0,fat:0,forma:0};prepJug(j);base.push(j);}
   const once=armarOnce(base,f,(fijos||[]).filter(disponible));
   once.forEach(o=>{ const ef=efectivo(o.jug); o.ef=ef; o.rt=Math.max(28,ef-(o.fuera?10:o.adapta?4:0)); });
   return once;
@@ -54,7 +56,7 @@ function identidadRival(club){
   let id=S.identR[club.n];
   if(!id||S.rng()<0.3){
     const e=R.el(ESTILOS);
-    const buenos=FORMACIONES.filter(f=>FIT[e][f]>=1.06);
+    const buenos=FORMACIONES.filter(f=>FIT[e][f]>=1.015);
     id={f:S.rng()<0.65?R.el(buenos):R.el(FORMACIONES.filter(f=>FIT[e][f]>=1)),e};
     S.identR[club.n]=id;
   }
@@ -79,7 +81,7 @@ function miEquipo(rival){
   const plan=planContra(S.plan,{f:yo.f,e:yo.e,attrs},{f:rival.f,e:rival.e,attrs:rival.attrs},yo.auto);
   let mult=plan.mult*((S.prensa&&S.prensa.mult)||1);
   if(S.adapta>0) mult*=0.97; // "me adapto yo": el sistema nuevo sale a medias las primeras fechas
-  if(rival.clasico&&S.momentosOk) mult*=1+0.02*S.momentosOk;
+  // La práctica no concede un bonus por acertar un cuestionario.
   // el modelo en cuatro momentos contra el rival, leído por sectores (js/zonas.js)
   const mYo=S.modelo||modeloDeEstilo(yo.e), mEl=rival.modelo||modeloDeEstilo(rival.e);
   const an=analizarPartido(yo,rival,mYo,mEl,yo.auto,rival.auto);
@@ -228,7 +230,7 @@ function armarTemporada(){
     clubesLiga.forEach(c=>eqs.push(equipoRival(c,div)));
     const cla=S.esSeleccion?null:clasicoDe(S.club);
     eqs.forEach(e=>{ e.tab={pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}; e.tabA={pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0}; e.tabC={pj:0,g:0,e:0,p:0,gf:0,gc:0,pts:0};
-      if(cla&&e.club.n===cla.n) e.clasico=true; });
+      if(cla&&cla.esClasicoReal&&e.club.n===cla.n) e.clasico=true; });
   }
   TT.equipos=eqs;
   let fechas=eqs.length?todosContraTodos(eqs.length):[];

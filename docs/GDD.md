@@ -1,3 +1,12 @@
+# Actualización vigente: v10
+
+Ver [V10_DISENO_Y_PLAYTEST.md](V10_DISENO_Y_PLAYTEST.md) para el ADN persistente,
+los nuevos flujos, el arte, las charlas, las pruebas y las limitaciones. El balance
+y los porcentajes de versiones anteriores de este documento son históricos.
+
+
+---
+
 # Carrera de DT — Game Design Document
 
 **Versión:** 4.0 (prototipo jugable, publicado en GitHub Pages)

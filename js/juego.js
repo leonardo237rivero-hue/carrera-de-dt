@@ -69,9 +69,9 @@ function pintarDuelo(){
   $("#s-duelo").innerHTML=`
     <h2 class="disp">Duelo</h2>
     <p>Los dos juegan su carrera por separado, cuando cada uno pueda.
-    El código hace que reciban <b>exactamente</b> las mismas situaciones, las mismas
-    cartas del mercado, las mismas ruletas y las mismas tiradas de azar.
-    Gana el que saca mejor puntaje.</p>
+    El código comparte una <b>semilla inicial</b>. Si toman caminos distintos,
+    también puede cambiar el orden del azar y del contenido.
+    Comparen las historias; este modo todavía no garantiza un duelo competitivo justo.</p>
     <h3 class="disp">Tu código</h3>
     <div class="codigo-caja">
       <input type="text" id="cod" maxlength="10" value="${tmp.codigo}"
@@ -693,6 +693,7 @@ function siguienteDecision(){
   const d=S.decs[S.decIdx];
   const ops=opcionesValidas(d);
   S.opsActuales=ops;
+  S.indicesActuales=ops.map(o=>d[2].indexOf(o));
   $("#s-decision").innerHTML=`
     <h2 class="disp">${t3("Decisión","Decisão","Decision")} ${S.decIdx+1} ${t3("de","de","of")} ${S.decs.length}</h2>
     <div class="ficha-sit"><div class="cat">${d[0]}</div><p>${d[1]}</p></div>
@@ -700,6 +701,8 @@ function siguienteDecision(){
   ir("decision");
 }
 function tomar(i){
+  const indiceReal=S.indicesActuales&&S.indicesActuales[i];
+  if(indiceReal>=0) i=indiceReal;
   const d=enIdioma(S.decs[S.decIdx]), o=d[2][i];
   let [txt,res,dir,hin,ves]=o;
   // el perfil del DT cambia lo que cuesta cada cosa
@@ -1270,7 +1273,7 @@ function pintarReporte(){
     ${barraCambio(t3("Automatismos","Automatismos","Automatisms"),S.autoAntes||0,S.auto)}
     ${!S.esSeleccion?`<p class="mini">${t3("Entran","Entram","In")} <b>${c.ingreso}</b> ${t3("de presupuesto (taquilla y premios).","de orçamento (bilheteria e prêmios).","budget (gate and prizes).")}</p>`:""}
 
-    ${c.sorp?(()=>{const m=c.sorp.m, t=moralejaTxt(R_el_local(c.sorp.gane?TITULARES_SUERTE.bien:TITULARES_SUERTE.mal));
+    ${c.sorp?(()=>{const m=c.sorp.m, t={t:t3('La tabla no cuenta toda la historia','A tabela não conta tudo','The table does not tell the whole story'),v:t3('La fuerza previa favorecía a otro resultado; no alcanza para atribuirlo a una sola decisión.','A força prévia favorecia outro resultado; não basta para atribuí-lo a uma decisão.','Pre-match strength favoured a different result; that does not identify a single cause.')};
       return `<div class="moraleja"><div class="titular">“${t.t}”</div>
       <div class="verdad"><b>${c.sorp.gane?t3("Ganaste siendo menos:","Venceu sendo inferior:","You won as underdogs:"):t3("Perdiste siendo más:","Perdeu sendo superior:","You lost as favourites:")}</b> ${m.gf}-${m.gc} ${t3("vs","vs","vs")} ${m.rival.n}. ${t.v}</div>
       <div class="cierre">${t3("El resultado de una decisión no prueba que la decisión haya sido buena.","O resultado de uma decisão não prova que ela foi boa.","The outcome of a decision doesn't prove the decision was good.")}</div></div>`;})():""}
@@ -1623,5 +1626,3 @@ function copiar(){
   if(navigator.clipboard?.writeText) navigator.clipboard.writeText(t).then(ok).catch(ok);
   else ok();
 }
-setIdioma(idiomaGuardado());
-portada();

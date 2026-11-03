@@ -293,7 +293,7 @@ function introClub(sigue){
     if(info.dt) filas.push([t3("DT histórico","Técnico histórico","Legendary coach"),info.dt]);
   }
   if(idolo) filas.push([t3("Ídolo","Ídolo","Idol"),idolo.n]);
-  if(cla) filas.push([t3("Clásico","Clássico","Derby"),`${escudo(cla,18)} ${cla.n}`]);
+  if(cla) filas.push([cla.esClasicoReal?t3("Clásico","Clássico","Derby"):t3("Rival destacado en esta liga","Rival de destaque nesta liga","Featured league opponent"),`${escudo(cla,18)} ${cla.n}`]);
   const glo=info?L(info.glo):sel?L(sel.glo):"";
   const meta=info?L(info.meta):"";
   const cul=info?L(info.cul):sel?L(sel.cul):"";
