@@ -211,6 +211,7 @@ function correrVivo(evs,desde,hasta,fin){
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const paso=()=>{
     if(S.pant!=="partido") return;
+    if(V.pausa){setTimeout(paso,80);return;}
     m++; V.min=m;
     evs.filter(e=>e.m===m).forEach(e=>{
       V.ev.push(e);

@@ -1,8 +1,8 @@
 // v10: núcleo completo offline; un script ausente nunca recibe HTML.
-const VERSION='cdt-v10-0-0';
+const VERSION='cdt-v11-0-0';
 const NUCLEO=['./','index.html','manifest.webmanifest','css/estilos.css','css/direccion.css','assets/banco-del-sur.png',
  'js/tactica.js','js/decisiones.js','js/datos.js','js/planteles.js','js/i18n/core.js','js/i18n/textos.js','js/i18n/datos-i18n.js','js/i18n/pool-pt.js','js/i18n/pool-en.js','js/i18n/pool-extra.js','js/i18n/aplicar.js',
- 'js/nucleo.js','js/cancha.js','js/ui.js','js/club.js','js/momentos.js','js/zonas.js','js/temporada.js','js/seleccion.js','js/idea.js','js/vivo.js','js/vestuario.js','js/juego.js','js/ciclo.js','js/comunicacion.js','js/direccion.js'];
+ 'js/nucleo.js','js/cancha.js','js/ui.js','js/club.js','js/momentos.js','js/zonas.js','js/temporada.js','js/seleccion.js','js/idea.js','js/vivo.js','js/vestuario.js','js/juego.js','js/ciclo.js','js/comunicacion.js','js/direccion.js','js/interiores.js','css/interiores.css','assets/interiores/vestuario.png','assets/interiores/banco.png','assets/interiores/jugadores.png','assets/interiores/entrenador.png','assets/interiores/dt-banco.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(VERSION).then(c=>c.addAll(NUCLEO)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('cdt-')&&k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

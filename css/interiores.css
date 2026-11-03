@@ -1,0 +1,469 @@
+/* v11 — cuaderno, personas y banco. Club real en cada componente. */
+:root{--equipo1:#173b34;--equipo2:#eadfc7;--equipo-tinta:#fff9ec;--equipo-acento:#173b34;--papel-interior:#f3eddf}
+
+#app{max-width:1440px}
+main{padding:32px 42px}
+
+body:not(.con-club) #app{max-width:1060px}
+
+body.con-club .btn:not(.sec){background:var(--equipo-acento);color:#fff9ec}
+
+body.con-club .pill.on{background:var(--equipo-acento)!important;color:#fff9ec!important;border-color:var(--equipo-acento)!important}
+
+.cabecera-interior{background:var(--equipo1);color:var(--equipo-tinta);border-bottom:5px solid var(--equipo2);padding:18px 36px 14px;backdrop-filter:none}
+
+.cabecera-interior .hinfo b{font-size:29px;letter-spacing:.025em}
+
+.cabecera-interior .hinfo span,.cabecera-interior .hstat span,.cabecera-interior .dt-mini small,.cabecera-interior .cab-idea{color:var(--equipo-tinta);opacity:.88}
+
+.cabecera-interior .hinfo .cab-contexto{display:block;font-size:9px;letter-spacing:.2em;margin-bottom:7px}
+
+.cabecera-interior .hstats{margin-top:17px;gap:28px}
+
+.cabecera-interior .hstat{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+
+.cabecera-interior .hstat b{font-size:19px}
+.cabecera-interior .hbar{width:100%;background:#ffffff45}
+
+.cabecera-interior .hbar i{background:var(--equipo-tinta)!important;opacity:.85}
+
+.cabecera-interior .cab-idea{border-top-color:currentColor;padding-top:9px;margin-top:12px;font-size:11px;letter-spacing:.04em}
+
+.cabecera-interior .dt-mini{font-family:var(--cond);font-size:19px;text-transform:uppercase}
+
+.cabecera-interior .retrato-dt{border:1px solid #ffffff55;border-radius:4px}
+
+.titulo-interior{display:flex;justify-content:space-between;gap:35px;align-items:center;margin-bottom:30px;padding-bottom:25px;border-bottom:1px solid #aeb6a0}
+
+.titulo-interior h2.disp{font-size:clamp(42px,5vw,76px);font-style:italic;letter-spacing:-.025em;line-height:.94;margin-bottom:15px}
+
+.titulo-interior .etq{color:var(--equipo-acento);font-weight:800}
+.titulo-interior p:last-child{margin:0;font-size:18px;font-style:italic}
+
+.sello-interior{display:flex;align-items:center;gap:15px;max-width:230px;text-transform:uppercase;font:800 26px/1 var(--cond)}
+
+.sello-interior .escudo{flex-shrink:0}
+
+.gestion-editorial{display:grid;grid-template-columns:minmax(0,1.17fr) minmax(0,1fr);gap:34px;align-items:start}
+
+.pizarra-titulares{background:#254e42;border:8px solid #c8c3aa;box-shadow:0 3px 0 #173b3422;position:relative}
+
+.pizarra-rotulo{padding:13px 18px 7px;display:flex;justify-content:space-between;color:#f4eed8;font:700 18px var(--cond);letter-spacing:.12em}
+
+.pizarra-titulares .cancha-cuaderno{display:block;width:100%;background:#234f42;border-radius:0;max-height:660px}
+
+.cancha-cuaderno text{font-family:var(--cond),sans-serif}
+
+.cancha-cuaderno g[role=button]{cursor:pointer;outline:none}
+
+.cancha-cuaderno g[role=button]:focus-visible circle{stroke:#f4d482;stroke-width:6px}
+
+.cancha-cuaderno g[role=button]:hover circle{stroke:#f4d482}
+
+.nota-pizarra{margin:0;padding:10px 16px 15px;color:#e6e4ce;font-size:12px;line-height:1.5}
+
+.lectura-once{margin-top:18px}
+.lectura-once>summary{font-size:13px}
+
+.banco-titulo{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #193b35;padding:0 0 12px}
+
+.banco-titulo h3.disp{font-size:32px;margin:0;font-style:italic}
+.banco-titulo>span{font-size:12px;color:var(--tenue)}
+
+.banco-instruccion{font-size:13px;margin:12px 0 16px;min-height:38px}
+
+.lista-personas{max-height:420px;overflow:auto;scrollbar-width:thin;border-bottom:1px solid #b6bfaa}
+
+.persona-fila{display:grid;grid-template-columns:64px minmax(0,1fr) 36px;align-items:center;gap:13px;width:100%;text-align:left;border:0;border-top:1px solid #b6bfaa;background:transparent;padding:10px 8px;color:var(--texto);cursor:pointer}
+
+.persona-fila.seleccionada{background:#dde3d5;box-shadow:inset 4px 0 var(--equipo-acento)}
+
+.persona-fila:hover{background:#e1e5d7}
+.persona-datos{min-width:0}
+.persona-datos>b{display:block;font:700 24px/1.1 var(--cond);text-transform:uppercase}
+
+.persona-datos>small{display:block;font-size:11px;color:var(--tenue);margin:5px 0}
+
+.persona-datos>em{font-size:12px;font-style:normal;color:var(--equipo-acento)}
+.persona-nivel{font:800 29px var(--cond);text-align:center}
+
+.retrato-jugador{position:relative;display:inline-block;width:64px;height:77px;isolation:isolate;flex-shrink:0;vertical-align:bottom}
+
+
+.camiseta-ilustrada{display:inline-block;position:relative;width:140px;aspect-ratio:180/156;vertical-align:middle}
+
+.camiseta-ilustrada>svg{width:100%;height:100%;display:block;filter:drop-shadow(0 2px 2px #0d211c28)}
+
+.camiseta-escudo{position:absolute;left:59%;top:31%;width:14%;height:20%;display:flex;align-items:center;justify-content:center}
+
+.camiseta-escudo .escudo{width:100%!important;height:100%!important}
+.camiseta-escudo img,.camiseta-escudo svg{width:100%!important;height:100%!important;object-fit:contain}
+
+.retrato-jugador>.camiseta-ilustrada{position:absolute;bottom:0;left:0;width:100%;height:52%;z-index:1}
+
+.retrato-compuesto{display:block;width:100%;height:100%}
+.retrato-escudo{position:absolute;left:63%;bottom:15%;width:14%;height:17%;display:flex;align-items:center;justify-content:center}
+.retrato-escudo .escudo{width:100%!important;height:100%!important}
+.retrato-escudo img,.retrato-escudo svg{width:100%!important;height:100%!important;object-fit:contain}
+
+.ficha-persona{display:flex;align-items:center;gap:18px;border-top:2px solid #173b34;padding:24px 0 15px;margin-top:24px}
+
+.retrato-jugador.grande{width:146px;height:177px}
+.ficha-persona>div{min-width:0;flex:1}
+.ficha-persona .etq{margin-bottom:8px;font-size:9px}
+
+.ficha-persona h3.disp{font-size:32px;line-height:1;margin:0 0 8px;font-style:italic}
+
+.ficha-persona p{font-size:12px;margin-bottom:6px}
+.ficha-persona strong{font-size:14px;color:var(--equipo-acento)}
+
+.ficha-persona .btn{margin-top:9px;padding:11px 14px;font-size:15px;min-height:42px}
+.detalle-persona{color:var(--tenue)}
+
+.firma-principios{display:grid;grid-template-columns:1.1fr repeat(4,1fr);gap:20px;border-block:2px solid #173b34;margin-top:28px;padding:20px 0;align-items:center}
+
+.firma-principios>b{font:800 27px/1 var(--cond);font-style:italic}
+
+.firma-principios>div{border-left:1px solid #a8b29e;padding-left:17px;min-width:0}
+
+.firma-principios span{display:block;font-size:10px;color:var(--tenue);margin-bottom:5px}
+.firma-principios strong{display:block;font:700 18px/1.2 var(--cond);text-transform:uppercase}
+
+.accion-editorial{justify-content:flex-end;margin-top:25px}
+.accion-editorial>.btn{min-width:240px}
+
+.plan-editorial{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:35px;margin-top:25px}
+
+.plan-editorial .plan-base{grid-template-columns:1fr;margin-top:0}
+.plan-editorial .plan-base>div{border:0;border-bottom:1px solid var(--borde)}
+
+.plan-editorial .firma-principios{grid-template-columns:1fr 1fr;gap:15px}
+.plan-editorial .firma-principios>b{grid-column:1/-1}
+.plan-editorial .firma-principios>div{padding-left:12px}
+
+.plan-editorial .cancha-cuaderno{max-height:510px}
+.plan-trabajo details{margin-top:0}
+
+/* Vestuario: espacio neutro + camiseta, escudo y jugadores de esta partida. */
+.arenga{border:0;padding:0;background:transparent;overflow:visible}
+
+.charla-club{background:var(--equipo1);color:var(--equipo-tinta);display:flex;align-items:center;gap:15px;padding:14px 24px;border-bottom:4px solid var(--equipo2);font:800 23px var(--cond);text-transform:uppercase}
+
+.charla-club>span:last-child{margin-left:auto;text-align:right;font:500 12px/1.4 'Barlow',sans-serif;max-width:45%}
+
+.escena-vestuario{height:380px;position:relative;isolation:isolate;background:#afaa92 url('../assets/interiores/vestuario.png') center 50%/cover;overflow:hidden;border-bottom:5px solid var(--equipo-acento)}
+
+.escena-vestuario:after{content:'';position:absolute;inset:0;background:linear-gradient(transparent 65%,#162e2450);pointer-events:none;z-index:-1}
+
+.bandera-equipo{display:flex;align-items:center;justify-content:center;gap:12px;background:linear-gradient(180deg,var(--equipo1) 0 32%,var(--equipo2) 32% 66%,var(--equipo1) 66%);color:var(--equipo-tinta);border:2px solid #ffffff55;box-shadow:2px 5px 9px #0003;padding:12px 18px;max-width:230px}
+
+.bandera-equipo>span:last-child{background:var(--equipo1);color:var(--equipo-tinta);padding:6px;font:800 21px/1 var(--cond);text-transform:uppercase}
+
+.bandera-equipo .escudo{flex-shrink:0;filter:drop-shadow(0 1px 2px #0006)}
+
+.escena-vestuario>.bandera-equipo{position:absolute;top:25px;left:26px;transform:rotate(-3deg);z-index:-1}
+
+.vestuario-personajes{position:absolute;bottom:18px;left:4%;right:3%;display:flex;align-items:end;justify-content:space-around;gap:8px}
+
+.jugador-escena{position:relative;flex:1;max-width:230px;text-align:center;filter:drop-shadow(4px 5px 4px #201b1b38)}
+
+.retrato-jugador.en-escena{width:100%;height:270px}
+.jugador-escena:nth-child(even) .en-escena{height:250px}
+
+.en-escena>.camiseta-ilustrada{height:52%;width:100%;bottom:0}
+
+.numero-persona{position:absolute;right:3%;bottom:45%;background:#f7efd8;color:#183b34;border:1px solid #718171;border-radius:50%;width:29px;height:29px;font:800 18px var(--cond);line-height:27px;z-index:3}
+
+.escena-firma{position:absolute;right:18px;bottom:12px;display:flex;align-items:center;gap:9px;background:#17352ce8;color:#fff4de;padding:7px 12px;font:700 15px var(--cond);z-index:5;text-transform:uppercase}
+
+.charla-contenido{padding:24px 26px 10px}
+.charla-contenido>h2.disp{font-style:italic;font-size:clamp(32px,4.5vw,65px);max-width:none}
+
+.charla-contenido>.huella-idea{margin-top:0;padding:8px 12px;font-size:12px}
+.charla-contenido>.huella-idea span{font-size:11px}
+
+.ar-caras{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;margin:22px 0;border-block:1px solid #aeb6a0;background:none;border-radius:0;padding:0}
+
+.ar-cara{border:0;border-right:1px solid #b9c1ac;background:transparent;padding:17px 12px;border-radius:0;text-align:left;box-shadow:none!important}
+
+.ar-cara:last-child{border-right:0}
+.ar-cara b{font:800 22px/1 var(--cond);text-transform:uppercase;margin:8px 0;display:block}
+.ar-cara>.mini{font-size:11px}
+
+.ar-cara .ar-av{display:block;width:25px;height:25px;background:var(--equipo-acento)!important;color:#fff9ec!important;border-radius:50%;font:700 15px var(--cond);line-height:25px;margin:0}
+
+.ar-est{font-size:12px;line-height:1.4;color:var(--tenue);min-height:34px}
+.reaccion-persona{font-size:11px;font-weight:700;color:var(--equipo-acento);display:block;margin-top:8px}
+
+.ar-cara.ok{background:#dce5d24d}
+.ar-cara.mal{background:#af49320c}
+
+.ar-orden{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:25px 0}
+
+.ar-slot{border:1px solid #aab49e;background:#f8f2e4;border-radius:0;padding:15px;min-height:105px}
+
+.ar-slot>span{font:800 18px var(--cond);color:var(--equipo-acento);text-transform:uppercase}
+.ar-slot>b{font-size:13px;line-height:1.45;margin-top:9px}
+.ar-slot>i{font-size:13px}
+
+.ar-frases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ar-frase{border-radius:0!important;border:1px solid #b6bfaa;padding:16px;font-size:14px;background:transparent;line-height:1.5}
+
+.ar-tono{display:block;font:800 18px var(--cond);text-transform:uppercase;color:var(--equipo-acento);margin-bottom:5px}
+
+.charla-contenido>.discurso-libre{padding-top:20px}
+.charla-contenido .voz-editor{background:#faf5e9}
+
+/* Vivo y entretiempo comparten datos, con dos composiciones distintas. */
+.partido-editorial .huella-idea{border-color:var(--equipo-acento)}
+
+.marcador-editorial{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:20px;background:var(--equipo1);color:var(--equipo-tinta);border-radius:0;padding:17px 24px;border-bottom:5px solid var(--equipo2);position:relative}
+
+.marcador-club{display:flex;align-items:center;gap:12px;font:800 26px/1 var(--cond);text-transform:uppercase}
+.marcador-club.visitante{justify-content:flex-end;text-align:right}
+
+#vvM{font:900 51px/1 var(--disp);white-space:nowrap}
+.marcador-editorial #vvMin{font:800 32px var(--cond);border-left:1px solid currentColor;padding-left:20px}
+
+.marcador-comp{grid-column:1/-1;font-size:11px;letter-spacing:.05em;text-align:center;opacity:.9}
+.marcador-editorial .tk-barra{position:absolute;bottom:0;left:0;width:100%;height:3px;background:transparent}
+.marcador-editorial #vvBar{background:var(--equipo-tinta)}
+
+.vivo-editorial{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);border-bottom:1px solid #acb79f}
+
+.banco-escena{position:relative;min-height:570px;background:#7b7c61 url('../assets/interiores/banco.png') center/cover;overflow:hidden}
+.dt-de-espaldas{position:absolute;left:0;bottom:25px;width:52%;height:90%;background:url('../assets/interiores/dt-banco.png') center bottom/contain no-repeat;filter:drop-shadow(4px 5px 3px #171d2438)}
+.dt-de-espaldas>span{position:absolute;left:58%;top:26%;width:7%;height:7%}.dt-de-espaldas .escudo,.dt-de-espaldas img,.dt-de-espaldas svg{width:100%!important;height:100%!important;object-fit:contain}
+.banco-lectura .pizarra-partido{max-height:490px}
+
+.bandera-banco{position:absolute;top:20px;right:20px;transform:rotate(3deg)}
+.bandera-banco .bandera-equipo{max-width:190px}
+.bandera-banco .bandera-equipo .escudo{width:45px!important;height:53px!important}
+.bandera-banco .bandera-equipo>span:last-child{font-size:18px}
+
+.banco-identidad{position:absolute;bottom:70px;left:26px;display:flex;align-items:center;gap:15px;background:#f3eddfed;padding:13px 18px;max-width:90%;border-left:4px solid var(--equipo-acento)}
+
+.banco-identidad>.camiseta-ilustrada{width:100px}
+.banco-identidad>div{display:flex;align-items:center;gap:12px}
+.banco-identidad>div>span{font:800 22px/1.1 var(--cond);text-transform:uppercase}
+.banco-identidad small{display:block;font:400 12px 'Barlow',sans-serif;margin-top:6px}
+
+.banco-leyenda{position:absolute;bottom:0;left:0;right:0;background:#132f29ed;color:#fff5dc;display:flex;align-items:baseline;gap:15px;padding:15px 24px}
+.banco-leyenda>span{font-size:10px;letter-spacing:.14em}
+.banco-leyenda>b{font:800 23px var(--cond);text-transform:uppercase}
+
+.banco-lectura{padding:24px 22px;background:#f3eddf}
+.banco-lectura .zonas{width:100%;max-height:390px;border-radius:0;display:block;margin:0 auto;background:#234b3f;padding:0;border:6px solid #c3c2a7}
+.banco-lectura .etq{margin-bottom:12px}
+
+.leyenda-equipos{display:flex;align-items:center;gap:6px;font-size:10px;margin-top:12px;flex-wrap:wrap}
+.leyenda-equipos>span:not(.escudo){margin:0 4px}
+.banco-lectura details{margin-bottom:0}
+.banco-lectura summary{font-size:12px}
+
+.controles-banco{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;background:var(--equipo1);color:var(--equipo-tinta);gap:15px}
+
+.controles-banco>span{font:800 23px var(--cond);font-style:italic}
+.controles-banco .btn.sec{color:var(--equipo-tinta);border-color:currentColor}
+
+.relato-editorial{max-height:185px;overflow:auto;font-size:13px;padding:12px 18px;border:1px solid #b0b99f;border-top:0;background:#f8f2e5}
+.relato-editorial .vf{border-left-color:var(--equipo-acento)}
+
+.partido-editorial[data-fase=entretiempo]>.vivo-editorial,.partido-editorial[data-fase=entretiempo]>.controles-banco,.partido-editorial[data-fase=entretiempo]>.relato-editorial{display:none}
+
+.entretiempo-cuaderno{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;padding:30px 0}
+
+.cuaderno-cancha h2.disp{font-size:clamp(40px,4vw,64px);font-style:italic;margin-bottom:22px}
+.cuaderno-cancha>.zonas{display:block;width:100%;height:auto;max-height:600px;padding:0;margin:0;border:8px solid #c3c2a7;border-radius:0;background:#234b3f}
+
+.cuaderno-cancha .firma-principios{grid-template-columns:1fr 1fr;gap:15px}
+.cuaderno-cancha .firma-principios>b{grid-column:1/-1;font-size:23px}
+
+.cuaderno-ordenes .entretiempo{margin:0;border:0;padding:0;background:none;box-shadow:none}
+.cuaderno-ordenes h3.disp{font-size:34px;font-style:italic;margin-top:20px}
+
+.ordenes-cuaderno{display:grid;gap:13px;margin:20px 0}
+.ordenes-cuaderno .card{position:relative;padding:20px 16px 20px 58px;border:1px solid #9eac93;border-radius:0;background:transparent;margin:0}
+
+.ordenes-cuaderno .card.sel{background:#dce5d5;border-color:var(--equipo-acento);box-shadow:inset 5px 0 var(--equipo-acento)}
+
+.ordenes-cuaderno .card b{font:800 25px/1.1 var(--cond);text-transform:uppercase}
+.ordenes-cuaderno .card .sub{font-size:13px;color:#405a4e;margin-top:9px}
+.ordenes-cuaderno .card .costo{font-size:12px;color:#85432e;border-top:1px solid #c2c6b1;padding-top:9px;margin-top:10px}
+
+.letra-orden{position:absolute;top:19px;left:16px;font:800 32px var(--cond);font-style:italic;color:var(--equipo-acento)}
+
+.cuaderno-ordenes .acciones>.btn{width:100%;margin-top:12px}
+.cuaderno-ordenes .huella-idea{margin-top:0}
+
+.previa-marca{float:left;max-width:18%;margin:15px}
+.previa-marca>.camiseta-ilustrada{width:100%}
+
+.mapa-controles{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.mapa-controles>button{background:transparent;color:var(--texto);border:1px solid #9eac93;padding:8px 10px;min-height:40px;font:700 12px 'Barlow',sans-serif;cursor:pointer}
+.mapa-controles>button.on{background:var(--equipo-acento);color:#fff9ec;border-color:var(--equipo-acento)}
+
+.escena-nombre{position:absolute;left:6%;right:6%;bottom:0;background:#f4eedbed;color:#173b34;font:800 17px var(--cond);text-transform:uppercase;padding:3px 6px;z-index:4}
+
+.pizarra-partido{display:block;width:100%;max-height:590px;border:7px solid #bfc0a4;background:#285344}
+.pizarra-partido text{font-family:var(--cond),sans-serif}
+.clave-mapa{font-size:10px;color:var(--tenue);margin:9px 0 0;line-height:1.5}
+.banco-lectura .pizarra-partido{max-height:490px}
+.banco-lectura .mapa-controles>button{padding:8px;font-size:11px}
+.cuaderno-cancha>.mapa-interior{margin-top:20px}
+
+.charla-contenido .pv-se{color:var(--equipo-acento)}
+
+.partido-editorial .previa{background:var(--equipo1);color:var(--equipo-tinta);border-bottom:5px solid var(--equipo2)}
+
+.partido-editorial .previa .pv-mini,.partido-editorial .previa .pv-se{color:var(--equipo-tinta)!important}
+
+@media(min-width:1100px){#s-plantel .gestion-editorial{grid-template-columns:minmax(0,1.12fr) minmax(0,1fr)}
+.gestion-cancha .cancha-cuaderno{max-height:640px}
+.charla-contenido .acciones{justify-content:flex-end}
+}
+
+@media(max-width:850px){main{padding:24px}
+.gestion-editorial,.plan-editorial{gap:24px}
+.persona-datos>b{font-size:20px}
+.persona-fila{grid-template-columns:49px minmax(0,1fr) 30px;gap:8px}
+.persona-fila .retrato-jugador{width:49px;height:61px}
+.ficha-persona{gap:10px}
+.ficha-persona .grande{width:100px;height:130px}
+.ficha-persona h3.disp{font-size:27px}
+.firma-principios{gap:12px}
+.firma-principios>b{font-size:22px}
+.firma-principios strong{font-size:16px}
+.escena-vestuario{height:340px}
+.retrato-jugador.en-escena{height:215px}
+.jugador-escena:nth-child(even) .en-escena{height:200px}
+.vivo-editorial{grid-template-columns:1.3fr 1fr}
+.banco-identidad{left:12px;bottom:80px;padding:12px}
+.banco-identidad .retrato-dt{width:56px;height:56px}
+.banco-identidad>.camiseta-ilustrada{width:70px}
+.banco-escena{min-height:500px}
+.marcador-club{font-size:21px}
+.marcador-editorial{gap:12px;padding:16px}
+.entretiempo-cuaderno{gap:24px}
+.charla-contenido{padding:22px 12px}
+.ar-caras{grid-template-columns:repeat(5,minmax(0,1fr))}
+.ar-cara{padding:14px 8px}
+.ar-cara b{font-size:18px}
+}
+
+@media(max-width:600px){main{padding:20px 15px}
+.cabecera-interior{padding:12px 14px 10px;border-bottom-width:4px}
+.cabecera-interior .hinfo b{font-size:22px}
+.cabecera-interior .hinfo .cab-contexto{font-size:8px;margin-bottom:3px}
+.cabecera-interior .hstats{gap:10px;margin-top:12px}
+.cabecera-interior .hstat{gap:4px}
+.cabecera-interior .hstat b{font-size:17px}
+.cabecera-interior .hstat span{font-size:9px}
+.cabecera-interior .cab-idea{font-size:10px}
+.cabecera-interior .dt-mini{font-size:15px}
+.titulo-interior{gap:15px;margin-bottom:20px;padding-bottom:18px;align-items:flex-start}
+.titulo-interior h2.disp{font-size:46px}
+.titulo-interior p:last-child{font-size:14px}
+.titulo-interior .etq{font-size:9px;margin-bottom:12px}
+.sello-interior{width:66px;max-width:66px;display:block;text-align:center}
+.sello-interior>.escudo{width:48px!important;height:55px!important}
+.sello-interior img{width:48px!important;height:55px!important}
+.sello-interior>span:last-child{display:block;font-size:12px;line-height:1.2;margin-top:7px;overflow-wrap:break-word}
+.gestion-editorial,.plan-editorial{grid-template-columns:1fr;gap:24px}
+.pizarra-titulares{border-width:5px}
+.pizarra-rotulo{font-size:14px;padding:10px 12px}
+.gestion-cancha .cancha-cuaderno{max-height:none}
+.nota-pizarra{font-size:11px;padding:10px 12px}
+.lectura-once{margin-top:12px}
+.lista-personas{max-height:370px}
+.persona-fila{grid-template-columns:58px minmax(0,1fr) 34px;padding:8px}
+.persona-fila .retrato-jugador{width:58px;height:70px}
+.persona-datos>b{font-size:22px}
+.banco-instruccion{min-height:0}
+.ficha-persona .grande{width:120px;height:150px}
+.ficha-persona h3.disp{font-size:30px}
+.ficha-persona .btn{font-size:14px}
+.firma-principios{grid-template-columns:1fr 1fr;margin-top:20px;padding:17px 0;gap:16px}
+.firma-principios>b{grid-column:1/-1;font-size:25px}
+.firma-principios>div{padding-left:10px}
+.firma-principios strong{font-size:17px}
+.accion-editorial>.btn{width:100%}
+.charla-club{padding:12px;font-size:19px;gap:9px}
+.charla-club>span:last-child{font-size:10px;max-width:40%}
+.escena-vestuario{height:300px;margin-inline:-15px}
+.escena-vestuario>.bandera-equipo{top:14px;left:17px;padding:6px 10px;max-width:170px}
+.escena-vestuario>.bandera-equipo .escudo{width:38px!important;height:45px!important}
+.escena-vestuario>.bandera-equipo>span:last-child{font-size:15px}
+.vestuario-personajes{left:0;right:0;bottom:24px;gap:0}
+.retrato-jugador.en-escena{height:155px}
+.jugador-escena:nth-child(even) .en-escena{height:145px}
+.numero-persona{width:22px;height:22px;font-size:13px;line-height:20px;right:-1%;bottom:36%}
+.escena-firma{font-size:12px;padding:4px 9px;bottom:5px;right:5px}
+.escena-firma .escudo{width:22px!important;height:26px!important}
+.charla-contenido{padding:20px 0 0}
+.charla-contenido>h2.disp{font-size:39px}
+.ar-caras{grid-template-columns:1fr;margin:20px 0}
+.ar-cara{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 10px;padding:12px 4px;border-right:0;border-bottom:1px solid #c0c5b2}
+.ar-cara:last-child{border-bottom:0}
+.ar-cara b{margin:0;font-size:21px}
+.ar-cara>.mini,.ar-cara>.ar-est,.ar-cara>.reaccion-persona{grid-column:2}
+.ar-cara .ar-av{grid-row:1/4;align-self:start;margin-top:3px}
+.ar-est{min-height:0;font-size:12px}
+.ar-orden,.ar-frases{grid-template-columns:1fr;gap:10px}
+.ar-slot{min-height:73px;padding:13px}
+.ar-frase{min-height:90px}
+.charla-contenido .acciones .btn{width:100%}
+.marcador-editorial{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);padding:13px 10px;gap:10px}
+.marcador-club{font-size:17px;gap:5px;flex-direction:column;text-align:center}
+.marcador-club.visitante{flex-direction:column-reverse;text-align:center}
+.marcador-club .escudo{width:32px!important;height:37px!important}
+.marcador-club img{width:32px!important;height:37px!important}
+#vvM{font-size:37px}
+.marcador-editorial #vvMin{grid-column:2;grid-row:2;font-size:23px;border:0;padding:0;text-align:center}
+.marcador-comp{font-size:10px;grid-row:3}
+.vivo-editorial{grid-template-columns:1fr}
+.banco-escena{min-height:350px}
+.banco-leyenda{padding:11px 14px;gap:10px}
+.banco-leyenda>span{font-size:9px}
+.banco-leyenda>b{font-size:20px}
+.banco-identidad{left:13px;bottom:65px;gap:9px}
+.banco-identidad>.camiseta-ilustrada{width:80px}
+.banco-identidad>div>span{font-size:19px}
+.banco-lectura{padding:20px 16px}
+.banco-lectura>.zonas{max-height:380px;max-width:310px}
+.leyenda-equipos{justify-content:center}
+.controles-banco{padding:12px 14px}
+.controles-banco>span{font-size:20px}
+.entretiempo-cuaderno{grid-template-columns:1fr;gap:20px;padding-top:23px}
+.cuaderno-cancha h2.disp{font-size:43px}
+.cuaderno-cancha>.zonas{max-height:480px}
+.cuaderno-ordenes h3.disp{font-size:31px}
+.ordenes-cuaderno .card{padding:17px 13px 17px 49px}
+.ordenes-cuaderno .card b{font-size:23px}
+.letra-orden{left:13px;top:16px;font-size:28px}
+.previa-marca{display:none}
+}
+
+@media(prefers-reduced-motion:reduce){.retrato-jugador,.cancha-cuaderno{transition:none}
+.vf-caja{animation:none}
+}
+
+@media(max-width:600px){.vestuario-personajes{overflow-x:auto;justify-content:flex-start;padding:0 15px 10px;gap:12px;bottom:30px;scroll-snap-type:x proximity}
+.jugador-escena{flex:0 0 145px;scroll-snap-align:center}
+.retrato-jugador.en-escena,.jugador-escena:nth-child(even) .en-escena{height:180px}
+.escena-nombre{font-size:15px}
+.controles-banco{flex-wrap:wrap}
+.controles-banco>span{flex-basis:100%}
+.mapa-controles>button{min-height:44px}
+.charla-club{overflow-wrap:anywhere}
+}
+
+@media(max-width:600px){.cabecera-interior .hinfo{flex:1;min-width:0}
+.cabecera-interior .hinfo b{overflow-wrap:anywhere}
+.cabecera-interior .dt-mini{flex:0 1 105px;min-width:0;margin-left:8px;font-size:14px}
+.cabecera-interior .dt-mini>span{min-width:0;overflow-wrap:anywhere;white-space:normal}
+.cabecera-interior .dt-mini .retrato-dt{width:32px;height:32px;flex-shrink:0}
+}
+
+@media(min-width:601px){.banco-identidad{right:18px;left:auto;bottom:75px;padding:10px 13px}.banco-identidad>.camiseta-ilustrada{display:none}.banco-identidad .retrato-dt{width:52px;height:60px}.banco-identidad>div>span{font-size:20px}}
+@media(max-width:600px){.banco-identidad{right:10px;left:auto;bottom:58px;padding:9px;max-width:53%}.banco-identidad>.camiseta-ilustrada{display:none}.banco-identidad .retrato-dt{width:40px;height:48px}.banco-identidad>div{gap:6px}.banco-identidad>div>span{font-size:16px}.dt-de-espaldas{width:60%}}

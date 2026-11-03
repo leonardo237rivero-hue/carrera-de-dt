@@ -103,9 +103,9 @@ function fuerza(eq,rv,local){
 }
 function poisson(l){ const Lm=Math.exp(-l); let k=0,p=1; do{k++;p*=S.rng();}while(p>Lm&&k<12); return k-1; }
 function goleador(once){
-  const w=once.map(o=>(ROL[o.rol].a[0]+0.04)*Math.max(20,o.rt));
+  const w=once.map(o=>o.rol==='POR'?0:(ROL[o.rol].a[0]+0.04)*Math.max(20,o.rt));
   let t=w.reduce((a,b)=>a+b,0)*S.rng();
-  for(let i=0;i<w.length;i++){ t-=w[i]; if(t<=0) return once[i]; }
+  for(let i=0;i<w.length;i++){ t-=w[i]; if(w[i]>0&&t<=0) return once[i]; }
   return once[once.length-1];
 }
 function apellido(n){ return (n||"").split(" ").slice(1).join(" ")||n; }
