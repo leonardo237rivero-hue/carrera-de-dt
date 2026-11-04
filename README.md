@@ -1,8 +1,10 @@
 # Carrera de DT
 
-**Revisión local v11:** rediseño de las pantallas interiores con identidad de club, pizarra interactiva,
-vestuario ilustrado, retratos y DT que envejece. Preparado en `arte-v11-interiores` para revisar antes
-de publicar. [Cambios, funcionamiento y pruebas](docs/V11_INTERIORES.md).
+**v13 — Diseño del juego:** vacantes y entrevista con compromisos,
+presentación al plantel, arengas propias antes del partido y en el descanso,
+puestos específicos, construcción organizada y legado por club.
+Conserva la dirección A / Cine de cancha de v12 y futbolistas sin retratos.
+[Cambios, pruebas y límites pendientes](docs/V13_GAME_DESIGN.md).
 
 Juego de navegador donde construís una carrera de entrenador de 3, 6 o 10 temporadas.
 Sostenés una idea, manejás el vestuario y elegís cómo intervenir en los partidos importantes.

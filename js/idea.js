@@ -128,7 +128,7 @@ function formaIdea(f,e,fase,m){
     } else {
       if(me==="pos"){ Y=24+0.66*y; if(/^(LT|CA)/.test(s[0])){Y+=16;x=x<50?5:95;} if(/^EX/.test(s[0]))x=x<50?10:90;
         // el 5 baja a recibir y los interiores se adelantan: así se arma el triángulo del medio
-        if(f==="4-3-3"&&s[0]==="MC") Y-=10; if(f==="4-3-3"&&/^M[ID]$/.test(s[0])) Y+=4; }
+        if(f==="4-3-3"&&s[0]==="MCD") Y-=10; if(f==="4-3-3"&&s[0]==="MC") Y+=4; }
       else if(me==="pre"){ Y=30+0.63*y; if(/^(LT|CA)/.test(s[0])) Y+=10; }
       else if(me==="con"){ Y=ROL[s[0]].g==="ATA"?78+0.1*y:10+0.55*y; if(s[0]==="MCO")Y=62; }
       else { Y=ROL[s[0]].g==="ATA"?62+0.15*y:6+0.45*y; }

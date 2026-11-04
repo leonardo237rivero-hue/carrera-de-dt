@@ -14,7 +14,7 @@ ICONO_ARQ.formador='01';ICONO_ARQ.ganador='02';ICONO_ARQ.bombero='03';
 const _pintarIdentidadV9=pintarIdentidad;
 pintarIdentidad=function(){
   _pintarIdentidadV9();const actions=document.querySelector('#s-identidad .acciones');if(!actions)return;
-  const extras=document.createElement('div');extras.className='opciones-carrera';extras.innerHTML=`<label>${t3('Edad al empezar','Idade inicial','Starting age')}<input id="edad-dt" type="number" min="25" max="65" value="${S.edadInicio||35}" onchange="S.edadInicio=clamp(Number(this.value)||35,25,65)"></label><label>${t3('Cómo querés vivir los partidos','Como acompanhar os jogos','How to experience matches')}<select onchange="S.ritmo=this.value"><option value="elegir" ${S.ritmo!=='rapido'?'selected':''}>${t3('Elegir en cada partido importante','Escolher nos jogos grandes','Choose at each big match')}</option><option value="rapido" ${S.ritmo==='rapido'?'selected':''}>${t3('Camino rápido: simular con mi plan','Caminho rápido: simular com meu plano','Fast route: simulate with my plan')}</option></select></label><p class="nota-dato">${t3('La edad cambia tu retrato con las temporadas. Simular usa el motor del partido: no agrega azar ni borra tu idea.','A idade muda o retrato. Simular usa o motor, sem azar extra.','Age changes your portrait over the seasons. Simulation uses the match engine, with no extra randomness.')}</p>`;actions.parentNode.insertBefore(extras,actions);
+  const extras=document.createElement('div');extras.className='opciones-carrera';extras.innerHTML=`<label>${t3('Edad al empezar','Idade inicial','Starting age')}<input id="edad-dt" type="number" min="25" max="65" value="${S.edadInicio||35}" onchange="S.edadInicio=clamp(Number(this.value)||35,25,65)"></label><label>${t3('Cómo querés vivir los partidos','Como acompanhar os jogos','How to experience matches')}<select onchange="S.ritmo=this.value"><option value="elegir" ${S.ritmo!=='rapido'?'selected':''}>${t3('Elegir en cada partido importante','Escolher nos jogos grandes','Choose at each big match')}</option><option value="rapido" ${S.ritmo==='rapido'?'selected':''}>${t3('Camino rápido: simular con mi plan','Caminho rápido: simular com meu plano','Fast route: simulate with my plan')}</option></select></label><p class="nota-dato">${t3('La edad avanza con las temporadas. Simular usa el motor del partido: no agrega azar ni borra tu idea.','A idade avança com as temporadas. Simular usa o motor, sem azar extra.','Age advances with each season. Simulation uses the match engine, with no extra randomness.')}</p>`;actions.parentNode.insertBefore(extras,actions);
 };
 pintarIdea=function(){
   tmp.m=tmp.m||modeloDeEstilo(tmp.e||'Posesion');tmp.e=estiloDeModelo(tmp.m);
@@ -32,7 +32,7 @@ cabecera=function(){
 };
 const _colaPreviaV9=colaPrevia;
 colaPrevia=function(){
-  if(S.introVisto===S.club.n&&!necesitaIdioma()&&!necesitaPrensa()&&S.prensaTemporada!==S.temporada){abrirConferencia();return;}
+  if(S.division===3&&S.introVisto===S.club.n&&!necesitaIdioma()&&!necesitaPrensa()&&S.prensaTemporada!==S.temporada){abrirConferencia();return;}
   _colaPreviaV9();
 };
 const _verPlantelV9=verPlantel;

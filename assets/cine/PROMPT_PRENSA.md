@@ -1,0 +1,5 @@
+# Fondo de prensa
+
+Generado con la herramienta integrada image_gen. Escenario ficticio neutro, sin marcas ni texto. PNG original sin retoque.
+
+Use case: photorealistic-natural. A wide 16:9 production background for the contemporary cinematic football-coach game Carrera DT. Empty modest South American football club press room, from coach eye level at side of an interview desk. A few elegant black broadcast microphones and a water bottle on the RIGHT foreground third, dark graphite blank acoustic panels behind, narrow warm overhead light and cool twilight from a high window. LEFT two-thirds deep quiet shadow for live HTML title overlays. Cinematic restrained photographic realism, convincing low-budget professional football setting, clean and organized, not luxurious, no vintage/grunge aesthetic, no illustrations. No people, no human faces, no heads, no logos, no text, no sponsor board branding, no UI. Palette charcoal, slate, warm white light, absolutely no club-specific red/yellow/blue painted decor. This is a neutral reusable setting; club colours and actual crest will be rendered over it by code.

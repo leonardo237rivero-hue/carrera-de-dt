@@ -276,7 +276,8 @@ function segundoTiempo(){
     if(k==="k") V.enf.cerrar.push(...(V.A.an||V.B.an).sus.slice(0,2).map(p=>p.id));
     V.ev.push({m:46,t:"nota",txt:"↻ "+o.t}); }
   if(V.rivalCierra){ V.enf.rivalCierra=V.rivalCierra; V.ev.push({m:46,t:"nota",txt:t3("Ellos cierran ","Eles fecham ","They shut ")+nomPatron(V.rivalCierra)}); }
-  if(V.enf.arenga) V.enf.arenga=Math.round(V.enf.arenga*500)/1000; // la charla se gasta: la mitad en el segundo tiempo
+  if(V.charlaDescansoV!=null) V.enf.arenga=V.charlaDescansoV;
+  else if(V.enf.arenga) V.enf.arenga=Math.round(V.enf.arenga*500)/1000; // la charla se gasta: la mitad en el segundo tiempo
   S.enfasis=V.enf;
   const {A,B}=equiposVivo(); V.A=A; V.B=B;
   V.p2=jugarMitad(A,B,V.info.neutral,46,90);
