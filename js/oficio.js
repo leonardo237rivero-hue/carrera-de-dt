@@ -105,11 +105,47 @@ const _equipoOficio=miEquipo;
 miEquipo=function(rv){
  const eq=_equipoOficio(rv);if(S.construccion){const r=evaluarConstruccion(S.construccion,rv,ejecucionConstruccion(S.construccion,S.modelo||S.modeloPref),S.modelo||S.modeloPref);eq.mult*=1+r.factor;eq.construccion=r;}
  const vs=eq.once.map(o=>vinculoJugador(o.jug));eq.coh*=1+vs.reduce((s,v)=>s+(v.confianza+v.conviccion+v.rol-120)/3,0)/Math.max(1,vs.length)/3000;
+ const fases=evaluarFasesDT(S.fasesDT,rv,eq.attrs);
+ eq.mult*=1+fases.ataque;
+ eq.fasesDT=fases;
  return eq;
 };
 // El riesgo de cobertura mejora también las opciones del adversario, en rápido y vivo.
 const _fuerzaOficio=fuerza;
-fuerza=function(eq,rv,local){return _fuerzaOficio(eq,rv,local)+(rv.yo&&rv.construccion?.riesgo?rv.construccion.riesgo*100:0);};
+fuerza=function(eq,rv,local){return _fuerzaOficio(eq,rv,local)+(rv.yo?((rv.construccion?.riesgo||0)+(rv.fasesDT?.exposicion||0))*100:0);};
+
+const FASES_DT={
+ creacion:{n:'Creación',a:'Abrir por fuera',b:'Combinar por dentro',d:'Abrir estira un bloque bajo; combinar por dentro aprovecha espacios ante presión alta.'},
+ finalizacion:{n:'Finalización',a:'Pase atrás al punto penal',b:'Centro al segundo palo',d:'El pase atrás explota el espacio tras desbordar; el centro necesita presencia aérea.'},
+ defensa:{n:'Defensa organizada',a:'Cerrar carril central',b:'Saltar sobre el receptor',d:'Cerrar el centro protege ante juego directo; saltar corta apoyos cortos, pero deja espacio detrás.'},
+ recuperacion:{n:'Tras recuperar',a:'Atacar el espacio',b:'Asegurar la posesión',d:'Salir rápido castiga líneas altas; asegurar evita regalar la pelota ante un bloque armado.'},
+ perdida:{n:'Tras perder',a:'Presionar cerca de la pelota',b:'Replegar detrás de la pelota',d:'Presionar incomoda la salida corta; replegar protege contra un pase directo a la espalda.'}
+};
+function evaluarFasesDT(plan,rv,attrs=[]){
+ const m=rv.modelo||modeloDeEstilo(rv.e),alto=m.def==='alto',bajo=m.def==='bajo',directo=m.ofe==='directo';
+ const contexto={creacion:bajo,finalizacion:!bajo,defensa:directo,recuperacion:alto,perdida:!directo};
+ let ataque=0,exposicion=0;
+ for(const [k,favorA] of Object.entries(contexto)){
+  const opcion=plan?.[k];if(opcion!=='a'&&opcion!=='b')continue;
+  const encaja=(opcion==='a')===favorA;
+  const calidad=clamp((Number(attrs[k==='defensa'||k==='perdida'?0:2])||60)/100,.35,1);
+  const efecto=(encaja?.012:-.008)*calidad;
+  if(k==='defensa'||k==='perdida')exposicion-=efecto;else ataque+=efecto;
+ }
+ return {ataque,exposicion,contexto};
+}
+function panelFasesDT(rv){
+ if(!rv)return '';
+ const {contexto}=evaluarFasesDT(S.fasesDT,rv);
+ return `<details class="gd-construccion"><summary>Otras fases del partido</summary><div class="gd-form">${Object.entries(FASES_DT).map(([k,f])=>`<label><b>${f.n}</b><select onchange="elegirFaseDT('${k}',this.value)"><option value="">Mantener el modelo</option>${['a','b'].map(o=>`<option value="${o}" ${S.fasesDT?.[k]===o?'selected':''}>${f[o]}</option>`).join('')}</select><small>${f.d} Para este rival, el cuerpo técnico sugiere: ${f[contexto[k]?'a':'b']}.</small></label>`).join('')}</div></details>`;
+}
+function elegirFaseDT(k,v){if(Object.hasOwn(FASES_DT,k)&&['','a','b'].includes(v))S.fasesDT={...S.fasesDT,[k]:v};}
+const _planFasesDT=pintarPlan;
+pintarPlan=function(){_planFasesDT();if(!(tmp.paso>0))$('#s-planteo .acciones').insertAdjacentHTML('beforebegin',panelFasesDT(S.rivalPlan));};
+const _previaFasesDT=pintarPrevia;
+pintarPrevia=function(){_previaFasesDT();$('#s-partido').insertAdjacentHTML('beforeend',panelFasesDT(tmp.vivo.info.rival));};
+const _descansoFasesDT=pintarEntretiempo;
+pintarEntretiempo=function(...args){_descansoFasesDT(...args);$('#vvPanel .acciones').insertAdjacentHTML('beforebegin',panelFasesDT(tmp.vivo.info.rival));};
 
 function asegurarEtapa(){
  S.etapasDT=S.etapasDT||[];let e=S.etapasDT.at(-1);

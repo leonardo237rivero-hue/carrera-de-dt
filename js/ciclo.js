@@ -1,6 +1,6 @@
 // v10. Dominio: identidad persistente, aprendizaje por principio, edad y contexto.
 // Las órdenes del partido modifican S.enfasis, nunca el ADN ni la memoria aprendida.
-const VERSION_JUEGO='13.0.0';
+const VERSION_JUEGO='13.1.0';
 const GUARDADO_CDT='cdt-v10-pretemporada';
 const copiaModelo=m=>Object.assign({},m||modeloDeEstilo('Posesion'));
 const escapeHTML=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -176,7 +176,7 @@ function guardarPretemporada(){
     localStorage.setItem(GUARDADO_CDT,JSON.stringify(data));
   }catch(e){ /* almacenamiento privado o lleno: la carrera sigue */ }
 }
-function leerGuardado(){try{const d=JSON.parse(localStorage.getItem(GUARDADO_CDT)||'null');return d&&['10.0.0','11.0.0','12.0.0',VERSION_JUEGO].includes(d.version)&&d.estado&&d.estado.club&&Array.isArray(d.estado.plantel)?d:null;}catch(e){return null;}}
+function leerGuardado(){try{const d=JSON.parse(localStorage.getItem(GUARDADO_CDT)||'null');return d&&['10.0.0','11.0.0','12.0.0','13.0.0',VERSION_JUEGO].includes(d.version)&&d.estado&&d.estado.club&&Array.isArray(d.estado.plantel)?d:null;}catch(e){return null;}}
 function continuarGuardado(){
   const d=leerGuardado();if(!d)return;
   S=d.estado;S.rng=mul32(d.rng);S.fijos=(S.fijosIdx||[]).map(i=>S.plantel[i]).filter(Boolean);delete S.fijosIdx;
