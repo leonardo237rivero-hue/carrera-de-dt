@@ -147,3 +147,16 @@ li.ok::before{content:"✓";color:var(--verde)}li.mal::before{content:"✗";colo
 /* ruleta */
 .v14-fichas{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:8px 0 14px}
 @media(prefers-reduced-motion:reduce){.v14-vacante,.v14-pregunta,.v14-respuestas .card,.v14-ronda i,.v14-callar{animation:none}.v14-ficha-j,.v14-pelota{transition:none}}
+
+/* nombre del que define y seña del truco */
+.v14-jug-cancha .tk small{position:absolute;left:50%;top:22px;transform:translateX(-50%);white-space:nowrap;font:700 11px var(--cond);color:#fff;background:#000a;padding:1px 5px;border-radius:3px}
+.v14-jugada.rival .v14-jug-cancha .tk small{transform:translateX(-50%) scaleY(-1);top:-18px}
+.v14-sena{border-left:3px solid var(--ambar);padding-left:10px;margin:8px 0}.v14-sena .mini{display:block}
+/* arte opcional (assets/v14/*.jpg): solo se usa si el archivo existe */
+html.arte-sala .v14-escena.entrevista .v14-escena-fondo{background:linear-gradient(0deg,#0b0e10f0,#0b0e1040 65%),url(../assets/v14/sala.jpg) center/cover}
+html.arte-sala .v14-escena.entrevista .v14-escena-fondo::after{display:none}
+html.arte-practica .v14-escena.practica .v14-escena-fondo{background:linear-gradient(0deg,#0b0e10e0,#0b0e1030 65%),url(../assets/v14/practica.jpg) center/cover}
+html.arte-sala .v14-escena,html.arte-practica .v14-escena.practica{height:220px}
+html.arte-diario .v14-cronica{background:linear-gradient(90deg,#12171bf5 55%,#12171b99),url(../assets/v14/diario.jpg) right center/cover;padding:18px;border-radius:8px}
+html.arte-llamada .v14-callar{background:linear-gradient(90deg,#15191cf2 50%,#15191c80),url(../assets/v14/llamada.jpg) right center/cover}
+.v14-retrato{border-radius:9px;object-fit:cover}

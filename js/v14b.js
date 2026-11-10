@@ -104,6 +104,7 @@ function animarJugada(e,listo){
    <span class="pel" style="left:${ini[0]}%;top:${ini[1]}%"></span><em class="v14-jug-grito"></em></div>
   <div class="v14-jug-pie"></div>`;
  const pel=caja.querySelector('.pel'),pos=J.a.map(p=>p.slice()),PASO=560;let k=0;
+ const def=[...J.pasos].reverse().find(p=>typeof p.b==='number'),tk=caja.querySelector(`[data-a="${def?def.b:0}"]`);if(tk&&gol&&e.nom)tk.innerHTML=`<small>${escapeHTML(e.nom)}</small>`;
  const fin=()=>{
   const pie=caja.querySelector('.v14-jug-pie'),grito=caja.querySelector('.v14-jug-grito');
   if(gol){caja.classList.add('gol');grito.textContent=t3('¡GOL!','GOL!','GOAL!');sonar(mio?'gol':'golrival');
@@ -165,10 +166,24 @@ pintarVivo=function(){
 
 /* ---------- 8. Truco: cantar antes del partido ---------- */
 function diferenciaTruco(){ const V=tmp.vivo,rv=V.info.rival; return (S.club.niv-rv.club.niv)*.25+((V.an0&&V.an0.ventaja)||0); }
+// qué va a contestar el otro banco. Si ya te agarraron mintiendo dos veces, nadie se achica.
+function respuestaTruco(){
+ const V=tmp.vivo,perfil=perfilPicardia(V.info.rival).nombre,dif=diferenciaTruco(),quemado=((S.memoriaTruco||{}).farolesPerdidos||0)>=2;
+ const r=perfil==='Calculador'?(dif>.15?'noquiero':'quiero'):perfil==='Orgulloso'?(V.info.rival.club.niv>=S.club.niv?'retruco':'quiero'):'quiero';
+ return r==='noquiero'&&quemado?'quiero':r;
+}
+// la seña: lo que se le ve al otro DT antes de cantar. El provocador a veces actúa.
+const SENAS_TRUCO={noquiero:['Lo ves incómodo: mira el piso y habla bajo con su ayudante.','Parece desconfortável: olha o chão e fala baixo.','He looks uneasy: eyes down, whispering to his assistant.'],
+ quiero:['Te sostiene la mirada, sin apuro.','Sustenta o olhar, sem pressa.','He holds your gaze, unhurried.'],
+ retruco:['Sonríe y le hace un gesto a su banco: tiene ganas de que le hables.','Sorri e faz um gesto ao banco: quer que você fale.','He grins and nods at his bench: he wants you to say something.']};
+function senaTruco(){
+ const V=tmp.vivo,rv=V.info.rival,perfil=perfilPicardia(rv).nombre,real=respuestaTruco();
+ const actua=perfil==='Provocador'&&hashS(rv.club.n+'|sena|'+S.temporada+'|'+((S.memoriaPicardia||{})[rv.club.n]||{partidos:0}).partidos)%3===0;
+ return t3(...SENAS_TRUCO[actua?'noquiero':real]);
+}
 function cantarTruco(){
  const V=tmp.vivo;if(!V||V.truco)return;
- const perfil=perfilPicardia(V.info.rival).nombre,dif=diferenciaTruco();
- const resp=perfil==='Calculador'?(dif>.15?'noquiero':'quiero'):perfil==='Orgulloso'?(V.info.rival.club.niv>=S.club.niv?'retruco':'quiero'):'quiero';
+ const dif=diferenciaTruco(),resp=respuestaTruco();
  V.truco={nivel:resp==='noquiero'?1:2,resp,farol:dif<-.15,pendiente:resp==='retruco'};
  if(resp==='noquiero'){S.vars.ves=clamp(S.vars.ves+2,0,100);cabecera();}
  sonar('uy');pintarPrevia();
@@ -183,7 +198,7 @@ function responderRetruco(quiero){
 function panelTruco(){
  const V=tmp.vivo,T2=V.truco,rv=V.info.rival;
  const cab=`<b>${t3('TRUCO','TRUCO','TRUCO')} · ${t3('subí la apuesta','aumente a aposta','raise the stakes')}</b>`;
- if(!T2)return `<div class="gd-construccion v14-truco">${cab}<p>${t3('Declarás en público que este partido lo ganás. Si ganás, la tribuna y la directiva lo festejan el doble; si perdés, lo pagás el doble. El otro banco puede achicarse, aceptar o redoblar.','Declara em público que ganha este jogo. Se ganhar, torcida e diretoria festejam em dobro; se perder, paga em dobro.','You say in public that you will win this one. Win, and fans and board celebrate double; lose, and you pay double. The other bench can back down, accept or raise.')}</p><button class="btn sec" onclick="cantarTruco()">${t3('¡Truco!','Truco!','Truco!')}</button> <span class="mini">${t3('Opcional: si no cantás, el partido vale lo de siempre.','Opcional.','Optional: say nothing and the match is worth the usual.')}</span></div>`;
+ if(!T2)return `<div class="gd-construccion v14-truco">${cab}<p>${t3('Declarás en público que este partido lo ganás. Si ganás, la tribuna y la directiva lo festejan el doble; si perdés, lo pagás el doble. El otro banco puede achicarse, aceptar o redoblar.','Declara em público que ganha este jogo. Se ganhar, torcida e diretoria festejam em dobro; se perder, paga em dobro.','You say in public that you will win this one. Win, and fans and board celebrate double; lose, and you pay double. The other bench can back down, accept or raise.')}</p><p class="v14-sena"><b>${t3('La seña','O sinal','The tell')}:</b> ${senaTruco()} <span class="mini">${t3('El incómodo suele achicarse, el que sonríe suele redoblar. Los provocadores a veces actúan.','O desconfortável costuma recuar; o que sorri, dobrar. Provocadores às vezes fingem.','The uneasy one usually backs down, the grinning one usually raises. Provocateurs sometimes act.')}${((S.memoriaTruco||{}).farolesPerdidos||0)>=2?' '+t3('Ya te agarraron mintiendo dos veces: nadie se achica más con vos.','Já pegaram você blefando duas vezes: ninguém recua mais.','You have been caught bluffing twice: nobody backs down against you any more.'):''}</span></p><button class="btn sec" onclick="cantarTruco()">${t3('¡Truco!','Truco!','Truco!')}</button> <span class="mini">${t3('Opcional: si no cantás, el partido vale lo de siempre.','Opcional.','Optional: say nothing and the match is worth the usual.')}</span></div>`;
  const txt={noquiero:t3(`“No quiero.” ${rv.club.n} se achica: van a esperar atrás. Tu vestuario se agranda (+2). El partido vale lo de siempre.`,`“Não quero.” O ${rv.club.n} recua. Seu vestiário cresce (+2).`,`“No thanks.” ${rv.club.n} back down and will sit deep. Your dressing room grows (+2). Usual stakes.`),
   quiero:t3(`“Quiero.” ${rv.club.n} acepta. El partido vale doble.`,`“Quero.” O ${rv.club.n} aceita. Vale em dobro.`,`“You're on.” ${rv.club.n} accept. Double stakes.`),
   retruco:t3(`“¡Quiero retruco!” ${rv.club.n} redobla: van a salir a buscarte arriba. ¿Aceptás que valga triple?`,`“Retruco!” O ${rv.club.n} dobra de novo. Aceita valer triplo?`,`“Re-raise!” ${rv.club.n} raise again and will press you high. Triple stakes?`),
@@ -220,7 +235,7 @@ finVivo=function(){
  let dh=0,dd=0,txt;
  if(emp)txt=t3('Truco: quedó en tablas. Nadie cobra.','Truco: empate. Ninguém cobra.','Truco: honours even. Nobody collects.');
  else if(gano){dh=2*k+(T2.farol?2:0);dd=k;txt=t3(`Truco ganado (×${T2.nivel}): lo dijiste y lo cumpliste.`,`Truco ganho (×${T2.nivel}).`,`Truco won (×${T2.nivel}): you said it and you delivered.`);}
- else{dh=-2*k;dd=-k;txt=t3(`Truco perdido (×${T2.nivel}): hablaste antes de tiempo.`,`Truco perdido (×${T2.nivel}).`,`Truco lost (×${T2.nivel}): you spoke too soon.`);}
+ else{dh=-2*k;dd=-k;if(T2.farol){S.memoriaTruco=S.memoriaTruco||{};S.memoriaTruco.farolesPerdidos=(S.memoriaTruco.farolesPerdidos||0)+1;}txt=t3(`Truco perdido (×${T2.nivel}): hablaste antes de tiempo.`,`Truco perdido (×${T2.nivel}).`,`Truco lost (×${T2.nivel}): you spoke too soon.`);}
  S.vars.hin=clamp(S.vars.hin+dh,0,100);S.vars.dir=clamp(S.vars.dir+dd,0,100);cabecera();
  caja.insertAdjacentHTML('beforeend',`<div class="${gano?'ok':emp?'':'mal'}">${txt}${dh||dd?` ${T('hinchada')} ${sg(dh)} · ${T('directiva')} ${sg(dd)}`:''}</div>`);
 };
@@ -289,3 +304,16 @@ pintarRuleta=function(){
   if(CLUB_INFO.Sevilla)CLUB_INFO.Sevilla.cla='Real Betis';
  }
 })();
+
+/* ---------- Arte v14: opcional. Ver assets/v14/PEDIDO_ARTE.md ---------- */
+const ARTE_V14={};
+(function(){
+ if(typeof Image==='undefined'||typeof document==='undefined'||!document.documentElement.classList)return;
+ ['sala','practica','diario','llamada','dt-joven','dt-medio','dt-maduro','dt-veterano'].forEach(n=>{
+  const i=new Image();i.onload=()=>{ARTE_V14[n]=true;try{document.documentElement.classList.add('arte-'+n);}catch(e){}};i.src='assets/v14/'+n+'.jpg';});
+})();
+const _retratoDTV13=retratoDT;
+retratoDT=function(tam){
+ const r='dt-'+((S.dt||{}).rango||'medio');
+ return ARTE_V14[r]?`<img class="retrato-dt v14-retrato" width="${tam||64}" height="${tam||64}" src="assets/v14/${r}.jpg" alt="${escapeHTML(S.nombre||'DT')}">`:_retratoDTV13(tam);
+};
