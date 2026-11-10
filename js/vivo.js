@@ -96,7 +96,9 @@ function pintarPrevia(){
 
 /* ---------- el partido: dos tiempos ---------- */
 function equiposVivo(){
-  const V=tmp.vivo, rv=V.info.rival;
+  const V=tmp.vivo, original=V.info.rival;
+  const lectura=lecturaPicardia(original);
+  const rv={...original,modelo:lectura.plan};
   const yo=miEquipo(rv);
   return V.info.soyA?{A:yo,B:rv}:{A:rv,B:yo};
 }
@@ -104,7 +106,10 @@ function equiposVivo(){
 function jugarMitad(A,B,neutral,desde,hasta){
   const Fa=fuerza(A,B,!neutral), Fb=fuerza(B,A,false), frac=(hasta-desde+1)/90;
   const la=clamp(LAMBDA_BASE*Math.exp((Fa-Fb)/K_PARTIDO),0.4,3.4)*frac, lb=clamp(LAMBDA_BASE*Math.exp((Fb-Fa)/K_PARTIDO),0.4,3.4)*frac;
-  const an=A.an||B.an, patA=A.an?an.mis:an.sus, patB=B.an?an.mis:an.sus, ev=[];
+  const an=A.an||B.an;
+  const patA=patronesConfianzaPicardia(A,B,A.an?an.mis:an.sus);
+  const patB=patronesConfianzaPicardia(B,A,B.an?an.mis:an.sus);
+  const ev=[];
   const gol=(E,l,pats)=>{ const o=goleador(E.once), pat=elegirPatron(pats);
     ev.push({m:R.e(desde,hasta),l,t:"gol",nom:apellido(o.jug.nom),jug:o.jug,pat,txt:narrarGol(pat,E.once,o),zona:(PATRONES.find(p=>p.id===pat)||{zona:14}).zona}); };
   for(let i=0,n=poisson(la);i<n;i++) gol(A,"a",patA);

@@ -136,8 +136,7 @@ function evaluarFasesDT(plan,rv,attrs=[]){
 }
 function panelFasesDT(rv){
  if(!rv)return '';
- const {contexto}=evaluarFasesDT(S.fasesDT,rv);
- return `<details class="gd-construccion"><summary>Otras fases del partido</summary><div class="gd-form">${Object.entries(FASES_DT).map(([k,f])=>`<label><b>${f.n}</b><select onchange="elegirFaseDT('${k}',this.value)"><option value="">Mantener el modelo</option>${['a','b'].map(o=>`<option value="${o}" ${S.fasesDT?.[k]===o?'selected':''}>${f[o]}</option>`).join('')}</select><small>${f.d} Para este rival, el cuerpo técnico sugiere: ${f[contexto[k]?'a':'b']}.</small></label>`).join('')}</div></details>`;
+ return `<details class="gd-construccion"><summary>Otras fases del partido</summary><div class="gd-form">${Object.entries(FASES_DT).map(([k,f])=>`<label><b>${f.n}</b><select onchange="elegirFaseDT('${k}',this.value)"><option value="">Mantener el modelo</option>${['a','b'].map(o=>`<option value="${o}" ${S.fasesDT?.[k]===o?'selected':''}>${f[o]}</option>`).join('')}</select><small>${f.d}</small></label>`).join('')}</div></details>`;
 }
 function elegirFaseDT(k,v){if(Object.hasOwn(FASES_DT,k)&&['','a','b'].includes(v))S.fasesDT={...S.fasesDT,[k]:v};}
 const _planFasesDT=pintarPlan;
@@ -169,4 +168,137 @@ final=function(){
  _finalOficio();const etapas=S.etapasDT||[];
  const html=`<div class="gd-etapas"><h3>${t3('Lo que dejaste en cada club','O que deixou em cada clube','What you left at each club')}</h3>${etapas.map(e=>{const c=CLUBES.find(c=>c.n===e.club)||SELECCIONES.find(c=>c.n===e.club),copas=S.titulos.filter(t=>t.club===e.club&&t.t>=e.desde&&t.t<=e.hasta);return `<article class="gd-etapa">${c?escudo(c,48):''}<div><h4>${escapeHTML(e.club)}</h4><p>${t3('Temporadas','Temporadas','Seasons')} ${e.desde}–${e.hasta} · ${copas.length} ${t3('títulos','títulos','titles')}</p><p>${e.salida==='despido'?t3('La directiva terminó el ciclo.','A diretoria encerrou o ciclo.','The board ended your tenure.'):e.salida==='otroclub'?t3('Elegiste continuar en otro club.','Escolheu outro clube.','You chose another club.'):e.salida==='seleccion'?t3('Te fuiste a dirigir una selección.','Foi dirigir uma seleção.','You left for a national team.'):t3('El ciclo sigue abierto.','O ciclo continua aberto.','This chapter remains open.')}</p><p>${t3('Vínculo con la hinchada al cierre','Vínculo com a torcida ao sair','Relationship with fans at departure')}: ${e.hin>=70?t3('muy querido','muito querido','much loved'):e.hin>=45?t3('respeto con matices','respeito com ressalvas','mixed respect'):t3('relación desgastada','relação desgastada','strained relationship')} (${Math.round(e.hin)}/100)</p>${copas.map(t=>`<span class="gd-titulo">${trofeo(t.tipo||'liga',26)} ${escapeHTML(t.comp)}</span>`).join('')}</div></article>`;}).join('')}${!etapas.length?`<p>${t3('Esta partida anterior no registró vínculos al salir. El historial de temporadas conserva sus resultados.','Esta partida antiga não registrou vínculos ao sair.','This older save did not record departure relationships; season results remain in its history.')}</p>`:''}</div>`;
  $('#s-final').insertAdjacentHTML('beforeend',html);
+};
+// Un fichaje negociable por mercado profesional. Las rondas consumen el reloj existente.
+const pintarMercadoBasePicardia = pintarMercado;
+pintarMercado = function(){
+ pintarMercadoBasePicardia();
+ const carta = S.cartas[0];
+ if(S.esSeleccion || S.division !== 3 || carta?.estado !== 'libre' || carta.negociacion?.cerrada) return;
+ const trato = carta.negociacion;
+ const botones = !trato
+  ? '<button class="btn sec" onclick="negociarPicardia(\'abrir\')">Negociar el primer fichaje</button>'
+  : trato.contra
+   ? `<button class="btn" onclick="negociarPicardia('aceptar')">Aceptar por ${trato.contra}</button>
+      <button class="btn sec" onclick="negociarPicardia('esperar')">Esperar</button>`
+   : `<button class="btn" onclick="negociarPicardia('oferta')">Ofrecer ${trato.oferta}</button>
+      <button class="btn sec" onclick="negociarPicardia('esperar')">Esperar</button>`;
+ $('#s-mercado .acciones').insertAdjacentHTML('beforebegin', `<div class="gd-construccion">
+ <b>${escapeHTML(carta.j.nom)}</b>
+ ${trato ? `<p role="status">${trato.mensaje}</p>` : ''}
+ ${botones}${trato ? '<button class="btn sec" onclick="negociarPicardia(\'salir\')">Retirarse</button>' : ''}
+ </div>`);
+};
+
+function negociarPicardia(accion){
+ const carta = S.cartas[0];
+ if(S.esSeleccion || S.division !== 3 || carta?.estado !== 'libre') return;
+ if(accion === 'abrir' && !carta.negociacion){
+  const urgente = R.e(0,1) === 0;
+  carta.negociacion = {
+   urgente, rondas:0,
+   minimo:Math.max(1, Math.ceil(carta.costo * (urgente ? .65 : .9))),
+   oferta:Math.max(1, Math.floor(carta.costo * .75)),
+   mensaje:urgente ? 'El representante dice que el club quiere cerrar una salida hoy.' : 'El representante dice que ya hubo consultas y el club puede esperar.'
+  };
+ }else{
+  const trato = carta.negociacion;
+  if(!trato || trato.cerrada) return;
+  if(accion === 'salir'){
+   trato.cerrada = true;
+  }else if(accion === 'aceptar' || accion === 'oferta'){
+   const precio = accion === 'aceptar' ? trato.contra : trato.oferta;
+   if(!precio) return;
+   if(precio > S.presupuesto){
+    trato.mensaje = 'La oferta supera tu presupuesto.';
+   }else if(precio >= trato.minimo){
+    carta.costo = precio;
+    trato.cerrada = true;
+    piquear(0);
+    return;
+   }else{
+    trato.contra = Math.min(carta.costo, trato.minimo + 1);
+    trato.mensaje = 'El club rechazó tu oferta y dejó una contraoferta.';
+   }
+  }else if(accion === 'esperar'){
+   trato.rondas++;
+   if(!trato.urgente || trato.rondas >= 2){
+    carta.estado = 'rival';
+    trato.cerrada = true;
+   }else{
+    trato.contra = trato.minimo;
+    trato.mensaje = 'El club bajó su pedido para cerrar hoy.';
+   }
+  }
+ }
+ pintarMercado();
+}
+
+// La reputación es estable por club y la declaración depende del planteo y del perfil.
+function perfilPicardia(rv){
+ const perfiles = ['Calculador','Orgulloso','Provocador'];
+ const semilla = hashS(rv.club.n);
+ return {nombre:perfiles[semilla % perfiles.length], semilla};
+}
+
+function lecturaPicardia(rv){
+ const perfil = perfilPicardia(rv);
+ const base = rv.modelo || modeloDeEstilo(rv.e);
+ const v = tmp.vivo;
+ const respuesta = v?.info?.rival === rv ? v.respuestaPicardia : null;
+ const plan = {...base};
+ const memoria = S.memoriaPicardia?.[rv.club.n];
+ const marcador = v?.marc;
+ const ventajaRival = marcador ? marcador[v.info.soyA?1:0]-marcador[v.info.soyA?0:1] : 0;
+ const desafio = respuesta === 'desafiar' && perfil.nombre === 'Orgulloso' && ventajaRival <= 0 && rv.club.niv >= S.club.niv;
+ const amague = respuesta === 'amague' && perfil.nombre === 'Calculador' && !memoria?.amagues && ventajaRival >= 0;
+ if(desafio) plan.def = 'alto';
+ if(amague) plan.def = 'bajo';
+ const despista = perfil.nombre === 'Provocador' && hashS(rv.club.n+'|'+S.temporada+'|'+(memoria?.partidos||0))%3 === 0;
+ const anunciaPresion = despista ? base.def !== 'alto' : base.def === 'alto';
+ return {perfil, plan, anunciaPresion};
+}
+
+const pintarPreviaBasePicardia = pintarPrevia;
+pintarPrevia = function(){
+ pintarPreviaBasePicardia();
+ const v = tmp.vivo;
+ const lectura = lecturaPicardia(v.info.rival);
+ const frase = lectura.anunciaPresion ? 'Vamos a ir a buscar la pelota bien arriba.' : 'Vamos a cuidar los espacios.';
+ const panel = `<div class="gd-construccion">
+ <b>El otro banco · ${lectura.perfil.nombre}</b><p>«${frase}»</p>
+ <label>Tu declaración <select onchange="tmp.vivo.respuestaPicardia=this.value">
+ ${[['','Sin declaraciones'],['desafiar','Desafiarlo a presionar'],['amague','Anunciar que vas a atacar directo']].map(([id,label]) =>
+ `<option value="${id}" ${(v.respuestaPicardia || '') === id ? 'selected' : ''}>${label}</option>`).join('')}
+ </select></label>
+ <label>Prioridad <select onchange="tmp.vivo.ritmoPicardia=this.value">
+ <option value="" ${!v.ritmoPicardia?'selected':''}>Administrar piernas</option>
+ <option value="arriesgar" ${v.ritmoPicardia==='arriesgar'?'selected':''}>Buscar profundidad · más desgaste</option>
+ </select></label></div>`;
+ $('#s-partido').insertAdjacentHTML('afterbegin', panel);
+};
+
+function patronesConfianzaPicardia(eq,rv,patrones){
+ if(!eq.yo || !eq.once?.length) return patrones;
+ const confianza = eq.once.reduce((total,o)=>total+vinculoJugador(o.jug).confianza,0)/eq.once.length;
+ const presion = (rv.club.niv-eq.club.niv)*5;
+ const profundidad = tmp.vivo?.ritmoPicardia === 'arriesgar' ? .18 : 0;
+ const cautela = clamp((50-confianza+presion)/100-profundidad,-.25,.25);
+ return patrones.map(p=>({...p,v:clamp(p.v+(p.zona>=13 ? -cautela : cautela),-1,1)}));
+}
+
+const cerrarVivoBasePicardia = cerrarVivo;
+cerrarVivo = function(){
+ const v = tmp.vivo;
+ const rival = v.info.rival.club.n;
+ S.memoriaPicardia ||= {};
+ const memoria = S.memoriaPicardia[rival] ||= {partidos:0,amagues:0};
+ memoria.partidos++;
+ // Se recuerda la discrepancia observable entre el anuncio y el modelo jugado.
+ if(v.respuestaPicardia === 'amague' && (S.modelo||modeloDeEstilo(S.estilo)).ofe !== 'directo') memoria.amagues++;
+ if(v.ritmoPicardia === 'arriesgar'){
+  const equipo = v.info.soyA ? v.A : v.B;
+  for(const {jug} of equipo?.once || []) jug.fat = clamp((jug.fat||0)+4,0,100);
+ }
+ cerrarVivoBasePicardia();
 };
