@@ -28,4 +28,5 @@ function legadoDePrueba(){plantelDePrueba();S.puntos=24;S.temporada=3;S.anosDiri
 </script>`;
 const html=fs.readFileSync(path.join(raiz,'index.html'),'utf8').replace('<head>','<head><base href="../">').replace('</body>',qa+'</body>');
 fs.writeFileSync(path.join(__dirname,'playtest-local.html'),html);
+fs.writeFileSync(path.join(__dirname,'playtest.html'),html); // copia publicada: se abre desde la tablet
 console.log('Abrir http://127.0.0.1:8767/herramientas/playtest-local.html');

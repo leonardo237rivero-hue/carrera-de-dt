@@ -177,16 +177,16 @@ pintarMercado = function(){
  if(S.esSeleccion || S.division !== 3 || carta?.estado !== 'libre' || carta.negociacion?.cerrada) return;
  const trato = carta.negociacion;
  const botones = !trato
-  ? '<button class="btn sec" onclick="negociarPicardia(\'abrir\')">Negociar el primer fichaje</button>'
+  ? `<button class="btn sec" onclick="negociarPicardia('abrir')">${t3('Negociar el primer fichaje','Negociar a primeira contratação','Negotiate the first signing')}</button>`
   : trato.contra
-   ? `<button class="btn" onclick="negociarPicardia('aceptar')">Aceptar por ${trato.contra}</button>
-      <button class="btn sec" onclick="negociarPicardia('esperar')">Esperar</button>`
-   : `<button class="btn" onclick="negociarPicardia('oferta')">Ofrecer ${trato.oferta}</button>
-      <button class="btn sec" onclick="negociarPicardia('esperar')">Esperar</button>`;
+   ? `<button class="btn" onclick="negociarPicardia('aceptar')">${t3('Aceptar por','Aceitar por','Accept for')} ${trato.contra}</button>
+      <button class="btn sec" onclick="negociarPicardia('esperar')">${t3('Esperar','Esperar','Wait')}</button>`
+   : `<button class="btn" onclick="negociarPicardia('oferta')">${t3('Ofrecer','Oferecer','Offer')} ${trato.oferta}</button>
+      <button class="btn sec" onclick="negociarPicardia('esperar')">${t3('Esperar','Esperar','Wait')}</button>`;
  $('#s-mercado .acciones').insertAdjacentHTML('beforebegin', `<div class="gd-construccion">
  <b>${escapeHTML(carta.j.nom)}</b>
  ${trato ? `<p role="status">${trato.mensaje}</p>` : ''}
- ${botones}${trato ? '<button class="btn sec" onclick="negociarPicardia(\'salir\')">Retirarse</button>' : ''}
+ ${botones}${trato ? `<button class="btn sec" onclick="negociarPicardia('salir')">${t3('Retirarse','Desistir','Walk away')}</button>` : ''}
  </div>`);
 };
 
@@ -199,7 +199,7 @@ function negociarPicardia(accion){
    urgente, rondas:0,
    minimo:Math.max(1, Math.ceil(carta.costo * (urgente ? .65 : .9))),
    oferta:Math.max(1, Math.floor(carta.costo * .75)),
-   mensaje:urgente ? 'El representante dice que el club quiere cerrar una salida hoy.' : 'El representante dice que ya hubo consultas y el club puede esperar.'
+   mensaje:urgente ? t3('El representante dice que el club quiere cerrar una salida hoy.','O empresário diz que o clube quer fechar uma saída hoje.','The agent says the club wants to close a sale today.') : t3('El representante dice que ya hubo consultas y el club puede esperar.','O empresário diz que já houve consultas e o clube pode esperar.','The agent says there has been interest and the club can wait.')
   };
  }else{
   const trato = carta.negociacion;
@@ -210,7 +210,7 @@ function negociarPicardia(accion){
    const precio = accion === 'aceptar' ? trato.contra : trato.oferta;
    if(!precio) return;
    if(precio > S.presupuesto){
-    trato.mensaje = 'La oferta supera tu presupuesto.';
+    trato.mensaje = t3('La oferta supera tu presupuesto.','A oferta passa do seu orçamento.','The offer is over your budget.');
    }else if(precio >= trato.minimo){
     carta.costo = precio;
     trato.cerrada = true;
@@ -218,7 +218,7 @@ function negociarPicardia(accion){
     return;
    }else{
     trato.contra = Math.min(carta.costo, trato.minimo + 1);
-    trato.mensaje = 'El club rechazó tu oferta y dejó una contraoferta.';
+    trato.mensaje = t3('El club rechazó tu oferta y dejó una contraoferta.','O clube recusou e fez uma contraproposta.','The club turned down your offer and made a counter-offer.');
    }
   }else if(accion === 'esperar'){
    trato.rondas++;
@@ -227,7 +227,7 @@ function negociarPicardia(accion){
     trato.cerrada = true;
    }else{
     trato.contra = trato.minimo;
-    trato.mensaje = 'El club bajó su pedido para cerrar hoy.';
+    trato.mensaje = t3('El club bajó su pedido para cerrar hoy.','O clube baixou o preço para fechar hoje.','The club lowered its price to close today.');
    }
   }
  }
@@ -264,18 +264,21 @@ pintarPrevia = function(){
  pintarPreviaBasePicardia();
  const v = tmp.vivo;
  const lectura = lecturaPicardia(v.info.rival);
- const frase = lectura.anunciaPresion ? 'Vamos a ir a buscar la pelota bien arriba.' : 'Vamos a cuidar los espacios.';
+ const frase = lectura.anunciaPresion ? t3('Vamos a ir a buscar la pelota bien arriba.','Vamos buscar a bola lá em cima.','We\'ll go and win the ball high up.') : t3('Vamos a cuidar los espacios.','Vamos cuidar dos espaços.','We\'ll protect the spaces.');
+ const nomPerfil = {Calculador:t3('Calculador','Calculista','Calculating'),Orgulloso:t3('Orgulloso','Orgulhoso','Proud'),Provocador:t3('Provocador','Provocador','Provocateur')}[lectura.perfil.nombre];
  const panel = `<div class="gd-construccion">
- <b>El otro banco · ${lectura.perfil.nombre}</b><p>«${frase}»</p>
- <label>Tu declaración <select onchange="tmp.vivo.respuestaPicardia=this.value">
- ${[['','Sin declaraciones'],['desafiar','Desafiarlo a presionar'],['amague','Anunciar que vas a atacar directo']].map(([id,label]) =>
+ <b>${t3('El otro banco','O outro banco','The other bench')} · ${nomPerfil}</b><p>«${frase}»</p>
+ <label>${t3('Tu declaración','Sua declaração','Your statement')} <select onchange="tmp.vivo.respuestaPicardia=this.value">
+ ${[['',t3('Sin declaraciones','Sem declarações','No comment')],['desafiar',t3('Desafiarlo a presionar','Desafiá-lo a pressionar','Dare him to press')],['amague',t3('Anunciar que vas a atacar directo','Anunciar que vai atacar direto','Announce you\'ll go direct')]].map(([id,label]) =>
  `<option value="${id}" ${(v.respuestaPicardia || '') === id ? 'selected' : ''}>${label}</option>`).join('')}
  </select></label>
- <label>Prioridad <select onchange="tmp.vivo.ritmoPicardia=this.value">
- <option value="" ${!v.ritmoPicardia?'selected':''}>Administrar piernas</option>
- <option value="arriesgar" ${v.ritmoPicardia==='arriesgar'?'selected':''}>Buscar profundidad · más desgaste</option>
+ <label>${t3('Prioridad','Prioridade','Priority')} <select onchange="tmp.vivo.ritmoPicardia=this.value">
+ <option value="" ${!v.ritmoPicardia?'selected':''}>${t3('Administrar piernas','Poupar pernas','Manage legs')}</option>
+ <option value="arriesgar" ${v.ritmoPicardia==='arriesgar'?'selected':''}>${t3('Buscar profundidad · más desgaste','Buscar profundidade · mais desgaste','Go for depth · more fatigue')}</option>
  </select></label></div>`;
- $('#s-partido').insertAdjacentHTML('afterbegin', panel);
+ // va antes de "qué le pedís al equipo": primero leés al otro banco, después decidís
+ const ops=$('#s-partido .pv-ops'), ancla=ops&&ops.previousElementSibling&&/^H\d$/.test(ops.previousElementSibling.tagName)?ops.previousElementSibling:ops;
+ if(ancla) ancla.insertAdjacentHTML('beforebegin', panel); else $('#s-partido').insertAdjacentHTML('afterbegin', panel);
 };
 
 function patronesConfianzaPicardia(eq,rv,patrones){
