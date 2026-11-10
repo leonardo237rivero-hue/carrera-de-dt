@@ -1,6 +1,6 @@
 // v10. Dominio: identidad persistente, aprendizaje por principio, edad y contexto.
 // Las órdenes del partido modifican S.enfasis, nunca el ADN ni la memoria aprendida.
-const VERSION_JUEGO='13.3.0';
+const VERSION_JUEGO='14.0.0';
 const GUARDADO_CDT='cdt-v10-pretemporada';
 const copiaModelo=m=>Object.assign({},m||modeloDeEstilo('Posesion'));
 const escapeHTML=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

@@ -30,6 +30,6 @@ const onceRelato=armarOnce(S.plantel,'4-3-3');for(let i=0;i<1000;i++)assert.notE
 console.log('OK autor del relato: no convierte al arquero en atacante de campo');
 `);
 const raiz=path.resolve(__dirname,'..'),html=fs.readFileSync(path.join(raiz,'index.html'),'utf8');
-for(const m of html.matchAll(/(?:src|href)="([^"]+)"/g))if(!m[1].startsWith('http'))assert(fs.existsSync(path.join(raiz,m[1])),m[1]);
+for(const m of html.matchAll(/(?:src|href)="([^"]+)"/g))if(!m[1].startsWith('http'))assert(fs.existsSync(path.join(raiz,m[1].split('?')[0])),m[1]);
 for(const p of ['banco.png','vestuario.png','jugadores.png','entrenador.png','dt-banco.png'])assert(fs.statSync(path.join(raiz,'assets/interiores',p)).size>1000,p);
 console.log('OK recursos locales presentes');
