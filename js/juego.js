@@ -265,7 +265,7 @@ function canchaGestion(once){
     <rect x="${W/2-62}" y="${H-46}" width="124" height="40" fill="none" stroke="rgba(222,255,210,.22)" stroke-width="1.5"/>
     ${once.map((o,i)=>{
       const px=(o.x/100)*W, py=H-margen-(o.y/100)*span, j=o.jug;
-      const marcado=tmp.selBanco&&(ROL[o.rol].g===tmp.selBanco.g||posDe(tmp.selBanco).includes(o.rol));
+      const marcado=tmp.selBanco&&encaje(tmp.selBanco,o.rol)<2; // sólo los casilleros que acepta
       const fat=clamp(j.fat||0,0,100), colFat=fat>=70?"#F05A4A":fat>=50?"#F2B33D":"#A6F03C";
       const flecha=j.forma>=2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#A6F03C">▲</text>`
         :j.forma<=-2?`<text x="${px+15}" y="${py-9}" font-size="11" font-weight="800" fill="#F05A4A">▼</text>`:"";

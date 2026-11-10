@@ -79,3 +79,16 @@ body[data-pant=identidad] .cine-masthead,body[data-pant=duelo] .cine-masthead,bo
 .gd-construccion{background:#121a1fed;border:1px solid #ffffff29;border-radius:10px;padding:24px;margin:26px 0}.gd-construccion summary{font-size:19px;font-weight:700;color:#f1f1e7}.gd-esquema{width:100%;max-height:360px}.gd-construccion p{line-height:1.65}
 .gd-etapas{margin:35px 0}.gd-etapa{display:flex;gap:22px;background:#171c20eb;border:1px solid #ffffff25;padding:24px;margin:16px 0;border-radius:10px}.gd-etapa h4{font-size:24px;margin:0 0 12px}.gd-etapa p{margin:8px 0}.gd-titulo{display:inline-flex;align-items:center;gap:8px;margin:8px 15px 8px 0}
 @media(max-width:700px){.gd-form{grid-template-columns:1fr;gap:6px}.gd-construccion{padding:16px}.gd-etapa{padding:16px;gap:12px}.gd-etapa h4{font-size:20px}.gd-charla textarea{font-size:16px}.gd-charla-respuesta{padding:4px 14px}}
+/* v13.3 — playtest tablet */
+body.con-club #s-club>.banner-club:first-child,body.con-club #s-ofertas>.banner-club:first-child{display:none}
+.tk-ev{min-height:15px}.tk-ev .ev-a,.tk-ev .ev-b{flex-direction:row;flex-wrap:nowrap;gap:8px;overflow:hidden;white-space:nowrap}.tk-ev .ev-b{justify-content:flex-end}
+.lec-texto{line-height:1.7;font-size:16px}
+.lec-texto mark,.gd-charla-respuesta blockquote mark{background:none;color:inherit;border-bottom-width:3px;border-bottom-style:solid;padding:0 1px}
+mark.lec-calma{border-color:#6FA8DC}mark.lec-orgullo{border-color:#E8C15A}mark.lec-bronca{border-color:#F05A4A}mark.lec-tactica{border-color:#A6F03C}mark.lec-grupo{border-color:#B07CFF}mark.lec-hinchada{border-color:#F2994A}
+.lec-barras{display:grid;gap:5px;margin:10px 0}.lec-barra{display:grid;grid-template-columns:90px 1fr 44px;gap:8px;align-items:center;font-size:13px}
+.lec-barra i{height:8px;background:#0b0f0d;border-radius:4px;overflow:hidden}.lec-barra b{display:block;height:100%}.lec-barra em{font-style:normal;text-align:right;color:var(--tenue)}
+b.lec-calma{background:#6FA8DC}b.lec-orgullo{background:#E8C15A}b.lec-bronca{background:#F05A4A}b.lec-tactica{background:#A6F03C}b.lec-grupo{background:#B07CFF}b.lec-hinchada{background:#F2994A}
+.lec-nota{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;margin:6px 0 4px}.lec-nota b{font:800 52px/1 var(--cond)}.lec-nota span{font:600 18px var(--cond);color:var(--tenue)}.lec-nota p{flex-basis:100%;margin:0;color:var(--tenue)}
+.lec-devolucion h4{margin:14px 0 4px;font:700 12px var(--cond);letter-spacing:.12em;text-transform:uppercase;color:var(--tenue)}
+.lec-caras{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}.lec-caras em{color:var(--tenue);font-size:12px}
+.lec-chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.lec-chip{font-size:12px;padding:3px 9px;border-radius:999px;background:#20272c;color:var(--tenue)}.lec-chip.ok{color:#A6F03C;background:rgba(166,240,60,.1)}.lec-chip.mal{color:#FF8A78;background:rgba(240,90,74,.12)}
