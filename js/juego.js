@@ -337,11 +337,11 @@ function pintarMercado(){
     <p class="mini">${S.esSeleccion?t3("Otro cuerpo técnico mira los mismos nombres.","Outra comissão olha os mesmos nomes.","Another staff is watching the same names."):t3("Otro DT mira la misma lista.","Outro técnico olha a mesma lista.","Another manager is watching the same list.")}
     ${t3("El primero que se tira, se lo lleva. Debajo de cada uno ves cuánto te cambia el equipo con tu sistema actual.","Quem se lançar primeiro, leva. Embaixo de cada um você vê quanto muda o time no seu sistema.","First to move gets him. Under each one you see how he changes your team in your current system.")}</p>
     <div class="reloj"><i id="rbar"></i></div>
-    <div class="grid3">${S.cartas.map((k,i)=>{
+    <div class="grid3 mercado-cartas ${tmp.mercadoAmpliado?'ampliadas':''}">${S.cartas.map((k,i)=>{
       const im=impactoDe(k.j);
       const util=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
       const costo=S.esSeleccion?0:k.costo;
-      return `<button class="jug" ${k.estado!=="libre"||costo>S.presupuesto?"disabled":""} onclick="piquear(${i})">
+      return `<button class="jug" ${k.estado!=="libre"||costo>S.presupuesto?"disabled":""} onclick="piquear(${i})" style="--orden:${i}">
         <div class="rt">${k.j.rt}</div>
         <div class="nm">${k.j.nom}</div>${k.j.de?`<div class="ps" style="opacity:.8">${t3("viene de","vem do","from")} ${k.j.de}</div>`:""}
         <div class="ps"><b class="pos-s">${posTxt(k.j)}</b> · ${k.j.ed} ${t3("años","anos","y/o")} · ${S.esSeleccion?t3("convocable","convocável","available"):t3("cuesta","custa","costs")+" "+k.costo}</div>
@@ -354,8 +354,13 @@ function pintarMercado(){
           ${t3("NO TE ALCANZA","NÃO DÁ","CAN'T AFFORD")}<br><span style="font-size:11px;font-weight:400">${t3("te faltan","faltam","short by")} ${Math.ceil(costo-S.presupuesto)}</span></div>`:''}
         ${k.estado==="mio"?`<div class="sello" style="color:var(--verde)">${t3("FICHADO","CONTRATADO","SIGNED")}</div>`:''}
       </button>`;}).join("")}</div>
-    <div class="acciones"><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>
+    <div class="acciones"><button class="btn sec compacto" aria-pressed="${tmp.mercadoAmpliado?'true':'false'}" onclick="ampliarMercado(this)">${t3("Ampliar fichas","Ampliar fichas","Expand cards")}</button><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>
     ${panelPlantel(true)}`;
+}
+function ampliarMercado(boton){
+  tmp.mercadoAmpliado=!tmp.mercadoAmpliado;
+  boton.setAttribute("aria-pressed",String(tmp.mercadoAmpliado));
+  $("#s-mercado .mercado-cartas").classList.toggle("ampliadas",tmp.mercadoAmpliado);
 }
 function correrPiqueo(){
   const t0=Date.now(), dur=15000;
@@ -584,7 +589,11 @@ function girar(){
   const grados=360*5+(360-(gan+0.5)*(360/R2.length));
   const el=$("#ruleta");
   const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(el&&!reduce) el.style.transform=`rotate(${grados}deg)`;
+  if(el){
+    el.closest(".ruleta-wrap").classList.add("girando");
+    el.querySelectorAll("path")[gan]?.classList.add("rul-casilla-final");
+  }
+  if(el) el.style.transform=`rotate(${grados}deg)`;
   const acerto=!seg.roja&&tmp.apuestas.some(x=>x.g===seg.g&&x.crack===seg.crack);
   // se calcula ya (con el RNG del duelo), se muestra cuando para la rueda
   let j=null, seVa=null, cobro=0;
@@ -603,6 +612,7 @@ function girar(){
   document.querySelectorAll(".ficha-btn").forEach(x=>x.disabled=true);
   const b=$("#btnGirar"); if(b) b.disabled=true;
   setTimeout(()=>{
+    el?.closest(".ruleta-wrap").classList.replace("girando","resuelta");
     tmp.rulRes={seg,acerto};
     const cc=$("#rulCentro"); if(cc) cc.innerHTML=centroRuleta();
     const s=$("#salida"); if(!s) return;

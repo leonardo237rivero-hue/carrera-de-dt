@@ -266,7 +266,7 @@ function cronicaTemporada(){
  if((campeon||mejor)&&d.origen==='estudio'&&(S.titulos||[]).length<=1)P.push(t3('Ya nadie pregunta dónde jugó.','Ninguém mais pergunta onde jogou.','Nobody asks where he played any more.'));
  if((campeon||mejor)&&d.rango==='joven'&&(S.titulos||[]).length<=1)P.push(t3('La edad dejó de ser tema.','A idade deixou de ser assunto.','His age is no longer a talking point.'));
  if((campeon||mejor)&&rech.length)P.push(t3(`En ${escapeHTML(rech[rech.length-1].club)} recuerdan que le dijeron que no.`,`No ${escapeHTML(rech[rech.length-1].club)} lembram que disseram não.`,`At ${escapeHTML(rech[rech.length-1].club)} they remember turning him down.`));
- return `<article class="v14-cronica"><p class="etq">${t3('LA CRÓNICA','A CRÔNICA','THE CHRONICLE')} · ${t3('Temporada','Temporada','Season')} ${S.temporada}</p><h3>${titular}</h3><p>${P.join(' ')}</p>${cita}</article>`;
+ return `<article class="v14-cronica"><p class="etq">${t3('LA CRÓNICA','A CRÔNICA','THE CHRONICLE')} · ${t3('Temporada','Temporada','Season')} ${S.temporada}</p><h3>${titular}</h3><p>${P.join(' ')}</p>${cita}<div class="v14-cronica-foto" aria-hidden="true"></div></article>`;
 }
 const _pintarReporteV13=pintarReporte;
 pintarReporte=function(){
@@ -314,6 +314,9 @@ const ARTE_V14={};
 })();
 const _retratoDTV13=retratoDT;
 retratoDT=function(tam){
- const r='dt-'+((S.dt||{}).rango||'medio');
+ if(!S.mostrarRetratoDT)return _retratoDTV13(tam);
+ const seleccion=RANGOS_DT.find(x=>x.id===(S.dt||{}).rango);
+ const edad=S.pant==='identidad'&&seleccion?seleccion.ed:edadDT();
+ const r='dt-'+(edad<33?'joven':edad<43?'medio':edad<56?'maduro':'veterano');
  return ARTE_V14[r]?`<img class="retrato-dt v14-retrato" width="${tam||64}" height="${tam||64}" src="assets/v14/${r}.jpg" alt="${escapeHTML(S.nombre||'DT')}">`:_retratoDTV13(tam);
 };

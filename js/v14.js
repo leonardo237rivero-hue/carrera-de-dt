@@ -74,6 +74,7 @@ pintarIdentidad=function(){
   </div>
   <aside class="v14-ficha" style="--c1:${hincha.c[0]};--c2:${hincha.c[1]}">
    <p class="etq">${t3('TU FICHA','SUA FICHA','YOUR FILE')}</p>
+   ${S.mostrarRetratoDT?retratoDT(88):''}
    <b id="v14-ficha-nom" class="v14-ficha-nom">${escapeHTML(S.nombre||'DT')}</b>
    <p>${textoQuienSos()}</p>
    <div class="v14-ficha-sueno">${escudo(hincha,56)}<div><small>${t3('Tu sueño','Seu sonho','Your dream')}</small><b>${escapeHTML(hincha.n)}</b></div></div>
@@ -81,7 +82,7 @@ pintarIdentidad=function(){
    ${chipsPrejuicio(prej)||''}
    <ul class="v14-lista">${prej.notas.map(n=>`<li>${n}</li>`).join('')||`<li>${t3('Sin prejuicios: te juzgan por el trabajo.','Sem preconceitos.','No prejudice: judged on the work.')}</li>`}</ul>
    <p class="v14-nota">${t3('El prejuicio no es capacidad: se borra con tu primer título.','Preconceito não é capacidade: some com o primeiro título.','Prejudice is not ability: it is gone with your first trophy.')}</p>
-   <label class="cine-retrato-opcion"><input type="checkbox" ${S.mostrarRetratoDT?'checked':''} onchange="S.mostrarRetratoDT=this.checked">${t3('Mostrar retrato del DT','Mostrar retrato do técnico','Show coach portrait')}</label>
+   <label class="cine-retrato-opcion"><input type="checkbox" ${S.mostrarRetratoDT?'checked':''} onchange="guardarNom();S.mostrarRetratoDT=this.checked;pintarIdentidad()">${t3('Mostrar retrato del DT','Mostrar retrato do técnico','Show coach portrait')}</label>
   </aside>
  </div>
  <input id="edad-dt" type="hidden" value="${RANGOS_DT.find(r=>r.id===d.rango).ed}">
@@ -164,12 +165,13 @@ pintarOfertas=function(){
  $('#s-ofertas').innerHTML=`<p class="etq">${t3('BOLSA DE TRABAJO','VAGAS','JOB BOARD')}</p>
  <h2 class="disp">${t3('Tres clubes leyeron tu currículum.','Três clubes leram seu currículo.','Three clubs read your CV.')}</h2>
  <p>${escapeHTML(S.nombre)}, ${textoQuienSos()}. ${t3('Cada club busca algo distinto. En la entrevista vas a saber si tu idea encaja: te pueden decir que no.','Cada clube busca algo diferente. Na entrevista você saberá se encaixa: podem dizer não.','Each club wants something different. The interview tells you whether you fit: they can say no.')}</p>
- ${S.ofertas.map((o,i)=>{const a=adnClub(o.club),r=rech.find(x=>x.club===o.club.n);
+ <div class="v14-vacantes">${S.ofertas.map((o,i)=>{const a=adnClub(o.club),r=rech.find(x=>x.club===o.club.n),perfil=prejuicioDT(o.club,o.div);
   return `<article class="gd-vacante v14-vacante ${r?'rechazada':''}" style="${estiloInterior(o.club)};--i:${i}">${bannerClub(o.club,{badges:badgesClub(o.club,o.div)})}
    <p>${L(o.txt)}</p>
    <p class="v14-adn"><span>${t3('Buscan','Buscam','They want')}</span><b>${t3(...ADN_TIPOS[a.id].n)}</b> · ${t3(...PACIENCIA_TXT[a.paciencia])} <i>${t3(...ADN_TIPOS[a.id].d)}</i></p>
+   ${perfil.notas.length?`<p class="v14-vacante-perfil">${perfil.notas.join(' ')}</p>`:''}
    ${r?`<p class="alerta mal">${t3('Te dijeron que no','Disseram não','They said no')}: ${escapeHTML(r.motivo)}</p>`:`<button class="btn" onclick="enviarCV(${i})">${t3('Ir a la entrevista','Ir à entrevista','Go to the interview')}</button>`}
-  </article>`;}).join('')}
+  </article>`;}).join('')}</div>
  ${sueno&&!S.ofertas.some(o=>o.club.n===sueno.n)?`<article class="gd-vacante v14-vacante cerrada" style="${estiloInterior(sueno)};--i:3">${bannerClub(sueno,{badges:badgesClub(sueno,3)})}<p><b>${t3('Tu sueño','Seu sonho','Your dream')}.</b> ${t3('Hoy no te atienden el teléfono. Ganá en otro lado y un día van a llamar ellos.','Hoje não atendem o telefone. Ganhe em outro lugar e um dia eles ligam.','Today they will not take your call. Win elsewhere and one day they will call you.')}</p></article>`:''}
  ${S.reOfertas>0?`<button class="btn sec" onclick="otrasOfertas()">${t3('Consultar otras vacantes (una vez)','Ver outras vagas (uma vez)','See other vacancies (once)')}</button>`:''}`;
  ir('ofertas');
@@ -208,7 +210,7 @@ function dictarEn(id,btn){
 }
 const hayDictado=()=>typeof motorDictado==='function'&&!!motorDictado();
 function escenaEntrevista(o,inner){
- return `<div class="v14-escena entrevista" style="${estiloInterior(o.club)}"><div class="v14-escena-fondo"></div><div class="v14-mesa">${escudo(o.club,64)}<div><small>${t3('SALA DE REUNIONES','SALA DE REUNIÕES','BOARDROOM')}</small><b>${escapeHTML(o.club.n)}</b><span>${tDiv(DIVISIONES[o.div].n)}</span></div></div></div>${inner}`;
+ return `<div class="v14-escena entrevista ${o.club.niv>=4?'sala-grande':''}" style="${estiloInterior(o.club)}"><div class="v14-escena-fondo"></div><div class="v14-mesa">${escudo(o.club,64)}<div><small>${t3('SALA DE REUNIONES','SALA DE REUNIÕES','BOARDROOM')}</small><b>${escapeHTML(o.club.n)}</b><span>${tDiv(DIVISIONES[o.div].n)}</span></div></div></div>${inner}`;
 }
 entrevistaDT=function(){
  const c=S.candidatura,o=S.ofertas[c.i],n=c.resp.length,adn=adnClub(o.club);
@@ -370,6 +372,7 @@ presentacionPlantel=function(){
  if(P.paso===0){
   $('#s-club').innerHTML=escenaPlantel(`<p class="etq">${t3('PRIMER ENCUENTRO','PRIMEIRO ENCONTRO','FIRST MEETING')}</p><h2 class="disp">${t3('Ahora te escucha el plantel.','Agora o grupo escuta você.','Now the squad is listening.')}</h2>
    <p>${t3('Todavía no te conocen. Lo que digas hoy se lee: una tarea concreta mejora cómo entienden lo que pedís; hablar del grupo suma confianza; una amenaza la resta.','Ainda não conhecem você. O que disser hoje conta.','They do not know you yet. What you say today is read: a concrete task helps understanding; talking about the group builds trust; a threat costs it.')}</p>
+   <details class="v14-guia"><summary>${t3('Ver un ejemplo de presentación','Ver um exemplo de apresentação','See an example introduction')}</summary><p>${t3('Cuando recuperemos la pelota, el primer pase va al costado. Si perdés la marca, avisá y tu compañero te cubre. Así el plantel escucha una tarea y sabe cómo ayudarse.','Quando recuperarmos a bola, o primeiro passe vai para o lado. Se perder a marcação, avise e seu companheiro cobre. Assim todos entendem a tarefa.','When we win the ball back, play the first pass wide. If you lose your mark, call it and a teammate will cover. Now everyone has a task and knows how to help.')}</p></details>
    <label class="v14-campo">${t3('Tu presentación','Sua apresentação','Your introduction')} <small>${t3('opcional','opcional','optional')}</small><textarea id="presentacion-dt" maxlength="1200" placeholder="${t3('Quién sos, qué les pedís y qué pueden esperar de vos…','Quem é você e o que espera…','Who you are and what they can expect…')}" oninput="tmp.pres.texto=this.value">${escapeHTML(P.texto)}</textarea></label>
    ${hayDictado()?`<button class="btn sec v14-mic" onclick="dictarEn('presentacion-dt',this)">🎤 ${t3('Dictar','Ditar','Dictate')}</button>`:''}
    <div class="acciones"><button class="btn" onclick="tmp.pres.paso=1;presentacionPlantel()">${t3('Hablarles','Falar','Speak to them')}</button></div>`);

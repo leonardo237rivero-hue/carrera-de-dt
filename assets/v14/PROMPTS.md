@@ -33,3 +33,27 @@ Use case: photorealistic-natural. Square cinematic bust portrait for Carrera de 
 ## dt-veterano.jpg
 
 Use case: photorealistic-natural. Square cinematic bust portrait for Carrera de DT, a wholly invented Rioplatense football coach unrelated to any real person or public figure. Centered head and upper torso, same camera level and subtle three-quarter pose, serene brown eyes looking at camera, charcoal unbranded sports zip jacket, dark neutral defocused background, cool soft fill and subtle warm rim light, realistic skin texture. No text, logos, crests, watermark or club colors. Use the supplied age-29 portrait as the exact fictional identity reference. Keep the facial geometry, spacing, brown eyes, nose, eyebrow notch, dimple, clean-shaven look, expression, angle, bust crop, jacket, lighting and backdrop. Change only age cues. Age 58, recognizably the same face with mostly silver-gray wavy hair, gentle recession, deeper natural eye and forehead lines and slightly looser jawline.
+
+## Escenas del rediseño del playtest
+
+Generadas con la herramienta integrada `image_gen` y exportadas a PNG de 1600 × 900.
+
+### sala-grande.png
+
+Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Boardroom of an established first-division club from the seated candidate's eye level. A long dark walnut table, two empty charcoal chairs opposite, broad window looking out onto a floodlit football pitch and concrete stands at blue hour. Well-maintained, understated, no luxury furnishings.
+
+### practica-ronda.png
+
+Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Exactly 22 adult football players form a broad open horseshoe on the practice pitch at misty dawn, all shown from behind in plain charcoal training jackets, heads turned away, with the coach viewpoint just behind them. Wide enough to see the shape of the group and grass, small training ground, no faces.
+
+### vestuario-plantel.png
+
+Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Modest football dressing room just after a team talk, several adult players seated on wooden benches facing their charcoal lockers and seen strictly from behind, plain unbranded gray training clothes, warm overhead light, wide shot, leave foreground dark and simple.
+
+### prensa.png
+
+Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Empty modest football press room seen from the journalist side, right-of-center conference table with two small gooseneck microphones, empty chair, charcoal blank wall behind it with room for the game's club crest overlay, subtle warm practical lighting. No signs or posters.
+
+### cierre-vestuario.png
+
+Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Quiet modest football dressing room after the last match of the season, empty timber benches, discarded neutral towels and unbranded boots, one warm overhead light, dark charcoal lockers. The visual subject occupies the right two-thirds for a newspaper layout.

@@ -160,3 +160,55 @@ html.arte-sala .v14-escena,html.arte-practica .v14-escena.practica{height:220px}
 html.arte-diario .v14-cronica{background:linear-gradient(90deg,#12171bf5 55%,#12171b99),url(../assets/v14/diario.jpg) right center/cover;padding:18px;border-radius:8px}
 html.arte-llamada .v14-callar{background:linear-gradient(90deg,#15191cf2 50%,#15191c80),url(../assets/v14/llamada.jpg) right center/cover}
 .v14-retrato{border-radius:9px;object-fit:cover}
+
+/* Arte del playtest en tablet */
+.cine-portada{justify-content:space-between}
+.cine-inicio{margin:auto 0}
+.cine-inicio h1{white-space:normal;margin:0 0 clamp(20px,5vh,48px)}
+.cine-portada-pie{position:static}
+@media (max-width:640px) and (orientation:portrait){
+ .cine-portada{background-image:linear-gradient(0deg,#090d12 45%,#090d1220 90%),url('../assets/cine/acceso.png');background-size:auto,auto 55%;background-position:center,70% top;background-repeat:no-repeat;background-color:#090d12}
+ .cine-inicio{margin:auto 0 0;padding:clamp(155px,37svh,340px) 22px 24px}
+}
+@media (max-height:550px) and (orientation:landscape){
+ .cine-portada{min-height:100dvh}
+ .cine-inicio{padding:18px clamp(24px,6vw,90px)}
+ .cine-inicio h1{font-size:clamp(44px,8vw,64px)}
+ .cine-menu-item{font-size:24px;min-height:44px;padding:7px 14px}
+ .cine-portada-pie{padding-block:10px}
+}
+
+.v14-vacantes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px;margin-block:20px}
+.v14-vacantes .v14-vacante{display:flex;flex-direction:column;align-items:stretch;margin:0;padding:14px;border-left:1px solid var(--borde);min-width:0;opacity:1}
+.v14-vacantes .banner-club{margin:0 0 12px}
+.v14-vacantes .bc-cuerpo{flex-wrap:wrap}
+.v14-vacantes .bc-nombre{overflow-wrap:anywhere}
+.v14-vacantes .v14-vacante>:is(.btn,.alerta){margin-top:auto}
+.v14-vacante-perfil{font-size:13px;color:var(--tenue);padding:10px 0;border-top:1px solid var(--borde)}
+
+html.arte-sala .v14-escena.entrevista,html.arte-practica .v14-escena.practica{height:clamp(225px,36vw,410px)}
+html.arte-sala .v14-escena.entrevista.sala-grande .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10dd,transparent 55%),url('../assets/v14/sala-grande.png')}
+html.arte-practica .v14-escena.practica .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10f0,transparent 60%),url('../assets/v14/practica-ronda.png'),url('../assets/v14/practica.jpg')}
+html.arte-practica .v14-ronda{display:none}
+.v14-ficha>.v14-retrato{display:block;margin:10px 0 14px;border-radius:8px}
+.v14-prensa-escena,.v14-vestuario-plantel,.v14-cronica-foto{border-radius:8px;overflow:hidden;background-color:#15191d}
+.v14-prensa-escena{display:flex;align-items:flex-end;min-height:clamp(185px,30vw,330px);margin-bottom:18px;background:linear-gradient(0deg,#0b0e10dd,transparent 70%),url('../assets/v14/prensa.png') center/cover}
+.v14-vestuario-plantel{min-height:clamp(140px,25vw,230px);margin-bottom:14px;background:url('../assets/v14/vestuario-plantel.png') center 45%/cover}
+.v14-cronica-foto{min-height:clamp(140px,24vw,240px);max-width:68ch;margin-top:14px;background:url('../assets/v14/cierre-vestuario.png') center/cover}
+
+#s-mercado .mercado-cartas{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
+#s-mercado .mercado-cartas.ampliadas{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+#s-mercado .mercado-cartas .jug{min-width:0;padding:14px;text-align:left;animation:v14-sube .25s both;animation-delay:calc(var(--orden)*.04s)}
+#s-mercado .mercado-cartas.ampliadas .jug{padding:20px}
+#s-mercado .mercado-cartas.ampliadas .jug .nm{font-size:clamp(20px,3vw,26px)}
+.rul-rueda{max-width:100%;outline:1px solid #ffffff29;outline-offset:3px;border-radius:50%}
+.rul-flecha{z-index:2}
+.resuelta .rul-casilla-final{stroke:#fff;stroke-width:4px}
+.girando .rul-rueda,.resuelta .rul-rueda{outline-color:var(--cine-acento)}
+@media (prefers-reduced-motion:reduce){
+ #s-mercado .mercado-cartas .jug{animation:none}
+ #ruleta{transition:none}
+}
+.v14-guia{margin:12px 0 18px;padding:12px 14px;border:1px solid var(--borde);border-radius:8px}
+.v14-guia summary{cursor:pointer;font-weight:700}
+.v14-guia p{margin:10px 0 0;max-width:62ch}

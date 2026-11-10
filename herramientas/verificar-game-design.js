@@ -61,7 +61,7 @@ test('guardar v13 conserva vínculos, asignaciones, charla y aprendizaje',()=>{
  fixture();S.pant='plantel';S.prensa=POLITICAS_PRENSA[1];S.pool=POOL.slice();vinculoJugador(S.plantel[0]).confianza=71;
  const once=onceTemporada(S.plantel,S.formacion,[]);S.fijos=once.map(o=>o.jug);S.onceFijado={club:S.club.n,f:S.formacion,puestos:S.fijos.map(j=>j.nom)};
  S.memoriaConstruccion={[S.club.n]:{pivot:42}};S.diarioDT=[{tipo:'charla',texto:'Mensaje guardado'}];
- const datos=new Map();global.localStorage={setItem:(k,v)=>datos.set(k,v),getItem:k=>datos.get(k)};guardarPretemporada();assert.equal(leerGuardado().version,'14.1.0');
+ const datos=new Map();global.localStorage={setItem:(k,v)=>datos.set(k,v),getItem:k=>datos.get(k)};guardarPretemporada();assert.equal(leerGuardado().version,'14.1.1');
  const old=verPlantel;verPlantel=()=>{};S=nuevo();continuarGuardado();verPlantel=old;assert.equal(S.plantel[0].vinculoDT.confianza,71);assert.equal(S.diarioDT[0].texto,'Mensaje guardado');assert.equal(S.memoriaConstruccion[S.club.n].pivot,42);assert.equal(onceTemporada(S.plantel,S.formacion,S.fijos)[0].jug.nom,S.onceFijado.puestos[0]);
 });
 console.log('REGRESIÓN GAME DESIGN V13 COMPLETA');

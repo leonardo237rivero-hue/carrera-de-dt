@@ -106,7 +106,7 @@ function devolucionCharla(A){
 }
 cuerpoCharla=(function(prev){return function(A){
  if(!A.aplicada)return prev(A);
- return `<div class="gd-charla-respuesta" role="status"><h3>${t3('La palabra queda.','A palavra fica.','Your words remain.')}</h3><blockquote>${textoSubrayado(A.borrador)}</blockquote><p>${A.informe}</p><div class="lec-devolucion">${devolucionCharla(A)}</div></div>`;
+ return `<div class="gd-charla-respuesta" role="status"><div class="v14-vestuario-plantel" aria-hidden="true"></div><h3>${t3('La palabra queda.','A palavra fica.','Your words remain.')}</h3><blockquote>${textoSubrayado(A.borrador)}</blockquote><p>${A.informe}</p><div class="lec-devolucion">${devolucionCharla(A)}</div></div>`;
 };})(cuerpoCharla);
 const _revisarAjustes=revisarDiscurso;
 revisarDiscurso=function(ctx){
