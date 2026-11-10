@@ -2,7 +2,7 @@
 // No cambia las probabilidades ni la página normal del juego.
 const fs=require('fs'),path=require('path');
 const raiz=path.resolve(__dirname,'..');
-const qa=`<aside style="padding:8px;background:#ecd8b9;position:fixed;bottom:0;left:0;right:0;z-index:100;font:12px system-ui;display:flex;gap:8px;flex-wrap:wrap"><b>PRUEBA</b><select id="qa-club" aria-label="Club de prueba"><option>Racing Club</option><option>Peñarol</option><option>River Plate</option><option>Boca Juniors</option><option>Corinthians</option><option>Real Madrid</option></select><button onclick="plantelDePrueba()">Plantel</button><button onclick="vestuarioDePrueba()">Vestuario</button><button onclick="vivoDePrueba()">Vivo</button><button onclick="entretiempoDePrueba()">Entretiempo</button><button onclick="tandaDePrueba()">Preparar tanda empatada</button><button onclick="gestionDePrueba()">Gestión de prueba</button><button onclick="planDePrueba()">Plan</button><button onclick="prensaDePrueba()">Prensa</button><button onclick="mercadoDePrueba()">Mercado</button><button onclick="ruletaDePrueba()">Ruleta</button><button onclick="legadoDePrueba()">Legado</button><button onclick="this.parentElement.style.display='none'">Ocultar pruebas</button></aside>
+const qa=`<aside style="padding:8px;background:#ecd8b9;position:fixed;bottom:0;left:0;right:0;z-index:100;font:12px system-ui;display:flex;gap:8px;flex-wrap:wrap"><b>PRUEBA</b><select id="qa-club" aria-label="Club de prueba"><option>Racing Club</option><option>Peñarol</option><option>River Plate</option><option>Boca Juniors</option><option>Corinthians</option><option>Real Madrid</option></select><button onclick="plantelDePrueba()">Plantel</button><button onclick="vestuarioDePrueba()">Vestuario</button><button onclick="vivoDePrueba()">Vivo</button><button onclick="previaPicardiaDePrueba()">Previa</button><button onclick="entretiempoDePrueba()">Entretiempo</button><button onclick="tandaDePrueba()">Preparar tanda empatada</button><button onclick="gestionDePrueba()">Gestión de prueba</button><button onclick="planDePrueba()">Plan</button><button onclick="prensaDePrueba()">Prensa</button><button onclick="mercadoDePrueba()">Mercado</button><button onclick="ruletaDePrueba()">Ruleta</button><button onclick="legadoDePrueba()">Legado</button><button onclick="this.parentElement.style.display='none'">Ocultar pruebas</button></aside>
 <script>
 function tandaDePrueba(){
  S=nuevo();tmp={};S.rng=mul32(hashS('tanda-v10'));S.nombre='Prueba';S.arq=ARQ[0];S.edadInicio=60;
@@ -21,7 +21,8 @@ function entretiempoDePrueba(){
 function planDePrueba(){plantelDePrueba();irPlanteo();}
 function prensaDePrueba(){if(!S.club)tandaDePrueba();abrirConferencia();}
 function vivoDePrueba(){vestuarioDePrueba();tmp.vivo.rapido=false;salirDeArenga(true);pausarVivoInterior(document.querySelector('.controles-banco button[aria-pressed]'));}
-function mercadoDePrueba(){plantelDePrueba();S.presupuesto=70;abrirMercado();}
+function previaPicardiaDePrueba(){tandaDePrueba();const info=tmp.vivo.info;S.temp={grandes:0};abrirPrevia({},info);}
+function mercadoDePrueba(){plantelDePrueba();S.division=3;S.presupuesto=70;abrirMercado();}
 function ruletaDePrueba(){plantelDePrueba();abrirRuleta();}
 function legadoDePrueba(){plantelDePrueba();S.puntos=24;S.temporada=3;S.anosDirigiendo=2;S.titulos=[{tipo:'liga',comp:'Campeonato de prueba',club:S.club.n,t:2,div:3}];S.hist=[{t:1,club:S.club.n,comp:'Liga de prueba',f:'4-3-3',pos:'3º',pts:6},{t:2,club:S.club.n,comp:'Liga de prueba',f:'4-3-3',pos:'1º',pts:10,tit:['liga']}];final();}
 </script>`;
