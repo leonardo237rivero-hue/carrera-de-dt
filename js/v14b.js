@@ -103,26 +103,61 @@ function animarJugada(e,listo){
    ${J.a.map((p,i)=>`<span class="tk a" data-a="${i}" style="left:${p[0]}%;top:${p[1]}%;background:${cA}"></span>`).join('')}
    <span class="pel" style="left:${ini[0]}%;top:${ini[1]}%"></span><em class="v14-jug-grito"></em></div>
   <div class="v14-jug-pie"></div>`;
- const pel=caja.querySelector('.pel'),pos=J.a.map(p=>p.slice()),PASO=560;let k=0;
+ const pel=caja.querySelector('.pel'),pos=J.a.map(p=>p.slice()),PASO=620;let k=0;
+ const vigente=()=>S.pant==='partido'&&tmp.vivo===V&&document.body.contains(caja)&&caja.classList.contains('on');
+ // El tiempo de escena avanza junto al partido y se descarta al salir.
+ function esperar(ms,continuar){
+  let previo=null,transcurrido=0;
+  function cuadro(ahora){
+   if(!vigente())return;
+   const pausada=!!(V.pausa||document.hidden);
+   caja.classList.toggle('pausada',pausada);
+   caja.getAnimations({subtree:true}).forEach(a=>{
+    if(pausada&&a.playState==='running')a.pause();
+    else if(!pausada&&a.playState==='paused')a.play();
+   });
+   if(previo!==null&&!pausada)transcurrido+=Math.min(ahora-previo,80);
+   previo=ahora;
+   if(transcurrido>=ms){continuar();return;}
+   requestAnimationFrame(cuadro);
+  }
+  requestAnimationFrame(cuadro);
+ }
+ caja.querySelector('.v14-jug-cancha').insertAdjacentHTML('beforeend','<div class="v14-pase"></div>');
+ caja.querySelector('.v14-jug-pie').insertAdjacentHTML('beforebegin','<div class="v14-jug-progreso"><i></i></div>');
+ let balon=ini.slice();
  const def=[...J.pasos].reverse().find(p=>typeof p.b==='number'),tk=caja.querySelector(`[data-a="${def?def.b:0}"]`);if(tk&&gol&&e.nom)tk.innerHTML=`<small>${escapeHTML(e.nom)}</small>`;
  const fin=()=>{
+  caja.querySelector('.v14-pase').style.opacity='0';
   const pie=caja.querySelector('.v14-jug-pie'),grito=caja.querySelector('.v14-jug-grito');
   if(gol){caja.classList.add('gol');grito.textContent=t3('¡GOL!','GOL!','GOAL!');sonar(mio?'gol':'golrival');
    pie.innerHTML=`${escapeHTML(e.txt||e.nom||'')}${cargada?`<span class="ok">${t3('Era la jugada que cargaste.','Era o lance que você carregou.','It was the move you loaded.')}</span>`:''}${cerrada?`<span class="mal">${t3('La habías mandado a cerrar y entró igual.','Você mandou fechar e entrou mesmo assim.','You asked to shut it and it still went in.')}</span>`:''}`;}
   else{sonar('uy');pie.innerHTML=mio?t3('Llegaste, pero no fue.','Chegou, mas não foi.','You got there, but no.'):t3('Te llegaron. Zafaste.','Chegaram. Escapou.','They got in. You survived.');}
-  setTimeout(()=>{caja.className='v14-jugada';listo();},gol?1900:900);
+  esperar(gol?1500:700,()=>{caja.className='v14-jugada';listo();});
  };
  const paso=()=>{
-  if(S.pant!=='partido'||!document.body.contains(caja)){listo();return;}
+  if(!vigente())return;
   const p=J.pasos[k++];if(!p){fin();return;}
   Object.entries(p.m||{}).forEach(([i,xy])=>{pos[i]=xy;const el=caja.querySelector(`[data-a="${i}"]`);if(el){el.style.left=xy[0]+'%';el.style.top=xy[1]+'%';}});
   let dest;
   if(p.b==='tiro'){dest=gol?[p.x,1]:(e.m%2?[50,6]:[p.x<50?28:72,-3]);pel.classList.add('tiro');}
   else dest=Array.isArray(p.b)?p.b:pos[p.b];
-  pel.style.left=dest[0]+'%';pel.style.top=dest[1]+'%';
-  setTimeout(paso,p.b==='tiro'?430:PASO);
+  const campo=caja.querySelector('.v14-jug-cancha'),trazo=caja.querySelector('.v14-pase');
+  const dx=(dest[0]-balon[0])*campo.clientWidth/100,dy=(dest[1]-balon[1])*campo.clientHeight/100;
+  trazo.style.left=balon[0]+'%';trazo.style.top=balon[1]+'%';trazo.style.width=Math.hypot(dx,dy)+'px';trazo.style.transform='rotate('+Math.atan2(dy,dx)+'rad)';
+  caja.querySelectorAll('[data-d]').forEach((el,i)=>{
+   el.style.left=clamp(J.d[i][0]+(dest[0]-50)*.18,5,95)+'%';
+   el.style.top=clamp(J.d[i][1]-k*2,10,85)+'%';
+  });
+  caja.querySelector('.por').style.left=clamp(50+(dest[0]-50)*.35,43,57)+'%';
+  caja.querySelectorAll('[data-a]').forEach(el=>el.classList.remove('receptor'));
+  if(typeof p.b==='number')caja.querySelector('[data-a="'+p.b+'"]').classList.add('receptor');
+  caja.querySelector('.v14-jug-pie').textContent=p.b==='tiro'?t3('Remate','Finalização','Shot'):t3('Pase y desmarque','Passe e desmarque','Pass and movement');
+  caja.querySelector('.v14-jug-progreso i').style.width=(k/J.pasos.length*100)+'%';
+  pel.style.left=dest[0]+'%';pel.style.top=dest[1]+'%';balon=dest.slice();
+  esperar(p.b==='tiro'?430:PASO,paso);
  };
- setTimeout(paso,380);
+ esperar(380,paso);
 }
 // el reloj se detiene mientras se ve la jugada; el marcador cambia cuando la pelota entra
 correrVivo=function(evs,desde,hasta,fin){
@@ -266,7 +301,7 @@ function cronicaTemporada(){
  if((campeon||mejor)&&d.origen==='estudio'&&(S.titulos||[]).length<=1)P.push(t3('Ya nadie pregunta dónde jugó.','Ninguém mais pergunta onde jogou.','Nobody asks where he played any more.'));
  if((campeon||mejor)&&d.rango==='joven'&&(S.titulos||[]).length<=1)P.push(t3('La edad dejó de ser tema.','A idade deixou de ser assunto.','His age is no longer a talking point.'));
  if((campeon||mejor)&&rech.length)P.push(t3(`En ${escapeHTML(rech[rech.length-1].club)} recuerdan que le dijeron que no.`,`No ${escapeHTML(rech[rech.length-1].club)} lembram que disseram não.`,`At ${escapeHTML(rech[rech.length-1].club)} they remember turning him down.`));
- return `<article class="v14-cronica"><p class="etq">${t3('LA CRÓNICA','A CRÔNICA','THE CHRONICLE')} · ${t3('Temporada','Temporada','Season')} ${S.temporada}</p><h3>${titular}</h3><p>${P.join(' ')}</p>${cita}<div class="v14-cronica-foto" aria-hidden="true"></div></article>`;
+ return `<article class="v14-cronica"><p class="etq">${t3('LA CRÓNICA','A CRÔNICA','THE CHRONICLE')} · ${t3('Temporada','Temporada','Season')} ${S.temporada}</p><h3>${titular}</h3><p>${P.join(' ')}</p>${cita}<div class="v14-cronica-foto ${campeon?'campeon':''}" aria-hidden="true"></div></article>`;
 }
 const _pintarReporteV13=pintarReporte;
 pintarReporte=function(){

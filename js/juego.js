@@ -310,6 +310,7 @@ function reemplazar(i){
 
 /* ---------- mercado de pases ---------- */
 function abrirMercado(){
+  tmp.mercadoPresentado=false;
   if(S.esSeleccion&&typeof abrirConvocatoria==="function"){ abrirConvocatoria(); return; }
   const grupos=R.mz(["POR","DEF","MED","ATA","DEF","MED","ATA"]).slice(0,3);
   const nivelBase=nivelBaseDe(S.club.niv,S.division)+S.temporada*2;
@@ -337,7 +338,7 @@ function pintarMercado(){
     <p class="mini">${S.esSeleccion?t3("Otro cuerpo técnico mira los mismos nombres.","Outra comissão olha os mesmos nomes.","Another staff is watching the same names."):t3("Otro DT mira la misma lista.","Outro técnico olha a mesma lista.","Another manager is watching the same list.")}
     ${t3("El primero que se tira, se lo lleva. Debajo de cada uno ves cuánto te cambia el equipo con tu sistema actual.","Quem se lançar primeiro, leva. Embaixo de cada um você vê quanto muda o time no seu sistema.","First to move gets him. Under each one you see how he changes your team in your current system.")}</p>
     <div class="reloj"><i id="rbar"></i></div>
-    <div class="grid3 mercado-cartas ${tmp.mercadoAmpliado?'ampliadas':''}">${S.cartas.map((k,i)=>{
+    <div class="grid3 mercado-cartas ${tmp.mercadoPresentado?'':'entrada'} ${tmp.mercadoAmpliado?'ampliadas':''}">${S.cartas.map((k,i)=>{
       const im=impactoDe(k.j);
       const util=im.dif.map((d,x)=>d?`${tAtr(x)} ${im.antes[x]}→${im.desp[x]}`:null).filter(Boolean);
       const costo=S.esSeleccion?0:k.costo;
@@ -356,6 +357,7 @@ function pintarMercado(){
       </button>`;}).join("")}</div>
     <div class="acciones"><button class="btn sec compacto" aria-pressed="${tmp.mercadoAmpliado?'true':'false'}" onclick="ampliarMercado(this)">${t3("Ampliar fichas","Ampliar fichas","Expand cards")}</button><button class="btn" onclick="cerrarMercado()">${T("cerrarMercado")}</button></div>
     ${panelPlantel(true)}`;
+  tmp.mercadoPresentado=true;
 }
 function ampliarMercado(boton){
   tmp.mercadoAmpliado=!tmp.mercadoAmpliado;

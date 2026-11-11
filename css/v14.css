@@ -187,18 +187,18 @@ html.arte-llamada .v14-callar{background:linear-gradient(90deg,#15191cf2 50%,#15
 .v14-vacante-perfil{font-size:13px;color:var(--tenue);padding:10px 0;border-top:1px solid var(--borde)}
 
 html.arte-sala .v14-escena.entrevista,html.arte-practica .v14-escena.practica{height:clamp(225px,36vw,410px)}
-html.arte-sala .v14-escena.entrevista.sala-grande .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10dd,transparent 55%),url('../assets/v14/sala-grande.png')}
-html.arte-practica .v14-escena.practica .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10f0,transparent 60%),url('../assets/v14/practica-ronda.png'),url('../assets/v14/practica.jpg')}
+html.arte-sala .v14-escena.entrevista.sala-grande .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10dd,transparent 55%),url('../assets/v14/sala-grande.jpg')}
+html.arte-practica .v14-escena.practica .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10f0,transparent 60%),url('../assets/v14/practica-ronda.jpg'),url('../assets/v14/practica.jpg')}
 html.arte-practica .v14-ronda{display:none}
 .v14-ficha>.v14-retrato{display:block;margin:10px 0 14px;border-radius:8px}
 .v14-prensa-escena,.v14-vestuario-plantel,.v14-cronica-foto{border-radius:8px;overflow:hidden;background-color:#15191d}
-.v14-prensa-escena{display:flex;align-items:flex-end;min-height:clamp(185px,30vw,330px);margin-bottom:18px;background:linear-gradient(0deg,#0b0e10dd,transparent 70%),url('../assets/v14/prensa.png') center/cover}
-.v14-vestuario-plantel{min-height:clamp(140px,25vw,230px);margin-bottom:14px;background:url('../assets/v14/vestuario-plantel.png') center 45%/cover}
-.v14-cronica-foto{min-height:clamp(140px,24vw,240px);max-width:68ch;margin-top:14px;background:url('../assets/v14/cierre-vestuario.png') center/cover}
+.v14-prensa-escena{display:flex;align-items:flex-end;min-height:clamp(185px,30vw,330px);margin-bottom:18px;background:linear-gradient(0deg,#0b0e10dd,transparent 70%),url('../assets/v14/prensa.jpg') center/cover}
+.v14-vestuario-plantel{min-height:clamp(140px,25vw,230px);margin-bottom:14px;background:url('../assets/v14/vestuario-plantel.jpg') center 45%/cover}
+.v14-cronica-foto{min-height:clamp(140px,24vw,240px);max-width:68ch;margin-top:14px;background:url('../assets/v14/cierre-vestuario.jpg') center/cover}
 
 #s-mercado .mercado-cartas{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px}
 #s-mercado .mercado-cartas.ampliadas{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
-#s-mercado .mercado-cartas .jug{min-width:0;padding:14px;text-align:left;animation:v14-sube .25s both;animation-delay:calc(var(--orden)*.04s)}
+#s-mercado .mercado-cartas .jug{min-width:0;padding:14px;text-align:left;}
 #s-mercado .mercado-cartas.ampliadas .jug{padding:20px}
 #s-mercado .mercado-cartas.ampliadas .jug .nm{font-size:clamp(20px,3vw,26px)}
 .rul-rueda{max-width:100%;outline:1px solid #ffffff29;outline-offset:3px;border-radius:50%}
@@ -212,3 +212,30 @@ html.arte-practica .v14-ronda{display:none}
 .v14-guia{margin:12px 0 18px;padding:12px 14px;border:1px solid var(--borde);border-radius:8px}
 .v14-guia summary{cursor:pointer;font-weight:700}
 .v14-guia p{margin:10px 0 0;max-width:62ch}
+
+/* Movimiento de las jugadas y lectura de las escenas */
+.v14-jugada.on{overflow:hidden}
+.v14-jug-cancha{flex:1 1 auto;min-height:160px;height:auto;max-height:400px}
+.v14-jug-pie{flex:0 0 auto;min-height:52px}
+.v14-jug-cab{flex:0 0 auto}
+.v14-pase{position:absolute;height:2px;background:repeating-linear-gradient(90deg,#fff9 0 5px,transparent 5px 10px);transform-origin:0 50%;pointer-events:none}
+.v14-jug-progreso{flex:0 0 3px;background:#ffffff18;margin-top:8px}
+.v14-jug-progreso i{display:block;height:100%;width:0;background:var(--cine-acento,#e9c84a);transition:width .3s linear}
+.v14-jug-cancha .tk.receptor{box-shadow:0 0 0 5px #ffffff38,0 2px 5px #0009}
+.v14-jugada.pausada::after{content:'Ⅱ';position:absolute;right:14px;top:10px;color:#fff;font-weight:700}
+.v14-escena-fondo{animation:v14-encuadre 1.4s cubic-bezier(.2,.7,.2,1) both}
+@keyframes v14-encuadre{from{transform:scale(1.035);opacity:.65}to{transform:scale(1);opacity:1}}
+.v14-mesa{animation:v14-sube .45s .1s both}
+.v14-prensa-escena,.v14-vestuario-plantel,.v14-cronica-foto{animation:v14-aparece .6s both}
+.mercado-cartas .jug .sello{animation:v14-sello .3s both}
+@keyframes v14-sello{from{opacity:0;transform:scale(1.15)}to{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){
+ .v14-escena-fondo,.v14-mesa,.v14-prensa-escena,.v14-vestuario-plantel,.v14-cronica-foto,.mercado-cartas .jug .sello{animation:none}
+ .v14-jug-progreso i{transition:none}
+}
+
+#s-mercado .mercado-cartas.entrada .jug{animation:v14-sube .25s both;animation-delay:calc(var(--orden)*.04s)}
+.cambio-destinos>div{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}.cambio-destinos .btn{min-height:44px}.cambio-destinos:empty{display:none}
+@media(prefers-reduced-motion:reduce){#s-mercado .mercado-cartas.entrada .jug{animation:none}}
+
+.v14-cronica-foto.campeon{background-image:url('../assets/v14/festejo.jpg')}

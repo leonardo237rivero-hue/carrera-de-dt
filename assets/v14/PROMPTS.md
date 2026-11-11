@@ -57,3 +57,11 @@ Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believ
 ### cierre-vestuario.png
 
 Photorealistic Cine de cancha game scene, wide 16:9 PNG, 1600x900 target. Believable Rioplatense football, charcoal architecture, cool post-rain ambience, warm practical lights. Dark unobtrusive lower area for game UI. No identifiable faces, no lettering, watermark, logos, crests or team colors, neutral clothing. Quiet modest football dressing room after the last match of the season, empty timber benches, discarded neutral towels and unbranded boots, one warm overhead light, dark charcoal lockers. The visual subject occupies the right two-thirds for a newspaper layout.
+
+## festejo.jpg
+
+Generada con image_gen para el cierre de una temporada con título. Se muestra cuando la crónica identifica al equipo como campeón.
+
+Use case photorealistic-natural. Landscape 1672x941 cinematic editorial photograph for Carrera de DT videogame, Cine de cancha. A modest Rioplatense football club celebrating winning its season at blue hour after rain. Group of adult players seen from behind in unbranded neutral charcoal tracksuits, arms around each other's shoulders at the touchline, one small simple silver trophy held aloft. Faces turned away and unrecognizable, no real people. Warm floodlights, wet concrete and natural green grass, restrained photographic realism. Celebration on right two thirds, left third quiet and dark for a newspaper headline overlay. No text, numbers, logos, sponsors, club crests, team colors or watermark.
+
+Las cinco escenas PNG de la entrega anterior se exportaron también a JPG con calidad 82 para la carga del juego. Los originales PNG se conservan. Los seis JPG nuevos pesan menos de 400.000 bytes cada uno.
