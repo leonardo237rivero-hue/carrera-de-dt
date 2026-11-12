@@ -1,13 +1,13 @@
 // v10: núcleo completo offline; un script ausente nunca recibe HTML.
-const VERSION='cdt-v14-1-2';
+const VERSION='cdt-v14-2-0';
 const NUCLEO=['./','index.html','manifest.webmanifest','css/estilos.css','css/direccion.css',
  'js/tactica.js','js/decisiones.js','js/datos.js','js/planteles.js','js/i18n/core.js','js/i18n/textos.js','js/i18n/datos-i18n.js','js/i18n/pool-pt.js','js/i18n/pool-en.js','js/i18n/pool-extra.js','js/i18n/aplicar.js',
- 'js/nucleo.js','js/cancha.js','js/ui.js','js/club.js','js/momentos.js','js/zonas.js','js/temporada.js','js/seleccion.js','js/idea.js','js/vivo.js','js/vestuario.js','js/juego.js','js/ciclo.js','js/comunicacion.js','js/direccion.js','js/interiores.js','css/interiores.css','css/cine.css','js/cine.js','js/recorrido.js','js/charlas.js','js/oficio.js','js/ajustes.js','js/v14.js','js/v14b.js','css/v14.css','assets/cine/acceso.png','assets/cine/tribuna.png','assets/cine/vestuario.png','assets/cine/prensa.png','assets/interiores/entrenador.png'];
+ 'js/nucleo.js','js/cancha.js','js/ui.js','js/club.js','js/momentos.js','js/zonas.js','js/temporada.js','js/seleccion.js','js/idea.js','js/vivo.js','js/vestuario.js','js/juego.js','js/ciclo.js','js/comunicacion.js','js/direccion.js','js/interiores.js','css/interiores.css','css/cine.css','js/cine.js','js/recorrido.js','js/charlas.js','js/oficio.js','js/ajustes.js','js/v14.js','js/v14b.js','css/v14.css','css/edicion.css','js/edicion.js','assets/cine/acceso.png','assets/cine/tribuna.png','assets/cine/vestuario.png','assets/cine/prensa.png','assets/interiores/entrenador.png'];
 
 // HTML y precaché deben pedir exactamente la misma revisión de JS/CSS.
 // Evita mezclar el HTML nuevo con archivos aún frescos de la caché HTTP anterior.
-const ARTE_V14=["sala.jpg","practica.jpg","diario.jpg","llamada.jpg","dt-joven.jpg","dt-medio.jpg","dt-maduro.jpg","dt-veterano.jpg","sala-grande.jpg","practica-ronda.jpg","prensa.jpg","vestuario-plantel.jpg","cierre-vestuario.jpg","festejo.jpg"].map(n=>'assets/v14/'+n);
-const PRECACHE=NUCLEO.map(p=>/\.(js|css)$/.test(p)?p+'?v=14.1.2':p).concat(ARTE_V14);
+const ARTE_V14=["sala.jpg","practica.jpg","diario.jpg","llamada.jpg","dt-joven.jpg","dt-medio.jpg","dt-maduro.jpg","dt-veterano.jpg","sala-grande.jpg","practica-ronda.jpg","prensa.jpg","vestuario-plantel.jpg","cierre-vestuario.jpg","festejo.jpg","revelacion.jpg"].map(n=>'assets/v14/'+n);
+const PRECACHE=NUCLEO.map(p=>/\.(js|css)$/.test(p)?p+'?v=14.2.0':p).concat(ARTE_V14);
 self.addEventListener('install',e=>e.waitUntil(caches.open(VERSION).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('cdt-')&&k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

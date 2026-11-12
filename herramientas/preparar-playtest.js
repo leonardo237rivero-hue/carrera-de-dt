@@ -2,7 +2,7 @@
 // No cambia las probabilidades ni la página normal del juego.
 const fs=require('fs'),path=require('path');
 const raiz=path.resolve(__dirname,'..');
-const qa=`<aside style="padding:8px;background:#ecd8b9;position:fixed;bottom:0;left:0;right:0;z-index:100;font:12px system-ui;display:flex;gap:8px;flex-wrap:wrap"><b>PRUEBA</b><select id="qa-club" aria-label="Club de prueba"><option>Racing Club</option><option>Peñarol</option><option>River Plate</option><option>Boca Juniors</option><option>Corinthians</option><option>Real Madrid</option></select><button onclick="plantelDePrueba()">Plantel</button><button onclick="vestuarioDePrueba()">Vestuario</button><button onclick="vivoDePrueba()">Vivo</button><button onclick="previaPicardiaDePrueba()">Previa</button><button onclick="entretiempoDePrueba()">Entretiempo</button><button onclick="tandaDePrueba()">Preparar tanda empatada</button><button onclick="gestionDePrueba()">Gestión de prueba</button><button onclick="planDePrueba()">Plan</button><button onclick="prensaDePrueba()">Prensa</button><button onclick="mercadoDePrueba()">Mercado</button><button onclick="ruletaDePrueba()">Ruleta</button><button onclick="legadoDePrueba()">Legado</button><button onclick="this.parentElement.style.display='none'">Ocultar pruebas</button></aside>
+const qa=`<aside style="padding:8px;background:#ecd8b9;position:fixed;bottom:0;left:0;right:0;z-index:100;font:12px system-ui;display:flex;gap:8px;flex-wrap:wrap"><b>PRUEBA</b><select id="qa-club" aria-label="Club de prueba"><option>Racing Club</option><option>Peñarol</option><option>River Plate</option><option>Boca Juniors</option><option>Corinthians</option><option>Real Madrid</option><option>Progreso</option></select><button onclick="plantelDePrueba()">Plantel</button><button onclick="vestuarioDePrueba()">Vestuario</button><button onclick="vivoDePrueba()">Vivo</button><button onclick="jugadaDePrueba()">Jugada animada</button><button onclick="previaPicardiaDePrueba()">Previa</button><button onclick="entretiempoDePrueba()">Entretiempo</button><button onclick="tandaDePrueba()">Preparar tanda empatada</button><button onclick="gestionDePrueba()">Gestión de prueba</button><button onclick="planDePrueba()">Plan</button><button onclick="prensaDePrueba()">Prensa</button><button onclick="mercadoDePrueba()">Mercado</button><button onclick="ruletaDePrueba()">Ruleta</button><button onclick="legadoDePrueba()">Legado</button><button onclick="reporteSimuladoDePrueba()">Temporada simulada</button><select id="qa-portada" aria-label="Caso de portada"><option value="real">Resultado simulado</option><option value="campeon">Campeón</option><option value="revelacion">Revelación</option><option value="grande">Grande en 4º</option><option value="crisis">Último</option></select><button onclick="portadaDePrueba()">Ver portada</button><button onclick="S.temporada++;pintarReporte()">Otra edición</button><button onclick="this.parentElement.style.display='none'">Ocultar pruebas</button></aside>
 <script>
 function tandaDePrueba(){
  S=nuevo();tmp={};S.rng=mul32(hashS('tanda-v10'));S.nombre='Prueba';S.arq=ARQ[0];S.edadInicio=60;
@@ -25,6 +25,30 @@ function previaPicardiaDePrueba(){tandaDePrueba();const info=tmp.vivo.info;S.tem
 function mercadoDePrueba(){plantelDePrueba();S.division=3;S.presupuesto=70;abrirMercado();}
 function ruletaDePrueba(){plantelDePrueba();abrirRuleta();}
 function legadoDePrueba(){plantelDePrueba();S.puntos=24;S.temporada=3;S.anosDirigiendo=2;S.titulos=[{tipo:'liga',comp:'Campeonato de prueba',club:S.club.n,t:2,div:3}];S.hist=[{t:1,club:S.club.n,comp:'Liga de prueba',f:'4-3-3',pos:'3º',pts:6},{t:2,club:S.club.n,comp:'Liga de prueba',f:'4-3-3',pos:'1º',pts:10,tit:['liga']}];final();}
+
+function jugadaDePrueba(){tandaDePrueba();tmp.vivo.pausa=false;tmp.vivo.min=25;pintarVivo();ir('partido');animarJugada({m:25,t:'gol',l:soyLado(),pat:'tercer',nom:'Prueba',txt:'Gol de prueba'},()=>{document.getElementById('vvMin').textContent='Prueba completada';});}
+function reporteSimuladoDePrueba(){
+ plantelDePrueba();armarTemporada();
+ for(S.temp.j=0;S.temp.j<S.temp.jornadas.length;S.temp.j++)jugarJornada(S.temp.jornadas[S.temp.j]);
+ finTemporada();
+}
+function portadaDePrueba(){
+ const tipo=document.getElementById('qa-portada').value;
+ if(tipo==='revelacion')document.getElementById('qa-club').value='Progreso';
+ reporteSimuladoDePrueba();if(tipo==='real')return;
+ S.club=Object.assign({},S.club);S.division=3;const c=S.calc;c.titulos=[];c.copaGano=false;c.ultimo=false;c.pos=4;c.exp=8;c.equipos=12;c.rel=4;
+ if(tipo==='campeon'){c.pos=1;c.exp=2;c.titulos=[{comp:'Liga de prueba',tipo:'liga'}];c.rel=1;}
+ if(tipo==='revelacion'){S.club={...CLUBES.find(c=>c.n==='Progreso')};}
+ if(tipo==='grande'){S.club.niv=5;c.exp=2;c.rel=-2;}
+ if(tipo==='crisis'){c.pos=12;c.exp=4;c.rel=-8;c.ultimo=true;}
+ c.presionClub=presionCierreClub(c);
+ // Casos visuales sintéticos: mantener coherentes también sus indicadores.
+ c.dDir=(tipo==='crisis'?-15:tipo==='grande'?-4:8)+c.presionClub.dir;
+ c.dHin=(tipo==='crisis'?-18:tipo==='grande'?-5:10)+c.presionClub.hin;
+ S.vars.dir=clamp(c.antes.dir+c.dDir,0,100);S.vars.hin=clamp(c.antes.hin+c.dHin,0,100);
+ pintarReporte();
+}
+
 </script>`;
 const html=fs.readFileSync(path.join(raiz,'index.html'),'utf8').replace('<head>','<head><base href="../">').replace('</body>',qa+'</body>');
 fs.writeFileSync(path.join(__dirname,'playtest-local.html'),html);

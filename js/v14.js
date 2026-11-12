@@ -168,7 +168,7 @@ pintarOfertas=function(){
  <div class="v14-vacantes">${S.ofertas.map((o,i)=>{const a=adnClub(o.club),r=rech.find(x=>x.club===o.club.n),perfil=prejuicioDT(o.club,o.div);
   return `<article class="gd-vacante v14-vacante ${r?'rechazada':''}" style="${estiloInterior(o.club)};--i:${i}">${bannerClub(o.club,{badges:badgesClub(o.club,o.div)})}
    <p>${L(o.txt)}</p>
-   <p class="v14-adn"><span>${t3('Buscan','Buscam','They want')}</span><b>${t3(...ADN_TIPOS[a.id].n)}</b> · ${t3(...PACIENCIA_TXT[a.paciencia])} <i>${t3(...ADN_TIPOS[a.id].d)}</i></p>
+   <p class="v14-adn"><span>${t3('Buscan','Buscam','They want')}</span><b>${t3(...ADN_TIPOS[a.id].n)}</b> · ${o.div<3?t3('formar y competir','formar e competir','develop and compete'):t3(...PACIENCIA_TXT[a.paciencia])} <i>${t3(...ADN_TIPOS[a.id].d)}</i></p>
    ${perfil.notas.length?`<p class="v14-vacante-perfil">${perfil.notas.join(' ')}</p>`:''}
    ${r?`<p class="alerta mal">${t3('Te dijeron que no','Disseram não','They said no')}: ${escapeHTML(r.motivo)}</p>`:`<button class="btn" onclick="enviarCV(${i})">${t3('Ir a la entrevista','Ir à entrevista','Go to the interview')}</button>`}
   </article>`;}).join('')}</div>

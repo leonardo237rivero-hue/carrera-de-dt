@@ -1252,7 +1252,7 @@ function pintarReporte(){
     <h2 class="disp">${t3("Temporada","Temporada","Season")} ${S.temporada} · ${S.club.n}</h2>
     <div class="resultado ${c.pts>=7?'bien':c.pts<=1?'mal':''}">
       ${c.pos?`<div class="pos-grande">${c.pos}º<small>${t3("de","de","of")} ${c.equipos}</small></div>
-        <span>${TT.ligaNombre} · ${t3("esperaban que terminaras","esperavam que você terminasse","they expected you to finish")} ${c.exp}º</span>`
+        <span>${TT.ligaNombre} · ${t3("proyección por plantel:","projeção pelo elenco:","squad projection:")} ${c.exp}º</span>`
         :`<div class="pos-grande" style="font-size:40px">${c.copaGano?t3("Campeón","Campeão","Champions"):c.copa.eliminado||t3("Final","Final","Final")}</div><span>${c.copa.nombre}</span>`}
       ${titulo?`<div class="titulos-gan">${titulo}</div>`:""}
     </div>
