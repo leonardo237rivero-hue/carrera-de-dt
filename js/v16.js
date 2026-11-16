@@ -22,7 +22,7 @@ const PRINCIPIOS={
  fijar:{n:['Fijar para liberar','Fixar para liberar','Pin to free'],d:['Contra línea de cinco, los extremos abiertos atan a los carrileros y el hueco aparece entre central y carrilero.','Contra linha de cinco, os pontas abertos prendem os alas.','Against a back five, wide wingers pin the wing-backs and the gap opens between centre-back and wing-back.']},
  gatillo:{n:['Presionar con gatillo','Pressionar com gatilho','Press on a trigger'],d:['No se presiona todo: se elige a quién dejar recibir y ahí salta el equipo entero. La raya es un defensor más.','Não se pressiona tudo: escolhe-se quem recebe e aí o time salta.','You do not press everything: you choose who receives, then the whole team jumps. The touchline is an extra defender.']}
 };
-const N_PRINCIPIOS=Object.keys(PRINCIPIOS).length, DOMINIO=3;
+let N_PRINCIPIOS=Object.keys(PRINCIPIOS).length;const DOMINIO=3;
 
 // g: quién lo ejecuta (grupo o roles) · vs: atributo rival [0 ataque,1 creación,2 defensa,3 presión]
 // mi/el: fichas [x,y,(sigla)] con y=0 en tu arco · mv: movimientos de tus fichas · b: camino de la pelota
@@ -140,7 +140,9 @@ const EFECTO_SIT=[[.95,1],[.99,1.03],[1.02,1.08]]; // [lectura 0, .5, 1][ejecuci
 function resolverSituacion(sit,c,k,clave){
  const op=opsDe(sit,c)[k],quien=ejecutor(c,op),rivalAttr=c.el.attrs[op.vs];
  const p=clamp(.5+(quien.rt-rivalAttr)/36,.2,.85),sale=azarSituacion(clave+'|'+k)<p;
- return {op,k,quien,rivalAttr,p,sale,lectura:op.L,mult:EFECTO_SIT[op.L*2][sale?1:0]};
+ // las órdenes del generador (v17) traen su propio premio y su propio costo de error
+ const mult=op.premio!=null?(sale?1+op.premio:1-op.costo):EFECTO_SIT[op.L*2][sale?1:0];
+ return {op,k,quien,rivalAttr,p,sale,lectura:op.L,mult};
 }
 function tocaSituacion(jor){
  if(S.esSeleccion||jor.t!=='liga'||jor.visto||jor.sit!==undefined)return false;
@@ -201,7 +203,7 @@ function abrirSituacion(jor,rival,sit,c,clave){
    <blockquote class="v16-relato">${rel}</blockquote>
    ${primera?`<p class="v16-pista"><b>${t3('Pista','Dica','Hint')}:</b> ${t3(...sit.pista)}</p>`:''}
    <div id="v16-cuerpo"><p class="v16-lbl">${t3('¿Qué gritás desde el banco?','O que você grita do banco?','What do you shout from the touchline?')}</p>
-    <div class="v16-ops">${opsDe(sit,c).map((o,k)=>`<button class="card" onclick="elegirSituacion(${k})"><span class="letra-orden">${'ABC'[k]}</span><b>${t3(...o.t)}</b></button>`).join('')}</div></div>
+    <div class="v16-ops">${opsDe(sit,c).map((o,k)=>`<button class="card" onclick="elegirSituacion(${k})"><span class="letra-orden">${'ABCD'[k]}</span><span class="v16-op-txt"><b>${t3(...o.t)}</b>${typeof numerosOrden==='function'?numerosOrden(sit,c,o):''}</span></button>`).join('')}</div></div>
   </div></div>`;
  const f=$('#tkFecha');if(f&&typeof tituloJornada==='function')f.innerHTML=tituloJornada(jor);
  document.body.appendChild(caja);
