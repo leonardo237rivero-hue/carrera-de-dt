@@ -51,13 +51,42 @@ function nombresDe(club){ return (typeof PLANTELES!=="undefined"&&club&&PLANTELE
 function datoReal(e){ return Array.isArray(e)?{nom:e[0],ed:e[1]||null,rt:e[2]||null}:{nom:e,ed:null,rt:null}; }
 // el puntaje real se lleva a la escala del juego: los pibes sin rodaje no bajan de 42
 function rtReal(r){ return clamp(Math.round(r),42,94); }
+const claveJugadorReal=nom=>String(nom).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim().replace(/\s+/g,' ');
+// El catálogo fija el club inicial; en carrera manda el último pase.
+const clubesPorNombreReal=new Map();
+for(const [club,grupos] of Object.entries(PLANTELES))for(const lista of Object.values(grupos))for(const item of lista){
+  const nombre=claveJugadorReal(datoReal(item).nom),clubes=clubesPorNombreReal.get(nombre)||new Set();clubes.add(club);clubesPorNombreReal.set(nombre,clubes);
+}
+// El catálogo no provee un identificador compartido entre clubes. Separar homónimos.
+function claveRegistroReal(nom,club){const n=claveJugadorReal(nom);return clubesPorNombreReal.get(n)?.size>1?n+'|'+club:n;}
+const registroJugadoresReales=new Map();
+for(const [club,grupos] of Object.entries(PLANTELES))for(const [g,lista] of Object.entries(grupos))for(const item of lista){
+  const r=datoReal(item),id=claveRegistroReal(r.nom,club);
+  const anterior=registroJugadoresReales.get(id);
+  if(!anterior||(r.rt||0)>(anterior.rt||0))registroJugadoresReales.set(id,{...r,club,g});
+}
+function clubDeJugadorReal(id){return S.pasesReales?.[id]?.club||registroJugadoresReales.get(id)?.club;}
+function reconciliarPasesReales(){
+  if(!S.club||S.esSeleccion||S.division!==3)return;
+  for(const j of S.plantel){
+    if(!j.real)continue;
+    const id=j.idReal||claveRegistroReal(j.nom,j.de||S.club.n),anterior=clubDeJugadorReal(id);
+    if(anterior&&anterior!==S.club.n){S.pasesReales||={};S.pasesReales[id]={club:S.club.n,de:j.de||anterior,t:S.temporada,g:j.g,nom:j.nom,ed:j.ed,rt:j.rt};}
+  }
+}
+function realesDeClub(club,g){
+  const local=new Map();
+  for(const item of nombresDe(club)?.[g]||[]){const r=datoReal(item),id=claveRegistroReal(r.nom,club);if(registroJugadoresReales.get(id)?.g===g&&clubDeJugadorReal(id)===club&&!local.has(id))local.set(id,{...r,idReal:id});}
+  for(const [id,p] of Object.entries(S.pasesReales||{}))if(p.club===club&&p.g===g)local.set(id,{...p,idReal:id});
+  return [...local.values()].sort((a,b)=>Number(!!b.club)-Number(!!a.club));
+}
 // un jugador real de otro club del mismo país (para el mercado); null si no hay
 function realDeLiga(g,pais,excluir,cerca){
   if(typeof PLANTELES==="undefined"||typeof CLUBES==="undefined") return null;
-  const usados=new Set((S&&S.plantel||[]).map(j=>j.nom));
-  const cl=R.mz(CLUBES.filter(c=>c.p===pais&&c.n!==excluir&&PLANTELES[c.n]));
+  const usados=new Set((S.plantel||[]).map(j=>claveJugadorReal(j.nom)));
+  const cl=R.mz(CLUBES.filter(c=>c.p===pais&&c.n!==excluir&&(PLANTELES[c.n]||Object.values(S.pasesReales||{}).some(p=>p.club===c.n))));
   for(const c of cl){
-    let op=(PLANTELES[c.n][g]||[]).map(datoReal).filter(x=>!usados.has(x.nom));
+    let op=realesDeClub(c.n,g).filter(x=>!usados.has(claveJugadorReal(x.nom)));
     if(cerca!=null){ const ok=op.filter(x=>x.rt&&Math.abs(x.rt-cerca)<=7); if(ok.length) op=ok; else continue; }
     if(op.length) return Object.assign(R.el(op),{de:c.n});
   }
@@ -66,7 +95,6 @@ function realDeLiga(g,pais,excluir,cerca){
 const CUPO_REAL={POR:2,DEF:7,MED:7,ATA:5};
 function generarPlantel(base,div,perfil,pais,club,extra){
   const p=[];
-  const reales=div===3?nombresDe(club):null;
   const sesgo = perfil || (()=>{
     const s={POR:0,DEF:0,MED:0,ATA:0};
     const gs=R.mz(["DEF","MED","ATA"]);
@@ -75,7 +103,7 @@ function generarPlantel(base,div,perfil,pais,club,extra){
     return s;
   })();
   [["POR",2],["DEF",5],["MED",6],["ATA",3]].forEach(([g,n])=>{
-    const lista=reales&&reales[g]?reales[g].map(datoReal):[];
+    const lista=div===3?realesDeClub(club,g):[];
     const conPuntaje=lista.length&&lista[0].rt!=null;
     const cupo=conPuntaje?Math.max(n,Math.min(CUPO_REAL[g],lista.length)):n;
     for(let i=0;i<cupo;i++){
@@ -83,7 +111,7 @@ function generarPlantel(base,div,perfil,pais,club,extra){
       const escalon = i===0?4 : i===1?0 : -6;
       const j=nuevoJugador(g,base+sesgo[g]+escalon,div,null,pais);
       const r=lista[i];
-      if(r){ j.nom=r.nom; j.real=true; if(r.ed) j.ed=r.ed; if(r.rt!=null) j.rt=clamp(rtReal(r.rt)+(extra||0),30,94); }
+      if(r){ j.nom=r.nom; j.real=true; j.idReal=r.idReal; if(r.ed) j.ed=r.ed; if(r.rt!=null) j.rt=clamp(rtReal(r.rt)+(extra||0),30,94); }
       const PG=POS_GRUPO[g]; j.pos=armarPos(PG[i%PG.length],hashTxt(j.nom)>>3);
       p.push(j);
     }

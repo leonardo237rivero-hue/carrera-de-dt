@@ -72,6 +72,18 @@ function equipoRival(club,div){
   const once=armarOnce(pl,id.f);
   return {club,f:id.f,e:id.e,attrs:atributosDe(once),once,auto:40,coh:1,emp:0};
 }
+function actualizarRivalPorPase(nombre){
+  const T=S.temp;if(!T||!nombre)return;
+  const vistos=new Set(),rng=S.rng;
+  try{
+    for(const e of [...(T.equipos||[]),...(T.copa?.equipos||[])]){
+      if(!e||e.yo||e.club.n!==nombre||vistos.has(e))continue;
+      vistos.add(e);S.rng=mul32(hashS(nombre+'|pase|'+S.temporada));
+      const nuevo=equipoRival(e.club,S.division);
+      Object.assign(e,{f:nuevo.f,e:nuevo.e,once:nuevo.once,attrs:nuevo.attrs});
+    }
+  }finally{S.rng=rng;}
+}
 // mi equipo para un partido: sale del once de ese día
 function miEquipo(rival){
   const once=onceTemporada(S.plantel,S.formacion,S.fijos);
@@ -191,6 +203,7 @@ function nombreRonda(n){ // n = equipos que quedan
     :n>=4?t3("Semifinales","Semifinais","Semi-finals"):t3("Final","Final","Final");
 }
 function armarTemporada(){
+  reconciliarPasesReales();
   const TT={j:0,jornadas:[],equipos:[],ligaNombre:"",copa:null,mitad:0,paro:false,mis:[],eventos:[],ac:null};
   const div=S.esSeleccion?3:S.division;
   let clubesLiga=[], copa=null;

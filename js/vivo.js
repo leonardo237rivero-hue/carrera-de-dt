@@ -275,11 +275,14 @@ function pintarEntretiempo(peligro,fuerte){
 }
 function segundoTiempo(){
   const V=tmp.vivo, o=V.sel2!=null?V.ops2[V.sel2]:null;
+  const antes=new Set(['cargar','cerrar'].flatMap(k=>V.enf[k].map(id=>k+':'+id)));
   if(o){ const [k,id]=o.k.split(":");
     if(k==="c") V.enf.cargar.push(id); if(k==="x") V.enf.cerrar.push(id);
     if(k==="r") V.enf.riesgo=true;
     if(k==="k") V.enf.cerrar.push(...(V.A.an||V.B.an).sus.slice(0,2).map(p=>p.id));
     V.ev.push({m:46,t:"nota",txt:"↻ "+o.t}); }
+  V.ordenesDesde||={};
+  for(const k of ['cargar','cerrar'])for(const id of V.enf[k])if(!antes.has(k+':'+id))V.ordenesDesde[k+':'+id]=46;
   if(V.rivalCierra){ V.enf.rivalCierra=V.rivalCierra; V.ev.push({m:46,t:"nota",txt:t3("Ellos cierran ","Eles fecham ","They shut ")+nomPatron(V.rivalCierra)}); }
   if(V.charlaDescansoV!=null) V.enf.arenga=V.charlaDescansoV;
   else if(V.enf.arenga) V.enf.arenga=Math.round(V.enf.arenga*500)/1000; // la charla se gasta: la mitad en el segundo tiempo

@@ -317,7 +317,7 @@ function abrirMercado(){
   S.cartas=grupos.map(g=>{
     const j=nuevoJugador(g,nivelBase+R.e(2,12),S.division,null,S.club.p);
     const real=S.division===3&&!S.esSeleccion?realDeLiga(g,S.club.p,S.club.n,j.rt):null;
-    if(real){ j.nom=real.nom; j.de=real.de; j.real=true; if(real.ed) j.ed=real.ed; if(real.rt) j.rt=rtReal(real.rt); }
+    if(real){ j.nom=real.nom; j.de=real.de; j.idReal=real.idReal; j.real=true; if(real.ed) j.ed=real.ed; if(real.rt) j.rt=rtReal(real.rt); }
     return {j,costo:clamp(Math.round(Math.max(4,(j.rt-nivelBase+12))*1.6+R.e(-4,6)),4,70),estado:"libre",
             demora:Math.round(R.r(6000,14000))};
   });
@@ -382,6 +382,7 @@ function piquear(i){
   const costo=S.esSeleccion?0:k.costo;
   if(k.estado!=="libre"||costo>S.presupuesto) return;
   k.estado="mio"; S.presupuesto-=costo; S.plantel.push(k.j);
+  if(k.j.real){reconciliarPasesReales();actualizarRivalPorPase(k.j.de);}
   pintarMercado(); cabecera();
 }
 function cerrarMercado(){clearInterval(S.timer); persuasion();}
@@ -757,7 +758,7 @@ function tomar(i){
     const mios=S.plantel.filter(x=>x.g===g).map(x=>x.rt).sort((a,b)=>b-a);
     const ref=mios.length?mios[Math.min(2,mios.length-1)]:nivelBaseDe(S.club.niv,S.division);
     pibe=nuevoJugador(g,ref+(/debutar/i.test(txtEs)?R.e(0,4):R.e(-6,0))+(S.arq.id==="formador"?3:0),S.division,R.e(17,19),S.club.p);
-    pibe.nuevo=true; pibe.canterano=true; prepJug(pibe); S.plantel.push(pibe);
+    pibe.nuevo=true; pibe.canterano=true; registrarCanterano(pibe,null,S.division); prepJug(pibe); S.plantel.push(pibe);
   }
   $("#s-decision").innerHTML=`
     <h2 class="disp">${T("decision",S.decIdx+1,S.decs.length)}</h2>
@@ -1008,7 +1009,7 @@ function tickerSiguiente(){
   // copas y clásicos: previa y partido en vivo (js/vivo.js)
   if(!jor.visto&&typeof partidoGrande==="function"){ const info=partidoGrande(jor); if(info){ tmp.saltar=false; abrirPrevia(jor,info); return; }
     // los grandes que no entran en el cupo se juegan acá, con aviso
-    if(typeof esGrandeMio==="function"&&esGrandeMio(jor)) jor.aviso=t3("Partido grande sin previa: las noches en vivo de la temporada ya se usaron.","Jogo grande sem prévia: as noites ao vivo da temporada já foram usadas.","Big game, no build-up: this season's live nights are used up."); }
+    if(typeof esGrandeMio==="function"&&esGrandeMio(jor)) jor.aviso=t3("Partido destacado · se juega con tu plan de temporada.","Jogo de destaque · segue com seu plano da temporada.","Featured match · played with your season plan."); }
   jugarJornada(jor);
   S.enfasis=null;
   animarJornada(jor,()=>{
@@ -1103,10 +1104,10 @@ function pintarTablaTk(){
 function pintarCopaTk(){
   const TT=S.temp, c=$("#tkCopa"); if(!c||!TT.copa) return;
   const C=TT.copa;
-  c.innerHTML=`<div class="lbl-sel">${trofeo(C.tipo==="conti"?"conti":C.tipo==="sel"?"sel":"copa",16)} ${C.nombre}</div>
+  c.innerHTML=`<div class="lbl-sel">${trofeo(C.tipo==="conti"?"conti":C.tipo==="sel"?"sel":"copa",28,C.nombre)} ${C.nombre}</div>
     ${C.rondas.length?C.rondas.map(r=>`<div class="cr ${r.gano?'ok':'mal'}">${r.ronda}: ${r.gf}-${r.gc}${r.pen?` (${r.pen[0]}-${r.pen[1]})`:""} ${r.rival.n} ${r.gano?'✓':'✗'}</div>`).join("")
       :`<div class="mini">${t3("Todavía no jugaste","Ainda não jogou","Not played yet")}</div>`}
-    ${C.campeon?`<div class="cr campeon">${trofeo("copa",14)} ${C.campeon.club.n}</div>`:""}`;
+    ${C.campeon?`<div class="cr campeon">${trofeo(C.tipo,24,C.nombre)} ${C.campeon.club.n}</div>`:""}`;
 }
 
 /* ---------- parada de mitad de temporada ---------- */
@@ -1314,6 +1315,7 @@ function cerrarTemporada(){
     const antes=S.division;
     S.division=Math.min(3,S.division+c.sube);
     ascendio=S.division>antes;
+    if(ascendio)tmp.divDesdeAscenso=antes;
     if(ascendio){ S.ascensos=(S.ascensos||0)+1; eventos.push(t3(`Te suben a ${tDiv(DIVISIONES[S.division].n)} de ${S.club.n}.`,`Você sobe para ${tDiv(DIVISIONES[S.division].n)} do ${S.club.n}.`,`You're promoted to ${S.club.n} ${tDiv(DIVISIONES[S.division].n)}.`)); }
   }
   // crecimiento del club
@@ -1402,7 +1404,7 @@ function marcarSube(i){
 function confirmarAscenso(){
   const suben=tmp.suben.map(i=>window.__cand[i]);
   S.plantel=generarPlantel(nivelBaseDe(S.club.niv,S.division),S.division,null,S.club.p,S.club.n);
-  suben.forEach(j=>{ j.rt=clamp(j.rt+3,20,94); j.subido=true; S.plantel.push(j); });
+  suben.forEach(j=>{ registrarCanterano(j,tmp.divDesdeAscenso??Math.max(0,S.division-1),S.division,S.temporada+1); j.rt=clamp(j.rt+3,20,94); j.subido=true; S.plantel.push(j); });
   S.presupuesto=clamp(S.presupuesto+12,0,120);
   siguienteTemporada();
 }

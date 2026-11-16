@@ -1,7 +1,7 @@
 // v10. Dominio: identidad persistente, aprendizaje por principio, edad y contexto.
 // Las órdenes del partido modifican S.enfasis, nunca el ADN ni la memoria aprendida.
-const VERSION_JUEGO='14.2.0';
-const GUARDADO_CDT='cdt-v10-pretemporada';
+const VERSION_JUEGO='15.0.0';
+const GUARDADO_CDT=typeof location!=='undefined'&&/\/herramientas\/playtest(?:-local)?\.html$/.test(location.pathname)?'cdt-playtest-pretemporada':'cdt-v10-pretemporada';
 const copiaModelo=m=>Object.assign({},m||modeloDeEstilo('Posesion'));
 const escapeHTML=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function prepararIdentidadDT(){
@@ -176,12 +176,12 @@ function guardarPretemporada(){
     localStorage.setItem(GUARDADO_CDT,JSON.stringify(data));
   }catch(e){ /* almacenamiento privado o lleno: la carrera sigue */ }
 }
-function leerGuardado(){try{const d=JSON.parse(localStorage.getItem(GUARDADO_CDT)||'null');return d&&['10.0.0','11.0.0','12.0.0','13.0.0',VERSION_JUEGO].includes(d.version)&&d.estado&&d.estado.club&&Array.isArray(d.estado.plantel)?d:null;}catch(e){return null;}}
+function leerGuardado(){try{const d=JSON.parse(localStorage.getItem(GUARDADO_CDT)||'null');return d&&/^(?:10|11|12|13|14|15)\.\d+\.\d+$/.test(d.version)&&d.estado&&d.estado.club&&Array.isArray(d.estado.plantel)?d:null;}catch(e){return null;}}
 function continuarGuardado(){
   const d=leerGuardado();if(!d)return;
   S=d.estado;S.rng=mul32(d.rng);S.fijos=(S.fijosIdx||[]).map(i=>S.plantel[i]).filter(Boolean);delete S.fijosIdx;
   S.pool=(S.poolIndices||[]).map(i=>POOL[i]).filter(Boolean);delete S.poolIndices;
   // Los arquetipos y políticas tienen funciones que no viajan en JSON.
   S.arq=ARQ.find(a=>a.id===S.arq.id);S.prensa=POLITICAS_PRENSA.find(p=>p.id===(S.prensa||{}).id)||POLITICAS_PRENSA[1];
-  tmp={};prepararIdentidadDT();aplicarTema();verPlantel();
+  tmp={};reconciliarPasesReales();recuperarCantera();prepararIdentidadDT();aplicarTema();verPlantel();
 }

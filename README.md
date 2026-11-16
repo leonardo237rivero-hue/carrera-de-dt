@@ -1,5 +1,9 @@
 # Carrera de DT
 
+**v15 — Club, tribuna y cantera.** Cinco canchas de club con arte propio, copas diferenciadas,
+sonido opcional, una previa más breve y un capítulo para cerrar cada temporada.
+[Análisis del playtest y cambios](docs/PLAYTEST_V15.md).
+
 **v13 — Diseño del juego:** vacantes y entrevista con compromisos,
 presentación al plantel, arengas propias antes del partido y en el descanso,
 puestos específicos, construcción organizada y legado por club.

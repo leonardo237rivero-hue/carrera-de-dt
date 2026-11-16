@@ -80,6 +80,6 @@ final=function(){
   const tarjeta=root.querySelector('.tarjeta');if(tarjeta)tarjeta.classList.add('cine-legado');
   if(S.titulos.length){
     const tabla=root.querySelector('table');
-    if(tabla)tabla.outerHTML=`<div class="cine-palmares">${S.titulos.map(t=>`<article class="cine-copa">${trofeo(t.tipo||'liga',54)}<div><h3>${escapeHTML(t.comp||t3('Título','Título','Trophy'))}</h3><p>${escapeHTML(t.club)} · ${t3('Temporada','Temporada','Season')} ${t.t}</p></div></article>`).join('')}</div>`;
+    if(tabla)tabla.outerHTML=`<div class="cine-palmares">${S.titulos.map(t=>`<article class="cine-copa">${trofeo(t.tipo||'liga',54,t.comp)}<div><h3>${escapeHTML(t.comp||t3('Título','Título','Trophy'))}</h3><p>${escapeHTML(t.club)} · ${t3('Temporada','Temporada','Season')} ${t.t}</p></div></article>`).join('')}</div>`;
   }
 };

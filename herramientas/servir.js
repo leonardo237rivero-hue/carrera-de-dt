@@ -1,7 +1,7 @@
 // Sólo desarrollo local. node herramientas/servir.js [puerto]
 const http=require('http'),fs=require('fs'),path=require('path');
 const raiz=path.resolve(__dirname,'..');
-const tipos={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webmanifest':'application/manifest+json','.svg':'image/svg+xml'};
+const tipos={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.jpg':'image/jpeg','.mp3':'audio/mpeg','.png':'image/png','.webmanifest':'application/manifest+json','.svg':'image/svg+xml'};
 http.createServer((req,res)=>{
   let ruta;try{ruta=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch(e){res.writeHead(400);res.end();return;}
   const archivo=path.resolve(raiz,'.'+(ruta==='/'?'/index.html':ruta));

@@ -130,7 +130,7 @@ function animarJugada(e,listo){
  const fin=()=>{
   caja.querySelector('.v14-pase').style.opacity='0';
   const pie=caja.querySelector('.v14-jug-pie'),grito=caja.querySelector('.v14-jug-grito');
-  if(gol){caja.classList.add('gol');grito.textContent=t3('¡GOL!','GOL!','GOAL!');sonar(mio?'gol':'golrival');
+  if(gol){caja.classList.add('gol');grito.textContent=t3('¡GOL!','GOL!','GOAL!');if(typeof sonidoGol==='function')sonidoGol(e);else sonar(mio?'gol':'golrival');
    pie.innerHTML=`${escapeHTML(e.txt||e.nom||'')}${cargada?`<span class="ok">${t3('Era la jugada que cargaste.','Era o lance que você carregou.','It was the move you loaded.')}</span>`:''}${cerrada?`<span class="mal">${t3('La habías mandado a cerrar y entró igual.','Você mandou fechar e entrou mesmo assim.','You asked to shut it and it still went in.')}</span>`:''}`;}
   else{sonar('uy');pie.innerHTML=mio?t3('Llegaste, pero no fue.','Chegou, mas não foi.','You got there, but no.'):t3('Te llegaron. Zafaste.','Chegaram. Escapou.','They got in. You survived.');}
   esperar(gol?1500:700,()=>{caja.className='v14-jugada';listo();});
@@ -168,7 +168,7 @@ correrVivo=function(evs,desde,hasta,fin){
   V.ev.push(e);const yoLado=soyLado();
   if(e.l==='a')V.zonasA[e.zona]+=e.t==='gol'?3:1;else V.zonasB[e.zona]+=e.t==='gol'?3:1;
   if(e.t==='gol'){V.marc[e.l==='a'?0:1]++;V.ultZona={z:e.l===yoLado?e.zona:espejoZona(e.zona),txt:'⚽',c:'#F4F7F0'};
-   const mk=$('#vvM');if(mk){mk.textContent=`${V.marc[0]} – ${V.marc[1]}`;mk.classList.remove('gol');void mk.offsetWidth;mk.classList.add('gol');}pintarFeedVivo();}
+   const mk=$('#vvM');if(mk){mk.textContent=`${V.marc[0]} – ${V.marc[1]}`;mk.classList.remove('gol');void mk.offsetWidth;mk.classList.add('gol');}pintarFeedVivo();if(typeof celebrarGol==='function')celebrarGol(e);}
  };
  const paso=()=>{
   if(S.pant!=='partido'||tmp.vivo!==V)return;
