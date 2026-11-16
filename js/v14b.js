@@ -155,6 +155,11 @@ function animarJugada(e,listo){
   caja.querySelector('.v14-jug-pie').textContent=p.b==='tiro'?t3('Remate','Finalização','Shot'):t3('Pase y desmarque','Passe e desmarque','Pass and movement');
   caja.querySelector('.v14-jug-progreso i').style.width=(k/J.pasos.length*100)+'%';
   pel.style.left=dest[0]+'%';pel.style.top=dest[1]+'%';balon=dest.slice();
+  // Vuelo sobre el mismo plano 3D. esperar() pausa también esta animación al ocultar la pestaña.
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches&&typeof pel.animate==='function'){
+   const alto=p.b==='tiro'?34:Array.isArray(p.b)||e.pat==='cambio'?30:18;
+   pel.animate([{transform:'translateZ(10px)'},{transform:`translateZ(${alto}px)`,offset:.45},{transform:'translateZ(10px)'}],{duration:p.b==='tiro'?340:500,easing:'ease-in-out'});
+  }
   esperar(p.b==='tiro'?430:PASO,paso);
  };
  esperar(380,paso);

@@ -24,3 +24,45 @@ body:not([data-pant=resolucion]) .cine-masthead{background-image:linear-gradient
 @media(prefers-reduced-motion:reduce){.v14-jugada.gol .arco{animation:none}}
 body[data-pant=plantel] .cine-masthead{min-height:84px;padding-block:14px;background:#10171c}body[data-pant=plantel] .cine-marca b{font-size:26px}body[data-pant=plantel] .cine-marca .escudo,body[data-pant=plantel] .cine-marca .escudo img{width:40px!important;height:46px!important}
 .cantera-prospecto{margin:14px 0 0;background:#101e1a;border-color:#416155}.cantera-prospecto summary{cursor:pointer;color:#c3ebcf}.cantera-prospecto .btn{margin-top:8px}
+
+/* v15.1: arquitectura reconocible y objetos en relieve sobre una interfaz editorial. */
+.escudo-volumen{display:inline-block;position:relative;perspective:650px;flex-shrink:0;vertical-align:middle;overflow:visible}
+.escudo-objeto{position:absolute;inset:0;display:block;transform-style:preserve-3d;transform:rotateX(9deg) rotateY(-18deg);transition:transform .65s cubic-bezier(.2,.7,.2,1);animation:insignia-entrada 1.1s cubic-bezier(.16,1,.3,1) both}
+.escudo-canto,.escudo-reflejo{position:absolute;inset:0;display:block;pointer-events:none;-webkit-mask:var(--sello) center/contain no-repeat;mask:var(--sello) center/contain no-repeat}
+.escudo-canto{background:linear-gradient(120deg,#f7e5b7,#78654a 34%,#d0b581 58%,#3a3835 85%)}
+.escudo-frente{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;transform:translateZ(.5px);filter:drop-shadow(0 10px 9px #0008)}
+.escudo-frente img{display:block;width:100%;height:100%;object-fit:contain}
+.escudo-reflejo{transform:translateZ(1px);background:linear-gradient(125deg,#fff8 0%,#fff1 27%,transparent 39% 66%,#fff3 78%,transparent 90%);opacity:.5}
+.escena-insignia{position:absolute;right:7%;bottom:62px;width:170px;height:210px;display:grid;place-items:center;perspective:600px;pointer-events:none}
+.escena-insignia .escudo-volumen{z-index:1;filter:drop-shadow(0 20px 26px #0008)}
+.insignia-base{position:absolute;bottom:4px;width:160px;height:80px;border-radius:50%;background:radial-gradient(ellipse,#e6cf9628,transparent 60%),linear-gradient(130deg,#7d87854d,#101919cc);border:1px solid #dddece35;box-shadow:0 9px 0 #111818,0 12px 20px #0009;transform:rotateX(65deg)}
+.escena-con-sello .escena-contenido{max-width:76%;padding-right:36px}
+.escena-con-sello::after{background:linear-gradient(0deg,#071015f5,#07101514 88%),linear-gradient(90deg,#07101560,transparent 75%)}
+.escena-con-sello::before{animation:lugar-entrada 2s ease-out both;transform-origin:60% 48%}
+.inicio-temporada.escena-con-sello{min-height:370px}.hito-temporada.escena-con-sello{min-height:450px}
+.inicio-temporada.escena-con-sello .escena-contenido{padding-top:140px}
+.banner-con-cancha .bc-escudo{perspective:600px;padding:6px 10px 10px 2px;overflow:visible}
+.previa-cancha .pv-vs{perspective:850px}.previa-cancha .pv-vs>.escudo-volumen:last-child .escudo-objeto{transform:rotateX(9deg) rotateY(18deg)}
+.panel-cantera{padding-top:0;overflow:hidden;border-top:0}.cantera-lugar{position:relative;isolation:isolate;min-height:230px;margin:0 -24px 22px;display:flex;align-items:flex-end;background:#192c25;overflow:hidden}
+.cantera-lugar::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--escena) center 42%/cover no-repeat}
+.cantera-lugar::after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,#101e1af5,#101e1a44 72%,transparent)}
+.cantera-lugar>div{padding:55px 24px 22px}.cantera-lugar .etq{font-size:10px;letter-spacing:.17em;color:#d6e9da}.cantera-lugar h3{color:#fff;margin:9px 0}.cantera-lugar p{color:#e0e8e2;text-shadow:0 1px 4px #000}
+html .v14-escena.practica.practica-con-lugar .v14-escena-fondo{background-image:linear-gradient(0deg,#0b0e10ee,transparent 80%),var(--cantera-lugar);background-size:cover;background-position:center}
+.vitrina-temporada article{perspective:700px}.vitrina-temporada .copa-diseno{transform:rotateY(-12deg);filter:drop-shadow(2px 1px 0 #7d745b) drop-shadow(2px 2px 0 #c3baa1) drop-shadow(0 12px 10px #0008)}
+/* El plano, el balón y el arco comparten perspectiva: ninguna transformación cambia la simulación. */
+.v14-jugada{perspective:1000px}.v14-jugada.on{background:radial-gradient(ellipse at 50% 5%,#34483b,#10191b 65%)}
+.v14-jugada.mia .v14-jug-cancha{transform:rotateX(32deg);transform-origin:center;transform-style:preserve-3d}
+.v14-jugada.rival .v14-jug-cancha{transform:rotateX(32deg) scaleY(-1);transform-origin:center;transform-style:preserve-3d}
+.v14-jugada .v14-jug-cancha{border:2px solid #b2c5ad88;box-shadow:0 3px 0 #667764,0 7px 0 #243b2e,0 20px 28px #0009;margin-block:12px 22px;border-radius:4px;overflow:visible}
+.v14-jug-cancha .tk{transform:translateZ(8px);background-image:radial-gradient(ellipse at 30% 20%,#ffffff8c,transparent 65%);box-shadow:0 3px 0 #15251bcc,2px 7px 6px #0008}
+.v14-jug-cancha .tk.d{border-style:solid;border-color:#f5f3e4;outline:1px solid #111;opacity:1}
+.v14-jug-cancha .tk.receptor{box-shadow:0 0 0 4px #ffffff50,0 4px 0 #15251bcc,2px 9px 7px #0008}
+.v14-jug-cancha .pel{transform:translateZ(14px);background:radial-gradient(circle at 32% 25%,white 15%,#e1e5df 42%,#535d59 85%);box-shadow:3px 7px 4px #0008,0 0 1px 1px #fff8}
+.v14-jug-cancha .arco{transform:translateZ(6px) rotateX(-55deg);transform-origin:center top;height:22px;box-shadow:0 4px 7px #0007}
+.v14-jugada.gol .arco{animation:red-volumen .6s ease-out}
+@keyframes insignia-entrada{from{opacity:0;transform:translateY(12px) rotateX(12deg) rotateY(-46deg)}to{opacity:1}}
+@keyframes lugar-entrada{from{transform:scale(1.045)}to{transform:scale(1)}}
+@keyframes red-volumen{0%,100%{transform:translateZ(6px) rotateX(-55deg)}35%{transform:translateZ(6px) rotateX(-38deg) scaleY(1.15)}}
+@media(hover:hover) and (pointer:fine){.escudo-volumen:hover .escudo-objeto,.banner-club:hover .escudo-objeto{transform:rotateX(3deg) rotateY(14deg)}.escena-con-sello:hover .escudo-objeto{transform:rotateX(4deg) rotateY(8deg)}}
+@media(max-width:700px){.escena-con-sello .escena-contenido{max-width:100%;padding-right:22px}.escena-insignia{top:24px;right:20px;bottom:auto;width:88px;height:110px}.escena-insignia .escudo-volumen{width:72px!important;height:82px!important}.escena-insignia .insignia-base{width:84px;height:40px;bottom:0}.inicio-temporada.escena-con-sello{min-height:370px}.hito-temporada.escena-con-sello{min-height:430px}.escena-con-sello .escena-contenido{padding-top:155px}.cantera-lugar{min-height:230px}.v14-jugada .v14-jug-cancha{margin-block:8px 16px}}
+@media(prefers-reduced-motion:reduce){.escudo-objeto,.escena-con-sello::before,.v14-jugada.gol .arco{animation:none}.escudo-objeto{transition:none;transform:rotateY(-12deg)}.escena-con-sello:hover .escudo-objeto,.escudo-volumen:hover .escudo-objeto,.banner-club:hover .escudo-objeto{transform:rotateY(-12deg)}.v14-jugada .v14-jug-cancha .pel{transition:none}}

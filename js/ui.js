@@ -13,12 +13,24 @@ function slugClub(n){
 function escudo(club,size){
   const s=size||34;
   if(USAR_ESCUDOS_REALES){
+    // Las piezas grandes tienen canto real por capas; los iconos conservan su lectura plana.
+    if(s>=48)return escudoVolumen(club,s);
         return `<span class="escudo" style="display:inline-flex;width:${s}px;height:${s*1.14}px;align-items:center">
       <img src="escudos/${club.sel?"seleccion-":""}${slugClub(club.n)}.png" alt="${club.n}" width="${s}" height="${s*1.14}"
         style="object-fit:contain" onerror="this.outerHTML=escudoSVG(${JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;')},${s})">
     </span>`;
   }
   return escudoSVG(JSON.stringify(club),s);
+}
+function escudoVolumen(club,s){
+  const src=`escudos/${club.sel?'seleccion-':''}${slugClub(club.n)}.png`;
+  // Los url() en una variable CSS se resuelven contra la hoja consumidora.
+  const mascara=new URL(src,document.baseURI||'http://localhost/').href;
+  const fallback=JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;');
+  return `<span class="escudo escudo-volumen" style="width:${s}px;height:${s*1.14}px;--sello:url('${mascara}')">
+    <span class="escudo-objeto">${[7,6,5,4,3,2,1].map(z=>`<i class="escudo-canto" aria-hidden="true" style="transform:translateZ(-${z}px)"></i>`).join('')}
+    <span class="escudo-frente"><img src="${src}" alt="${escapeHTML(club.n)}" width="${s}" height="${s*1.14}" onerror="this.closest('.escudo-volumen').outerHTML=escudoSVG(${fallback},${s})"></span>
+    <i class="escudo-reflejo" aria-hidden="true"></i></span></span>`;
 }
 function escudoSVG(clubJson,size){
   const club=typeof clubJson==="string"?JSON.parse(clubJson):clubJson;

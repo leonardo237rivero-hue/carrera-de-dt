@@ -7,6 +7,24 @@ function iniciar(nombre='Boca Juniors'){
 }
 const id=claveJugadorReal('Ángel Di María'),esDiMaria=j=>claveJugadorReal(j.nom)===id;
 const test=(n,fn)=>{fn();console.log('OK',n);};
+test('cada lugar distingue Primera, cantera, visita y sede neutral sin tocar el azar',()=>{
+ iniciar('Peñarol');const antes=S.rng.estado();
+ for(const n of ['Peñarol','Nacional','Barcelona']){
+  const c=club(n),l=LUGARES_CLUB[n];
+  assert.equal(arteCancha(c,3),'assets/v15.1/'+l.id+'.jpg');
+  assert.equal(arteCancha(c,2),'assets/v15.1/'+l.id+'-cantera.jpg');
+  assert.equal(nombreCancha(c,1),l.cantera);
+  assert(cabeceraCantera(c).includes(l.cantera));
+ }
+ const rival={club:club('Nacional')};
+ assert.equal(fotoPartido({soyA:false,rival}),'assets/v15.1/nacional.jpg');
+ assert.equal(fotoPartido({soyA:true,rival}),'assets/v15.1/penarol.jpg');
+ assert.equal(fotoPartido({soyA:true,rival,neutral:true}),'assets/v15/noche-europea.jpg');
+ assert.equal(arteCancha(club('Progreso'),2),'assets/v14/practica-ronda.jpg');
+ assert.equal(S.rng.estado(),antes);
+ assert(!escudo(club('Peñarol'),24).includes('escudo-volumen'));
+ assert(escudo(club('Peñarol'),72).includes('escudo-volumen'));
+});
 const datos=new Map();
 global.localStorage={getItem:k=>datos.get(k),setItem:(k,v)=>datos.set(k,v)};
 test('la compra retira a Di María de la liga y copa ya armadas y conserva tablero, dinero y azar',()=>{

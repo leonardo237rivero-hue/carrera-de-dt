@@ -1,5 +1,9 @@
 # Carrera de DT
 
+**v15.1 — Arquitectura e identidad.** Campeón del Siglo, Gran Parque Central y Camp Nou clásico,
+tres canteras con referencias fotográficas propias, escudos con relieve y jugadas con profundidad.
+[Dirección de arte, fuentes y verificación](docs/ARTE_V15_1.md).
+
 **v15 — Club, tribuna y cantera.** Cinco canchas de club con arte propio, copas diferenciadas,
 sonido opcional, una previa más breve y un capítulo para cerrar cada temporada.
 [Análisis del playtest y cambios](docs/PLAYTEST_V15.md).

@@ -1,17 +1,26 @@
 // v15 — Identidad de cancha, ritmo elegido y consecuencias observables.
 // La presentación nunca consume S.rng ni altera los goles ya simulados.
 const CANCHAS_ARTE={Peñarol:'penarol',Nacional:'nacional','Boca Juniors':'boca','River Plate':'river','Racing Club':'racing'};
+// Lugares verificados mediante referencias fotográficas; Barcelona usa su configuración histórica.
+const LUGARES_CLUB={
+ Peñarol:{id:'penarol',cancha:'Campeón del Siglo',cantera:'Ciudad Deportiva Néstor Gonçalves',ciudad:'Montevideo',epoca:''},
+ Nacional:{id:'nacional',cancha:'Gran Parque Central',cantera:'Los Céspedes',ciudad:'Montevideo',epoca:''},
+ Barcelona:{id:'barcelona',cancha:'Camp Nou',cantera:'Ciutat Esportiva Joan Gamper',ciudad:'Sant Joan Despí',epoca:'clásico'}
+};
+function arteCantera(club){const l=LUGARES_CLUB[club?.n];return l?'assets/v15.1/'+l.id+'-cantera.jpg':'assets/v14/practica-ronda.jpg';}
 function arteCancha(club,division=3){
- if(division<3)return 'assets/v14/practica-ronda.jpg';
+ if(division<3)return arteCantera(club);
+ if(LUGARES_CLUB[club?.n])return 'assets/v15.1/'+LUGARES_CLUB[club.n].id+'.jpg';
  if(CANCHAS_ARTE[club?.n])return 'assets/v15/'+CANCHAS_ARTE[club.n]+'.jpg';
  return club?.niv>=4||club?.sel?'assets/v15/noche-europea.jpg':'assets/v14/revelacion.jpg';
 }
 function cssFoto(ruta){return `url('${new URL(ruta,document.baseURI||'http://localhost/').href}')`;}
 function sedePartido(info){return info?.neutral?null:info?.soyA?S.club:info?.rival?.club;}
 function fotoPartido(info){const sede=sedePartido(info);return sede?arteCancha(sede,S.division):'assets/v15/noche-europea.jpg';}
-function nombreCancha(club,division=3){return division<3?t3('Campo de formación','Campo de formação','Academy ground'):CLUB_INFO[club?.n]?.est||t3('Nuestra casa','Nossa casa','Our home');}
+function nombreCancha(club,division=3){const l=LUGARES_CLUB[club?.n];return division<3?l?.cantera||t3('Campo de formación','Campo de formação','Academy ground'):l?.cancha||CLUB_INFO[club?.n]?.est||t3('Nuestra casa','Nossa casa','Our home');}
+function detalleLugar(club,division=3){return club?.n==='Barcelona'&&division>=3?t3('configuración histórica anterior a 2023','configuração histórica anterior a 2023','historic pre-2023 configuration'):t3('recreación artística','recriação artística','artistic interpretation');}
 function escenaClub(club,division,etiqueta,titulo,sub,clase=''){
- return `<section class="escena-club ${clase}" style="--escena:${cssFoto(arteCancha(club,division))};${estiloInterior(club)}"><div class="escena-luz" aria-hidden="true"></div><div class="escena-contenido"><p class="etq">${escapeHTML(etiqueta)}</p><h2>${escapeHTML(titulo)}</h2><p>${escapeHTML(sub)}</p></div><span class="escena-sede">${escapeHTML(nombreCancha(club,division))} · ${t3('recreación artística','recriação artística','artistic interpretation')}</span></section>`;
+ return `<section class="escena-club escena-con-sello ${clase}" style="--escena:${cssFoto(arteCancha(club,division))};${estiloInterior(club)}"><div class="escena-luz" aria-hidden="true"></div><div class="escena-contenido"><p class="etq">${escapeHTML(etiqueta)}</p><h2>${escapeHTML(titulo)}</h2><p>${escapeHTML(sub)}</p></div><div class="escena-insignia" aria-hidden="true">${escudo(club,132)}<i class="insignia-base"></i></div><span class="escena-sede">${escapeHTML(nombreCancha(club,division))} · ${detalleLugar(club,division)}</span></section>`;
 }
 const _bannerAtmosfera=bannerClub;
 bannerClub=function(club,opts){return _bannerAtmosfera(club,opts).replace('class="banner-club"','class="banner-club banner-con-cancha"').replace('style="--c1:',`style="--escena:${cssFoto(arteCancha(club,opts?.division??3))};--c1:`);};
@@ -189,8 +198,19 @@ function panelCantera(resumen=false){
  const pl=S.plantel.filter(j=>j.canteraDT);
  const p=!resumen&&!S.esSeleccion&&S.division===3?prospectoCantera():null;
  if(!pl.length&&!p)return '';
- return `<section class="panel-cantera"><p class="etq">${t3('FORMACIÓN','FORMAÇÃO','DEVELOPMENT')}</p><h3>${t3('El camino de la cantera','O caminho da base','The academy pathway')}</h3><div>${pl.map(j=>{const d=datosCantera(j);return `<article>${etiquetaCantera(j)}<b>${escapeHTML(j.nom)}</b><p>${escapeHTML(posTxt(j))} · ${j.ed} ${T('anios')} · ${t3('Nivel','Nível','Rating')} ${j.rt}</p><small>${resumen?(j.st?.pj||0):d.pj} ${t3('partidos','jogos','matches')} · ${resumen?(j.st?.g||0):d.g} ${t3('goles','gols','goals')}${d.delta==null?'':' · '+sg(d.delta)+' '+t3('de nivel','de nível','rating')}</small></article>`;}).join('')}</div>${p&&!p.subio?`<details class="cantera-prospecto"><summary>${t3('Ver recomendación de Reserva','Ver recomendação da base','See academy recommendation')}</summary><p><b>${escapeHTML(p.j.nom)}</b> · ${escapeHTML(posTxt(p.j))} · ${p.j.ed} ${T('anios')} · ${t3('Nivel','Nível','Rating')} ${p.j.rt}</p><p>${t3('Podés sumar a un juvenil por temporada. Su progreso se registra cuando juega.','Pode subir um jovem por temporada. Seu progresso é registrado quando joga.','You can promote one prospect per season. Their progress is tracked when they play.')}</p><button class="btn sec compacto" onclick="promoverProspecto()">${t3('Promover al plantel','Promover ao elenco','Promote to the squad')}</button></details>`:''}</section>`;
+ return `<section class="panel-cantera">${cabeceraCantera(S.club)}<div>${pl.map(j=>{const d=datosCantera(j);return `<article>${etiquetaCantera(j)}<b>${escapeHTML(j.nom)}</b><p>${escapeHTML(posTxt(j))} · ${j.ed} ${T('anios')} · ${t3('Nivel','Nível','Rating')} ${j.rt}</p><small>${resumen?(j.st?.pj||0):d.pj} ${t3('partidos','jogos','matches')} · ${resumen?(j.st?.g||0):d.g} ${t3('goles','gols','goals')}${d.delta==null?'':' · '+sg(d.delta)+' '+t3('de nivel','de nível','rating')}</small></article>`;}).join('')}</div>${p&&!p.subio?`<details class="cantera-prospecto"><summary>${t3('Ver recomendación de Reserva','Ver recomendação da base','See academy recommendation')}</summary><p><b>${escapeHTML(p.j.nom)}</b> · ${escapeHTML(posTxt(p.j))} · ${p.j.ed} ${T('anios')} · ${t3('Nivel','Nível','Rating')} ${p.j.rt}</p><p>${t3('Podés sumar a un juvenil por temporada. Su progreso se registra cuando juega.','Pode subir um jovem por temporada. Seu progresso é registrado quando joga.','You can promote one prospect per season. Their progress is tracked when they play.')}</p><button class="btn sec compacto" onclick="promoverProspecto()">${t3('Promover al plantel','Promover ao elenco','Promote to the squad')}</button></details>`:''}</section>`;
 }
+function cabeceraCantera(club){
+ const l=LUGARES_CLUB[club?.n];
+ return `<header class="cantera-lugar" style="--escena:${cssFoto(arteCantera(club))}"><div><p class="etq">${t3('EL FUTURO SE ENTRENA ACÁ','O FUTURO TREINA AQUI','THE FUTURE TRAINS HERE')}</p><h3>${escapeHTML(l?.cantera||t3('El camino de la cantera','O caminho da base','The academy pathway'))}</h3><p>${escapeHTML(club.n)}${l?' · '+l.ciudad:''} · ${t3('Formación','Formação','Development')}</p></div></header>`;
+}
+const _escenaPlantelLugar=escenaPlantel;
+escenaPlantel=function(inner){
+ const base=_escenaPlantelLugar(inner);if(!LUGARES_CLUB[S.club?.n])return base;
+ return base.replace('class="v14-escena practica"','class="v14-escena practica practica-con-lugar"')
+  .replace('style="',`style="--cantera-lugar:${cssFoto(arteCantera(S.club))};`)
+  .replace(`<b>${escapeHTML(S.club.n)}</b>`,`<b>${escapeHTML(S.club.n)}</b><span>${escapeHTML(nombreCancha(S.club,2))}</span>`);
+};
 const _plantelCantera=pintarPlantel;
 pintarPlantel=function(){recuperarCantera();_plantelCantera();const root=document.querySelector('#s-plantel');root?.querySelector('.contexto-club')?.insertAdjacentHTML('afterend',panelCantera());};
 const _reporteCantera=pintarReporte;
