@@ -36,5 +36,17 @@ test('el generador de salida cubre muchos arquetipos y siempre ofrece una orden 
  assert.ok(vistos.size>=14,'arquetipos distintos: '+vistos.size);assert.equal(sols.size,SOLUCIONES_SALIDA.length,'todas las soluciones aparecen: '+sols.size);
  console.log('   arquetipos generados: '+vistos.size+' · soluciones usadas: '+sols.size);
 });
+test('el generador de presión siempre ofrece una orden correcta y usa todo su catálogo',()=>{
+ const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','ED','EI','DC'].map((rol,i)=>({rol,rt:50+i,jug:{nom:'Nombre Apellido'+i}}));
+ const vistos=new Set(),sols=new Set();let i=0;
+ for(const miF of ['4-3-3','3-5-2','4-4-2','4-2-3-1'])for(const elF of ['4-4-2','4-3-3','4-2-3-1','5-4-1','3-4-3','3-5-2'])for(const ofe of ['posicional','directo'])for(const cre of [50,65])for(let r=0;r<6;r++){
+  const c={yo:{f:miF,attrs:[60,60,60,60],once,m:{ofe:'posicional',def:'alto'}},el:{club:{n:'X'},f:elF,attrs:[55,cre,55,55],m:{ofe,def:'medio',tdef:'repliegue',tofe:'contra'}},crack:null};
+  const s=generarPresion(c,'p|'+(i++)),B=s.A;vistos.add([B.cb,B.piv,B.pies,B.corto,B.dif].join('|'));
+  assert.ok(s.ops.length>=3&&s.ops.some(o=>o.L===1),'una correcta: '+JSON.stringify(B));assert.equal(new Set(s.ops.map(o=>o.sol)).size,s.ops.length);assert.ok(PRINCIPIOS[s.p]);
+  s.ops.forEach((o,k)=>{sols.add(o.sol);Object.keys(o.mv).forEach(j=>assert.ok(s.mi[j]));const x=resolverSituacion(s,c,k,'y');assert.ok(x.mult>=.94&&x.mult<=1.08);});
+ }
+ assert.ok(vistos.size>=16,'arquetipos de presión: '+vistos.size);assert.equal(sols.size,SOLUCIONES_PRESION.length,'soluciones usadas: '+sols.size);
+ console.log('   arquetipos de presión: '+vistos.size+' · soluciones usadas: '+sols.size);
+});
 console.log('REGRESIÓN SITUACIONES V16: '+n+' pruebas.');
 `);

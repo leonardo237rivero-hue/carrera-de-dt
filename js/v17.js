@@ -116,7 +116,7 @@ function generarSalida(c,clave){
 function numerosOrden(sit,c,o){
  if(o.premio==null)return '';
  const q=ejecutor(c,o),p=clamp(.5+(q.rt-c.el.attrs[o.vs])/36,.2,.85);
- return `<span class="v17-nums"><i>${t3('Sale','Sai','Comes off')} <b>${Math.round(p*100)}%</b> · ${escapeHTML(apellido(q.nom)||q.rol)}</i><i class="${o.riesgo==='alto'?'mal':o.riesgo==='medio'?'med':''}">${t3('Si falla','Se falhar','If it fails')} <b>−${Math.round(o.costo*100)}%</b> · ${t3(...RIESGO_SALIDA[o.riesgo].n)}</i></span>`;
+ return `<span class="v17-nums"><i>${t3('Sale','Sai','Comes off')} <b>${Math.round(p*100)}%</b> · ${escapeHTML(apellido(q.nom)||q.rol)}</i><i class="${o.riesgo==='alto'?'mal':o.riesgo==='medio'?'med':''}">${t3('Si falla','Se falhar','If it fails')} <b>−${Math.round(o.costo*100)}%</b> · ${t3(...(o.rn||RIESGO_SALIDA[o.riesgo].n))}</i></span>`;
 }
 // el generador entra cuando el rival viene a apretar; las fichas escritas siguen para lo demás
 const _elegirSituacionV16=elegirSituacionPara;
