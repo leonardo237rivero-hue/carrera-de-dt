@@ -1,5 +1,9 @@
 # Carrera de DT
 
+**v16.1 — Veinte clubes, cuarenta lugares.** Dos referentes por país con estadio y cantera propios,
+veinte escudos con modelos 3D y renders, y fuente reutilizable en Salida Limpia. Integra la v16 de problemas tácticos.
+[Arte y verificación](docs/ARTE_V16_1.md) · [Galería de clubes y modelos](herramientas/galeria-clubes.html).
+
 **v15.1 — Arquitectura e identidad.** Campeón del Siglo, Gran Parque Central y Camp Nou clásico,
 tres canteras con referencias fotográficas propias, escudos con relieve y jugadas con profundidad.
 [Dirección de arte, fuentes y verificación](docs/ARTE_V15_1.md).

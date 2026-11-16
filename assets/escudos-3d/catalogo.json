@@ -1,0 +1,122 @@
+[
+  {
+    "country": "Uruguay",
+    "club": "Peñarol",
+    "slug": "penarol",
+    "source": "../../escudos/penarol.png"
+  },
+  {
+    "country": "Uruguay",
+    "club": "Nacional",
+    "slug": "nacional",
+    "source": "../../escudos/nacional.png"
+  },
+  {
+    "country": "Argentina",
+    "club": "Boca Juniors",
+    "slug": "boca-juniors",
+    "source": "../../escudos/boca-juniors.png"
+  },
+  {
+    "country": "Argentina",
+    "club": "River Plate",
+    "slug": "river-plate",
+    "source": "../../escudos/river-plate.png"
+  },
+  {
+    "country": "Brasil",
+    "club": "Flamengo",
+    "slug": "flamengo",
+    "source": "../../escudos/flamengo.png"
+  },
+  {
+    "country": "Brasil",
+    "club": "Corinthians",
+    "slug": "corinthians",
+    "source": "../../escudos/corinthians.png"
+  },
+  {
+    "country": "España",
+    "club": "Barcelona",
+    "slug": "barcelona",
+    "source": "../../escudos/barcelona.png"
+  },
+  {
+    "country": "España",
+    "club": "Real Madrid",
+    "slug": "real-madrid",
+    "source": "../../escudos/real-madrid.png"
+  },
+  {
+    "country": "Inglaterra",
+    "club": "Liverpool FC",
+    "slug": "liverpool-fc",
+    "source": "../../escudos/liverpool-fc.png"
+  },
+  {
+    "country": "Inglaterra",
+    "club": "Manchester United",
+    "slug": "manchester-united",
+    "source": "../../escudos/manchester-united.png"
+  },
+  {
+    "country": "Italia",
+    "club": "Milan",
+    "slug": "milan",
+    "source": "../../escudos/milan.png"
+  },
+  {
+    "country": "Italia",
+    "club": "Juventus",
+    "slug": "juventus",
+    "source": "../../escudos/juventus.png"
+  },
+  {
+    "country": "Alemania",
+    "club": "Bayern München",
+    "slug": "bayern-munchen",
+    "source": "../../escudos/bayern-munchen.png"
+  },
+  {
+    "country": "Alemania",
+    "club": "Borussia Dortmund",
+    "slug": "borussia-dortmund",
+    "source": "../../escudos/borussia-dortmund.png"
+  },
+  {
+    "country": "Francia",
+    "club": "Paris Saint-Germain",
+    "slug": "paris-saint-germain",
+    "source": "../../escudos/paris-saint-germain.png"
+  },
+  {
+    "country": "Francia",
+    "club": "Marsella",
+    "slug": "marsella",
+    "source": "../../escudos/marsella.png"
+  },
+  {
+    "country": "Estados Unidos",
+    "club": "Inter Miami",
+    "slug": "inter-miami",
+    "source": "../../escudos/inter-miami.png"
+  },
+  {
+    "country": "Estados Unidos",
+    "club": "LA Galaxy",
+    "slug": "la-galaxy",
+    "source": "../../escudos/la-galaxy.png"
+  },
+  {
+    "country": "Arabia Saudita",
+    "club": "Al Hilal",
+    "slug": "al-hilal",
+    "source": "../../escudos/al-hilal.png"
+  },
+  {
+    "country": "Arabia Saudita",
+    "club": "Al Nassr",
+    "slug": "al-nassr",
+    "source": "../../escudos/al-nassr.png"
+  }
+]

@@ -9,10 +9,14 @@ const id=claveJugadorReal('Ángel Di María'),esDiMaria=j=>claveJugadorReal(j.no
 const test=(n,fn)=>{fn();console.log('OK',n);};
 test('cada lugar distingue Primera, cantera, visita y sede neutral sin tocar el azar',()=>{
  iniciar('Peñarol');const antes=S.rng.estado();
- for(const n of ['Peñarol','Nacional','Barcelona']){
+ assert.equal(Object.keys(LUGARES_CLUB).length,20);
+ for(const pais of Object.keys(LIGAS))assert.equal(Object.keys(LUGARES_CLUB).filter(n=>club(n)?.p===pais).length,2,pais);
+ for(const n of Object.keys(LUGARES_CLUB)){
   const c=club(n),l=LUGARES_CLUB[n];
-  assert.equal(arteCancha(c,3),'assets/v15.1/'+l.id+'.jpg');
-  assert.equal(arteCancha(c,2),'assets/v15.1/'+l.id+'-cantera.jpg');
+  assert.equal(arteCancha(c,3),'assets/'+l.dir+'/'+l.id+'.jpg');
+  assert.equal(arteCancha(c,2),'assets/'+l.dir+'/'+l.id+'-cantera.jpg');
+  assert(escudo(c,72).includes('assets/escudos-3d/'+l.id+'.png'));
+  assert(!escudo(c,24).includes('assets/escudos-3d/'));
   assert.equal(nombreCancha(c,1),l.cantera);
   assert(cabeceraCantera(c).includes(l.cantera));
  }

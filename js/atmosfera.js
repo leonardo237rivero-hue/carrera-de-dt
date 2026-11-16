@@ -3,14 +3,31 @@
 const CANCHAS_ARTE={Peñarol:'penarol',Nacional:'nacional','Boca Juniors':'boca','River Plate':'river','Racing Club':'racing'};
 // Lugares verificados mediante referencias fotográficas; Barcelona usa su configuración histórica.
 const LUGARES_CLUB={
- Peñarol:{id:'penarol',cancha:'Campeón del Siglo',cantera:'Ciudad Deportiva Néstor Gonçalves',ciudad:'Montevideo',epoca:''},
- Nacional:{id:'nacional',cancha:'Gran Parque Central',cantera:'Los Céspedes',ciudad:'Montevideo',epoca:''},
- Barcelona:{id:'barcelona',cancha:'Camp Nou',cantera:'Ciutat Esportiva Joan Gamper',ciudad:'Sant Joan Despí',epoca:'clásico'}
+ "Peñarol":{"id":"penarol","cancha":"Campeón del Siglo","cantera":"Ciudad Deportiva Néstor Gonçalves","ciudad":"Montevideo","dir":"v15.1","epoca":""},
+ "Nacional":{"id":"nacional","cancha":"Gran Parque Central","cantera":"Los Céspedes","ciudad":"Montevideo","dir":"v15.1","epoca":""},
+ "Barcelona":{"id":"barcelona","cancha":"Camp Nou","cantera":"Ciutat Esportiva Joan Gamper","ciudad":"Sant Joan Despí","dir":"v15.1","epoca":"clásico"},
+ "Boca Juniors":{"id":"boca-juniors","cancha":"La Bombonera","cantera":"Boca Predio","ciudad":"Ezeiza","dir":"v16.1","epoca":""},
+ "River Plate":{"id":"river-plate","cancha":"Monumental","cantera":"River Camp","ciudad":"Ezeiza","dir":"v16.1","epoca":""},
+ "Flamengo":{"id":"flamengo","cancha":"Maracanã","cantera":"Ninho do Urubu","ciudad":"Río de Janeiro","dir":"v16.1","epoca":""},
+ "Corinthians":{"id":"corinthians","cancha":"Neo Química Arena","cantera":"CT de Base · Parque Ecológico","ciudad":"São Paulo","dir":"v16.1","epoca":""},
+ "Real Madrid":{"id":"real-madrid","cancha":"Santiago Bernabéu","cantera":"Ciudad Real Madrid · Valdebebas","ciudad":"Madrid","dir":"v16.1","epoca":""},
+ "Liverpool FC":{"id":"liverpool-fc","cancha":"Anfield","cantera":"Kirkby · Campus de formación","ciudad":"Liverpool","dir":"v16.1","epoca":""},
+ "Manchester United":{"id":"manchester-united","cancha":"Old Trafford","cantera":"Academia de Carrington","ciudad":"Manchester","dir":"v16.1","epoca":""},
+ "Milan":{"id":"milan","cancha":"San Siro","cantera":"Centro Sportivo Vismara","ciudad":"Milán","dir":"v16.1","epoca":""},
+ "Juventus":{"id":"juventus","cancha":"Allianz Stadium","cantera":"Juventus Training Center · Vinovo","ciudad":"Vinovo","dir":"v16.1","epoca":""},
+ "Bayern München":{"id":"bayern-munchen","cancha":"Allianz Arena","cantera":"FC Bayern Campus","ciudad":"Múnich","dir":"v16.1","epoca":""},
+ "Borussia Dortmund":{"id":"borussia-dortmund","cancha":"Signal Iduna Park","cantera":"Brackel · Hohenbuschei","ciudad":"Dortmund","dir":"v16.1","epoca":""},
+ "Paris Saint-Germain":{"id":"paris-saint-germain","cancha":"Parc des Princes","cantera":"Campus PSG · Poissy","ciudad":"Poissy","dir":"v16.1","epoca":""},
+ "Marsella":{"id":"marsella","cancha":"Stade Vélodrome","cantera":"La Commanderie · Robert Louis-Dreyfus","ciudad":"Marsella","dir":"v16.1","epoca":""},
+ "Inter Miami":{"id":"inter-miami","cancha":"Chase Stadium","cantera":"Florida Blue Training Center","ciudad":"Fort Lauderdale","dir":"v16.1","epoca":"Fort Lauderdale"},
+ "LA Galaxy":{"id":"la-galaxy","cancha":"Dignity Health Sports Park","cantera":"Academia LA Galaxy · Carson","ciudad":"Carson","dir":"v16.1","epoca":""},
+ "Al Hilal":{"id":"al-hilal","cancha":"Kingdom Arena","cantera":"Academia Al Hilal · Al Qirawan","ciudad":"Riad","dir":"v16.1","epoca":""},
+ "Al Nassr":{"id":"al-nassr","cancha":"Al Awwal Park","cantera":"Prince Abdulrahman bin Saud","ciudad":"Riad","dir":"v16.1","epoca":""}
 };
-function arteCantera(club){const l=LUGARES_CLUB[club?.n];return l?'assets/v15.1/'+l.id+'-cantera.jpg':'assets/v14/practica-ronda.jpg';}
+function arteCantera(club){const l=LUGARES_CLUB[club?.n];return l?'assets/'+l.dir+'/'+l.id+'-cantera.jpg':'assets/v14/practica-ronda.jpg';}
 function arteCancha(club,division=3){
  if(division<3)return arteCantera(club);
- if(LUGARES_CLUB[club?.n])return 'assets/v15.1/'+LUGARES_CLUB[club.n].id+'.jpg';
+ const lugar=LUGARES_CLUB[club?.n];if(lugar)return 'assets/'+lugar.dir+'/'+lugar.id+'.jpg';
  if(CANCHAS_ARTE[club?.n])return 'assets/v15/'+CANCHAS_ARTE[club.n]+'.jpg';
  return club?.niv>=4||club?.sel?'assets/v15/noche-europea.jpg':'assets/v14/revelacion.jpg';
 }
@@ -18,7 +35,11 @@ function cssFoto(ruta){return `url('${new URL(ruta,document.baseURI||'http://loc
 function sedePartido(info){return info?.neutral?null:info?.soyA?S.club:info?.rival?.club;}
 function fotoPartido(info){const sede=sedePartido(info);return sede?arteCancha(sede,S.division):'assets/v15/noche-europea.jpg';}
 function nombreCancha(club,division=3){const l=LUGARES_CLUB[club?.n];return division<3?l?.cantera||t3('Campo de formación','Campo de formação','Academy ground'):l?.cancha||CLUB_INFO[club?.n]?.est||t3('Nuestra casa','Nossa casa','Our home');}
-function detalleLugar(club,division=3){return club?.n==='Barcelona'&&division>=3?t3('configuración histórica anterior a 2023','configuração histórica anterior a 2023','historic pre-2023 configuration'):t3('recreación artística','recriação artística','artistic interpretation');}
+function detalleLugar(club,division=3){
+ if(division>=3&&club?.n==='Barcelona')return t3('configuración histórica anterior a 2023','configuração histórica anterior a 2023','historic pre-2023 configuration');
+ if(division>=3&&club?.n==='Inter Miami')return t3('sede histórica de Fort Lauderdale','sede histórica de Fort Lauderdale','historic Fort Lauderdale home');
+ return t3('recreación artística','recriação artística','artistic interpretation');
+}
 function escenaClub(club,division,etiqueta,titulo,sub,clase=''){
  return `<section class="escena-club escena-con-sello ${clase}" style="--escena:${cssFoto(arteCancha(club,division))};${estiloInterior(club)}"><div class="escena-luz" aria-hidden="true"></div><div class="escena-contenido"><p class="etq">${escapeHTML(etiqueta)}</p><h2>${escapeHTML(titulo)}</h2><p>${escapeHTML(sub)}</p></div><div class="escena-insignia" aria-hidden="true">${escudo(club,132)}<i class="insignia-base"></i></div><span class="escena-sede">${escapeHTML(nombreCancha(club,division))} · ${detalleLugar(club,division)}</span></section>`;
 }
