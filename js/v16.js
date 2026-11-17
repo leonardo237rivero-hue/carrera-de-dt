@@ -229,7 +229,7 @@ function mostrarResultadoSituacion(recien){
  const X=tmp.sit,r=X.res,P=PRINCIPIOS[X.sit.p],reg=cuadernoDT()[X.sit.p],cuerpo=$('#v16-cuerpo');if(!cuerpo)return;
  const lec=r.lectura===1?['ok',t3('Lectura correcta','Leitura correta','Right read')]:r.lectura===.5?['med',t3('Lectura a medias','Leitura pela metade','Half a read')]:['mal',t3('Lectura equivocada','Leitura errada','Wrong read')];
  const pct=Math.round((r.mult-1)*100),caja=$('#v16-cancha');if(caja)caja.classList.add(r.sale?'sale':'falla');
- if(typeof sonar==='function')sonar(r.sale&&r.lectura===1?'gol':'uy');
+ // El ambiente continúa: resolver una orden no equivale a convertir un gol.
  cuerpo.innerHTML=`<div class="v16-veredicto">
    <div class="${lec[0]}"><small>${t3('La idea','A ideia','The idea')}</small><b>${lec[1]}</b><span>${t3(...r.op.pq)}</span></div>
    <div class="${r.sale?'ok':'mal'}"><small>${t3('La ejecución','A execução','The execution')}</small><b>${r.sale?t3('Salió','Saiu','It came off'):t3('No salió','Não saiu','It did not come off')}</b>

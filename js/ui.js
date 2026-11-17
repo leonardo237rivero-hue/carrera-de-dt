@@ -6,8 +6,7 @@
    ========================================================== */
 // Poné los PNG en la carpeta "escudos/". Si falta el archivo, cae al escudo generado.
 const USAR_ESCUDOS_REALES = true;
-// Renders de mallas reales: fuente Blender y exportaciones GLB/FBX en el paquete de arte.
-const ESCUDOS_RENDER=new Set(["penarol","nacional","boca-juniors","river-plate","flamengo","corinthians","barcelona","real-madrid","liverpool-fc","manchester-united","milan","juventus","bayern-munchen","borussia-dortmund","paris-saint-germain","marsella","inter-miami","la-galaxy","al-hilal","al-nassr"]);
+// Identidad plana en todos los tamaños. Los modelos 3D quedan como archivo de arte.
 function slugClub(n){
   return n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
@@ -15,29 +14,12 @@ function slugClub(n){
 function escudo(club,size){
   const s=size||34;
   if(USAR_ESCUDOS_REALES){
-    // Los iconos pequeños conservan su lectura plana.
-    if(s>=48&&!club.sel&&ESCUDOS_RENDER.has(slugClub(club.n)))return escudoRender(club,s);
-    if(s>=48)return escudoVolumen(club,s);
-        return `<span class="escudo" style="display:inline-flex;width:${s}px;height:${s*1.14}px;align-items:center">
-      <img src="escudos/${club.sel?"seleccion-":""}${slugClub(club.n)}.png" alt="${club.n}" width="${s}" height="${s*1.14}"
+    return `<span class="escudo" style="display:inline-flex;width:${s}px;height:${s*1.14}px;align-items:center">
+      <img src="escudos/${club.sel?"seleccion-":""}${slugClub(club.n)}.png" alt="${escapeHTML(club.n)}" width="${s}" height="${s*1.14}"
         style="object-fit:contain" onerror="this.outerHTML=escudoSVG(${JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;')},${s})">
     </span>`;
   }
   return escudoSVG(JSON.stringify(club),s);
-}
-function escudoRender(club,s){
-  const fallback=JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;');
-  return `<span class="escudo escudo-volumen escudo-render" style="width:${s}px;height:${s*1.14}px"><img src="assets/escudos-3d/${slugClub(club.n)}.png" alt="${escapeHTML(club.n)}" width="${s}" height="${s*1.14}" decoding="async" onerror="this.parentElement.outerHTML=escudoVolumen(${fallback},${s})"></span>`;
-}
-function escudoVolumen(club,s){
-  const src=`escudos/${club.sel?'seleccion-':''}${slugClub(club.n)}.png`;
-  // Los url() en una variable CSS se resuelven contra la hoja consumidora.
-  const mascara=new URL(src,document.baseURI||'http://localhost/').href;
-  const fallback=JSON.stringify({n:club.n,c:club.c}).replace(/"/g,'&quot;');
-  return `<span class="escudo escudo-volumen" style="width:${s}px;height:${s*1.14}px;--sello:url('${mascara}')">
-    <span class="escudo-objeto">${[7,6,5,4,3,2,1].map(z=>`<i class="escudo-canto" aria-hidden="true" style="transform:translateZ(-${z}px)"></i>`).join('')}
-    <span class="escudo-frente"><img src="${src}" alt="${escapeHTML(club.n)}" width="${s}" height="${s*1.14}" onerror="this.closest('.escudo-volumen').outerHTML=escudoSVG(${fallback},${s})"></span>
-    <i class="escudo-reflejo" aria-hidden="true"></i></span></span>`;
 }
 function escudoSVG(clubJson,size){
   const club=typeof clubJson==="string"?JSON.parse(clubJson):clubJson;

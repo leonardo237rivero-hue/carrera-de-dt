@@ -41,7 +41,7 @@ function detalleLugar(club,division=3){
  return t3('recreación artística','recriação artística','artistic interpretation');
 }
 function escenaClub(club,division,etiqueta,titulo,sub,clase=''){
- return `<section class="escena-club escena-con-sello ${clase}" style="--escena:${cssFoto(arteCancha(club,division))};${estiloInterior(club)}"><div class="escena-luz" aria-hidden="true"></div><div class="escena-contenido"><p class="etq">${escapeHTML(etiqueta)}</p><h2>${escapeHTML(titulo)}</h2><p>${escapeHTML(sub)}</p></div><div class="escena-insignia" aria-hidden="true">${escudo(club,132)}<i class="insignia-base"></i></div><span class="escena-sede">${escapeHTML(nombreCancha(club,division))} · ${detalleLugar(club,division)}</span></section>`;
+ return `<section class="escena-club escena-con-sello ${clase}" style="--escena:${cssFoto(arteCancha(club,division))};${estiloInterior(club)}"><div class="escena-luz" aria-hidden="true"></div><div class="escena-contenido"><p class="etq">${escapeHTML(etiqueta)}</p><h2>${escapeHTML(titulo)}</h2><p>${escapeHTML(sub)}</p></div><div class="escena-insignia" aria-hidden="true">${escudo(club,88)}</div><span class="escena-sede">${escapeHTML(nombreCancha(club,division))} · ${detalleLugar(club,division)}</span></section>`;
 }
 const _bannerAtmosfera=bannerClub;
 bannerClub=function(club,opts){return _bannerAtmosfera(club,opts).replace('class="banner-club"','class="banner-club banner-con-cancha"').replace('style="--c1:',`style="--escena:${cssFoto(arteCancha(club,opts?.division??3))};--c1:`);};

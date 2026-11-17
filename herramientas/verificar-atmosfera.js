@@ -15,7 +15,7 @@ test('cada lugar distingue Primera, cantera, visita y sede neutral sin tocar el 
   const c=club(n),l=LUGARES_CLUB[n];
   assert.equal(arteCancha(c,3),'assets/'+l.dir+'/'+l.id+'.jpg');
   assert.equal(arteCancha(c,2),'assets/'+l.dir+'/'+l.id+'-cantera.jpg');
-  assert(escudo(c,72).includes('assets/escudos-3d/'+l.id+'.png'));
+  for(const size of [24,72,132]){assert(escudo(c,size).includes('src="escudos/'+l.id+'.png"'));assert(!escudo(c,size).includes('escudo-volumen'));}
   assert(!escudo(c,24).includes('assets/escudos-3d/'));
   assert.equal(nombreCancha(c,1),l.cantera);
   assert(cabeceraCantera(c).includes(l.cantera));
@@ -27,7 +27,9 @@ test('cada lugar distingue Primera, cantera, visita y sede neutral sin tocar el 
  assert.equal(arteCancha(club('Progreso'),2),'assets/v14/practica-ronda.jpg');
  assert.equal(S.rng.estado(),antes);
  assert(!escudo(club('Peñarol'),24).includes('escudo-volumen'));
- assert(escudo(club('Peñarol'),72).includes('escudo-volumen'));
+ assert(!escenaClub(club('Peñarol'),3,'Temporada','Prueba','').includes('insignia-base'));
+ assert(escudo({...club('Peñarol'),sel:true},72).includes('escudos/seleccion-penarol.png'));
+ assert(escudoSVG({n:'Club de prueba',c:['#111111','#eeeeee']},72).includes('<svg'));
 });
 const datos=new Map();
 global.localStorage={getItem:k=>datos.get(k),setItem:(k,v)=>datos.set(k,v)};

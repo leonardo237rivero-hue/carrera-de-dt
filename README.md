@@ -1,5 +1,7 @@
 # Carrera de DT
 
+**v18.0.1 — Escudos 2D y sonido coherente.** Escudos planos en todos los tamaños, sin pedestal ni reflejos. Resolver una orden táctica ya no reproduce el festejo de gol. Conserva los estadios, las canteras y los generadores de salida y presión de v17/v18.
+
 **v16.1 — Veinte clubes, cuarenta lugares.** Dos referentes por país con estadio y cantera propios,
 veinte escudos con modelos 3D y renders, y fuente reutilizable en Salida Limpia. Integra la v16 de problemas tácticos.
 [Arte y verificación](docs/ARTE_V16_1.md) · [Galería de clubes y modelos](herramientas/galeria-clubes.html).
