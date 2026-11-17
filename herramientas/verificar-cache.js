@@ -4,7 +4,7 @@ const sandbox={self:{addEventListener(){}}};
 vm.runInNewContext(fs.readFileSync(path.join(root,'sw.js'),'utf8')+'\nglobalThis.precache=PRECACHE;',sandbox);
 const urls=[...html.matchAll(/(?:src|href)="((?:js|css)\/[^\"]+)"/g)].map(m=>m[1]);
 assert(urls.length>25);
-for(const u of urls){assert(u.endsWith('?v=18.0.1'),u);assert(sandbox.precache.includes(u),'No precache: '+u);assert(fs.existsSync(path.join(root,u.split('?')[0])),u);}
+for(const u of urls){assert(u.endsWith('?v=19.0.0'),u);assert(sandbox.precache.includes(u),'No precache: '+u);assert(fs.existsSync(path.join(root,u.split('?')[0])),u);}
 const arte=sandbox.precache.filter(u=>u.startsWith('assets/v14/'));
 assert.equal(arte.length,15);
 for(const u of arte)assert(fs.existsSync(path.join(root,u)),'Falta arte: '+u);
