@@ -48,5 +48,14 @@ test('el generador de presión siempre ofrece una orden correcta y usa todo su c
  assert.ok(vistos.size>=16,'arquetipos de presión: '+vistos.size);assert.equal(sols.size,SOLUCIONES_PRESION.length,'soluciones usadas: '+sols.size);
  console.log('   arquetipos de presión: '+vistos.size+' · soluciones usadas: '+sols.size);
 });
+test('el dial de riesgo no toca nada en equilibrada, abre o cierra el partido en las demás y depende del rival',()=>{
+ assert.deepEqual(factoresPostura({e:'Posesion'},'equilibrada'),{yo:1,el:1});
+ const contra={modelo:{ofe:'directo',tofe:'contra'}},pelota={modelo:{ofe:'posicional',tofe:'ataque'}};
+ assert.ok(factoresPostura(contra,'ambiciosa').el>factoresPostura(pelota,'ambiciosa').el,'la contra castiga al que se abre');
+ assert.ok(factoresPostura(pelota,'segura').el>factoresPostura(contra,'segura').el,'el que tiene la pelota castiga al que se cierra');
+ assert.ok(factoresPostura(contra,'todo').yo>factoresPostura(contra,'ambiciosa').yo&&factoresPostura(contra,'segura').yo<1);
+ const prev=S._post,vistos=[];S._post={n:0,fa:1.2,fb:.8};const rng=S.rng;S.rng=()=>.5;
+ poisson(1);poisson(1);poisson(1);assert.equal(S._post.n,3);S._post=prev;S.rng=rng;
+});
 console.log('REGRESIÓN SITUACIONES V16: '+n+' pruebas.');
 `);

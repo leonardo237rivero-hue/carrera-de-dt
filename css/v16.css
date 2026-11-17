@@ -62,3 +62,11 @@
 .v19-ayuda{font-size:13.5px;color:var(--tenue);margin:0 0 8px}
 .v16-ops .card.pre{border-color:var(--ambar);box-shadow:0 0 0 2px var(--ambar) inset}
 .v19-acc{margin-top:12px}
+/* v20 — dial de riesgo */
+.v20-postura{display:grid;grid-template-columns:minmax(0,1.1fr) auto minmax(0,1.2fr);gap:8px 16px;align-items:center;margin:10px 0;padding:10px 12px;border:1px solid #ffffff26;border-left:4px solid var(--ambar);border-radius:8px;background:#12171b}
+@media(max-width:860px){.v20-postura{grid-template-columns:1fr}}
+.v20-cab b{display:block;font:900 15px var(--disp);font-stretch:70%;text-transform:uppercase;letter-spacing:.04em}
+.v20-cab span{font-size:13px;color:var(--tenue)}
+.v20-pills{display:flex;flex-wrap:wrap;gap:4px}
+.v20-lec{font-size:13px;display:grid;gap:2px}.v20-lec b.ok{color:var(--verde)}.v20-lec b.mal{color:#ff9a8a}
+.v20-rv{color:var(--tenue)}.v20-rv b{color:var(--texto)}
