@@ -103,7 +103,7 @@ function generarSalida(c,clave){
  const libre=x=>!el.includes(x);
  const media=todas.filter(x=>libre(x)&&x.f>=.45&&x.f<.8);if(media.length)el.push(media[(h>>>2)%media.length]);
  const mala=todas.filter(x=>libre(x)&&x.f<.45);if(mala.length)el.push(mala[(h>>>4)%mala.length]);
- const segura=todas.filter(x=>libre(x)&&x.s.r==='bajo')[0]||todas.filter(libre)[0];if(segura)el.push(segura);
+ const segura=todas.filter(x=>libre(x)&&x.s.r==='bajo'&&x.f<.8)[0]||todas.filter(libre)[0];if(segura)el.push(segura);
  const orden=el.map((x,i)=>[hashS(clave+'|o'+i),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
  const ops=orden.map(({s,f})=>({sol:s.id,t:s.t,L:f>=.8?1:f>=.45?.5:0,g:s.g,vs:s.vs,pq:f>=.45?s.si:s.no,mv:s.mv,b:s.b,
   riesgo:s.r,premio:Math.round(s.pr*f*100)/100,costo:RIESGO_SALIDA[s.r].c,fit:f}));

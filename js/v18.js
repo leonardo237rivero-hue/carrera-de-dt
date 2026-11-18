@@ -52,7 +52,7 @@ function generarPresion(c,clave){
  const mejores=todas.filter(x=>x.f>=.8),buena=mejores[h%mejores.length]||todas[0],sel=[buena],libre=x=>!sel.includes(x);
  const media=todas.filter(x=>libre(x)&&x.f>=.45&&x.f<.8);if(media.length)sel.push(media[(h>>>2)%media.length]);
  const mala=todas.filter(x=>libre(x)&&x.f<.45);if(mala.length)sel.push(mala[(h>>>4)%mala.length]);
- const segura=todas.filter(x=>libre(x)&&x.s.r==='bajo')[0]||todas.filter(libre)[0];if(segura)sel.push(segura);
+ const segura=todas.filter(x=>libre(x)&&x.s.r==='bajo'&&x.f<.8)[0]||todas.filter(libre)[0];if(segura)sel.push(segura);
  const ops=sel.map((x,i)=>[hashS(clave+'|po'+i),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]).map(({s,f})=>({sol:s.id,t:s.t,L:f>=.8?1:f>=.45?.5:0,g:s.g,vs:s.vs,pq:f>=.45?s.si:s.no,mv:s.mv,b:s.b,
   riesgo:s.r,rn:RIESGO_PRESION[s.r],premio:Math.round(s.pr*f*100)/100,costo:RIESGO_SALIDA[s.r].c,fit:f}));
  const rel=()=>[t3(`Salen con ${B.cb} centrales y ${B.piv===2?'doble 5':'un solo 5'}.`,`Saem com ${B.cb} zagueiros e ${B.piv===2?'dois volantes':'um volante'}.`,`They build with ${B.cb} centre-backs and ${B.piv===2?'a double pivot':'a single pivot'}.`),

@@ -9,7 +9,7 @@ test('cada problema tiene un principio, tres órdenes y una sola lectura correct
    assert.equal(ops.filter(o=>o.L===1).length,1,s.id+' una correcta');assert.ok(ops.every(o=>[0,.5,1].includes(o.L)&&o.g instanceof RegExp&&o.vs>=0&&o.vs<4&&o.t.length===3&&o.pq.length===3),s.id);
    ops.forEach(o=>Object.keys(o.mv||{}).forEach(i=>assert.ok(s.mi[i],s.id+' ficha '+i)));});
   assert.equal(typeof s.cuando(ctx),'boolean',s.id);});
- assert.equal(new Set(SITUACIONES.map(s=>s.p).concat(SOLUCIONES_SALIDA.map(s=>s.p))).size,N_PRINCIPIOS,'todo principio tiene al menos un problema');
+ assert.equal(new Set(SITUACIONES.map(s=>s.p).concat(SOLUCIONES_SALIDA.map(s=>s.p),SOLUCIONES_PRESION.map(s=>s.p),SOLUCIONES_DEFENSA.map(s=>s.p))).size,N_PRINCIPIOS,'todo principio tiene al menos un problema');
 });
 test('leer bien nunca rinde menos que leer mal, y ejecutar bien nunca menos que fallar',()=>{
  for(let l=0;l<3;l++){assert.ok(EFECTO_SIT[l][1]>=EFECTO_SIT[l][0]);if(l)assert.ok(EFECTO_SIT[l][0]>=EFECTO_SIT[l-1][0]&&EFECTO_SIT[l][1]>=EFECTO_SIT[l-1][1]);}
@@ -56,6 +56,18 @@ test('el dial de riesgo no toca nada en equilibrada, abre o cierra el partido en
  assert.ok(factoresPostura(contra,'todo').yo>factoresPostura(contra,'ambiciosa').yo&&factoresPostura(contra,'segura').yo<1);
  const prev=S._post,vistos=[];S._post={n:0,fa:1.2,fb:.8};const rng=S.rng;S.rng=()=>.5;
  poisson(1);poisson(1);poisson(1);assert.equal(S._post.n,3);S._post=prev;S.rng=rng;
+});
+test('el generador de defensa organizada cubre sus arquetipos con una orden correcta',()=>{
+ const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','ED','EI','DC'].map((rol,i)=>({rol,rt:50+i,jug:{nom:'Nombre Apellido'+i}}));
+ const vistos=new Set(),sols=new Set();let i=0;
+ for(const miF of ['4-3-3','5-3-2','4-4-2','3-5-2'])for(const def of ['alto','medio','bajo'])for(const elF of ['4-4-2','4-3-3','4-2-3-1','3-4-3'])for(const ofe of ['posicional','directo'])for(const cre of [50,70])for(let r=0;r<3;r++){
+  const c={yo:{f:miF,attrs:[60,60,60,60],once,m:{ofe:'posicional',def}},el:{club:{n:'C'+r},f:elF,attrs:[55,cre,55,55],m:{ofe,def:'medio',tdef:'repliegue',tofe:'contra'}},crack:null};
+  const s=generarDefensa(c,'d|'+(i++)),B=s.A;vistos.add(JSON.stringify(B));
+  assert.ok(s.ops.length>=3&&s.ops.some(o=>o.L===1),'una correcta: '+JSON.stringify(B));assert.equal(new Set(s.ops.map(o=>o.sol)).size,s.ops.length);assert.ok(PRINCIPIOS[s.p]);
+  s.ops.forEach((o,k)=>{sols.add(o.sol);Object.keys(o.mv).forEach(j=>assert.ok(s.mi[j],o.sol+' '+j));const x=resolverSituacion(s,c,k,'z');assert.ok(x.mult>=.94&&x.mult<=1.08);});
+ }
+ assert.ok(vistos.size>=20,'arquetipos de defensa: '+vistos.size);assert.ok(sols.size>=11,'soluciones usadas: '+sols.size);
+ console.log('   arquetipos de defensa: '+vistos.size+' · soluciones usadas: '+sols.size+'/'+SOLUCIONES_DEFENSA.length);
 });
 console.log('REGRESIÓN SITUACIONES V16: '+n+' pruebas.');
 `);
