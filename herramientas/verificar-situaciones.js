@@ -9,7 +9,7 @@ test('cada problema tiene un principio, tres órdenes y una sola lectura correct
    assert.equal(ops.filter(o=>o.L===1).length,1,s.id+' una correcta');assert.ok(ops.every(o=>[0,.5,1].includes(o.L)&&o.g instanceof RegExp&&o.vs>=0&&o.vs<4&&o.t.length===3&&o.pq.length===3),s.id);
    ops.forEach(o=>Object.keys(o.mv||{}).forEach(i=>assert.ok(s.mi[i],s.id+' ficha '+i)));});
   assert.equal(typeof s.cuando(ctx),'boolean',s.id);});
- assert.equal(new Set(SITUACIONES.map(s=>s.p).concat(SOLUCIONES_SALIDA.map(s=>s.p),SOLUCIONES_PRESION.map(s=>s.p),SOLUCIONES_DEFENSA.map(s=>s.p),SOLUCIONES_PROGRESION.map(s=>s.p),SOLUCIONES_FINALIZACION.map(s=>s.p))).size,N_PRINCIPIOS,'todo principio tiene al menos un problema');
+ assert.equal(new Set(SITUACIONES.map(s=>s.p).concat(SOLUCIONES_SALIDA.map(s=>s.p),SOLUCIONES_PRESION.map(s=>s.p),SOLUCIONES_DEFENSA.map(s=>s.p),SOLUCIONES_PROGRESION.map(s=>s.p),SOLUCIONES_FINALIZACION.map(s=>s.p),SOLUCIONES_RECUPERAR.map(s=>s.p),SOLUCIONES_PERDER.map(s=>s.p),SOLUCIONES_PARADA.map(s=>s.p))).size,N_PRINCIPIOS,'todo principio tiene al menos un problema');
 });
 test('leer bien nunca rinde menos que leer mal, y ejecutar bien nunca menos que fallar',()=>{
  for(let l=0;l<3;l++){assert.ok(EFECTO_SIT[l][1]>=EFECTO_SIT[l][0]);if(l)assert.ok(EFECTO_SIT[l][0]>=EFECTO_SIT[l-1][0]&&EFECTO_SIT[l][1]>=EFECTO_SIT[l-1][1]);}
@@ -69,13 +69,13 @@ test('el generador de defensa organizada cubre sus arquetipos con una orden corr
  assert.ok(vistos.size>=20,'arquetipos de defensa: '+vistos.size);assert.ok(sols.size>=11,'soluciones usadas: '+sols.size);
  console.log('   arquetipos de defensa: '+vistos.size+' · soluciones usadas: '+sols.size+'/'+SOLUCIONES_DEFENSA.length);
 });
-test('los generadores de progresión y finalización cubren todos sus arquetipos con la respuesta del mazo',()=>{
+test('los generadores de ataque, transición y pelota parada cubren todos sus arquetipos con la respuesta del mazo',()=>{
  const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','ED','EI','DC'].map((rol,i)=>({rol,rt:50+i,jug:{nom:'Nombre Apellido'+i}}));
- [['prog',generarProgresion,CASOS_PROGRESION,SOLUCIONES_PROGRESION],['fin',generarFinalizacion,CASOS_FINALIZACION,SOLUCIONES_FINALIZACION]].forEach(([fam,gen,CASOS,CAT])=>{
+ [['prog',generarProgresion,CASOS_PROGRESION,SOLUCIONES_PROGRESION],['fin',generarFinalizacion,CASOS_FINALIZACION,SOLUCIONES_FINALIZACION],['rec',generarRecuperar,CASOS_RECUPERAR,SOLUCIONES_RECUPERAR],['per',generarPerder,CASOS_PERDER,SOLUCIONES_PERDER],['pp',generarParada,CASOS_PARADA,SOLUCIONES_PARADA]].forEach(([fam,gen,CASOS,CAT])=>{
   const casos=new Set(),sols=new Set();let i=0;
   CASOS.forEach(k=>[2,3,4].forEach(j=>assert.ok(CAT.find(s=>s.id===k[j]),fam+' '+k[j])));
   for(const miF of ['4-3-3','4-4-2','3-5-2 / 5-3-2','4-2-3-1'])for(const elF of ['4-4-2','4-3-3','4-2-3-1','5-4-1','3-4-3','3-5-2 / 5-3-2'])for(const ofe of ['posicional','directo'])for(const def of ['alto','medio','bajo'])for(const tdef of ['presion','repliegue'])for(let r=0;r<2;r++){
-   const c={yo:{f:miF,attrs:[60,60,60,60],once,m:{ofe,def:'medio'}},el:{club:{n:'R'+r+elF},f:elF,attrs:[55,55,55,55],m:{ofe:'directo',def,tdef,tofe:'contra'}},crack:null};
+   const c={yo:{f:miF,attrs:[60,60,60,60],once,m:{ofe,def:['alto','medio','bajo'][(i>>1)%3],tdef:['presion','repliegue'][i%2]}},el:{club:{n:'R'+r+elF},f:elF,attrs:r?[65,65,65,65]:[55,55,55,55],m:{ofe:['directo','posicional'][(i>>2)%2],def,tdef,tofe:'contra'}},crack:null};
    const s=gen(c,fam+'|'+(i++)),k=CASOS[s.A.caso];casos.add(s.A.caso);
    assert.ok(s.ops.length>=3&&s.ops.length<=4);assert.equal(s.ops.filter(o=>o.L===1).length,1,'una sola correcta');assert.equal(s.ops.find(o=>o.L===1).sol,k[2],'la buena es la del mazo');
    assert.ok(s.ops.some(o=>o.sol===k[4]&&o.L===0),'la trampa siempre está');assert.equal(new Set(s.ops.map(o=>o.sol)).size,s.ops.length);assert.ok(PRINCIPIOS[s.p]);
@@ -86,6 +86,37 @@ test('los generadores de progresión y finalización cubren todos sus arquetipos
   assert.equal(casos.size,CASOS.length,fam+' arquetipos: '+casos.size);assert.equal(sols.size,CAT.length,fam+' soluciones: '+sols.size);
   console.log('   '+fam+': '+casos.size+' arquetipos · '+sols.size+' soluciones');
  });
+});
+test('cada DT rival tiene una escuela fija y su escuela decide qué problemas te plantea',()=>{
+ const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','ED','EI','DC'].map((rol,i)=>({rol,rt:50+i,jug:{nom:'Nombre Apellido'+i}}));
+ const vistos=new Set();
+ for(const e of ['Posesion','Presion alta','Contraataque / Directo','Bloque bajo / Repliegue'])for(let k=0;k<12;k++){const m=modeloDeEstilo(e),p=perfilDT({n:'Club'+k},m);
+  assert.ok(PERFILES_DT[p]);assert.equal(perfilDT({n:'Club'+k},m),p,'siempre el mismo');vistos.add(p);}
+ for(const m of [{ofe:'posicional',def:'bajo'},{ofe:'directo',def:'alto'}])for(let k=0;k<12;k++)vistos.add(perfilDT({n:'Club'+k},m));
+ assert.equal(vistos.size,Object.keys(PERFILES_DT).length,'las siete escuelas aparecen: '+vistos.size);
+ Object.entries(PERFILES_DT).forEach(([p,P])=>{assert.ok(P.n.length===3&&P.d.length===3);const cuenta={};
+  for(let i=0;i<400;i++){const f=familiaPorPerfil(p,'x'+i);assert.ok(P.fams[f],p+' '+f);cuenta[f]=(cuenta[f]||0)+1;}
+  const top=Object.entries(P.fams).sort((a,b)=>b[1]-a[1])[0][0];assert.ok(cuenta[top]>=Math.max(...Object.values(cuenta))*0.7,p+' respeta su peso');
+  Object.keys(P.fams).forEach(f=>{const c={yo:{f:'4-3-3',attrs:[60,60,60,60],once,m:{ofe:'posicional',def:'medio'}},el:{club:{n:'Z'},f:'4-4-2',attrs:[55,55,55,55],m:{ofe:'directo',def:'medio',tdef:'presion',tofe:'contra'}},crack:null};
+   const s=GENERADOR_FAMILIA[f](c,'dt|'+f);assert.ok(s&&s.gen&&s.ops.some(o=>o.L===1),f);});
+ });
+ assert.notEqual(familiaPorPerfil('intenso','y',null),undefined);
+ console.log('   escuelas: '+vistos.size);
+});
+test('en el partido en vivo la postura pesa en cada tiempo y se puede cambiar en el entretiempo',()=>{
+ const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','EXD','EXI','DC'].map((rol,i)=>({rol,rt:60,jug:{nom:'Nombre Apellido'+i}}));
+ const eq=(yo,e)=>({club:{n:yo?'Yo':'El'},yo,f:'4-3-3',e,attrs:[60,60,60,60],once,auto:0,coh:1,emp:0,modelo:modeloDeEstilo(e),an:yo?{mis:[],sus:[]}:undefined});
+ const goles=(post,desde)=>{const prev=S.postura,rng=S.rng,vivo=tmp.vivo;S.postura=post;S.rng=mul32(7);tmp.vivo=null;let a=0,b=0;
+  for(let i=0;i<1500;i++){const r=jugarMitad(eq(true,'Posesion'),eq(false,'Contraataque / Directo'),true,desde,desde+44);r.ev.forEach(e=>{if(e.t==='gol')e.l==='a'?a++:b++;});}
+  S.postura=prev;S.rng=rng;tmp.vivo=vivo;return [a,b];};
+ const pcp=patronesConfianzaPicardia;patronesConfianzaPicardia=(e,r,p)=>p;
+ const eqv=goles('equilibrada',1),todo=goles('todo',1),seg=goles('segura',1);
+ assert.ok(todo[0]>eqv[0]*1.15&&todo[1]>eqv[1]*1.2,'todo o nada abre el partido: '+todo+' vs '+eqv);
+ assert.ok(seg[0]<eqv[0]&&seg[1]<eqv[1],'segura lo cierra: '+seg+' vs '+eqv);
+ assert.equal(S._post,null,'no deja la postura pegada');
+ const rng=S.rng;S.rng=mul32(9);tmp.vivo={post2:'todo',info:{rival:{club:{n:'El'}}}};let a=0;for(let i=0;i<800;i++)a+=jugarMitad(eq(true,'Posesion'),eq(false,'Contraataque / Directo'),true,46,90).ev.filter(e=>e.t==='gol'&&e.l==='a').length;
+ S.rng=mul32(9);tmp.vivo.post2='segura';let c=0;for(let i=0;i<800;i++)c+=jugarMitad(eq(true,'Posesion'),eq(false,'Contraataque / Directo'),true,46,90).ev.filter(e=>e.t==='gol'&&e.l==='a').length;
+ tmp.vivo=null;S.rng=rng;patronesConfianzaPicardia=pcp;assert.ok(a>c*1.3,'la postura del entretiempo manda en el segundo tiempo: '+a+' vs '+c);
 });
 console.log('REGRESIÓN SITUACIONES V16: '+n+' pruebas.');
 `);

@@ -3,7 +3,7 @@ const fs=require('fs'), path=require('path');
 const raiz=path.join(__dirname,'..');
 const ORDEN=['tactica','decisiones','datos','planteles',
   'i18n/core','i18n/textos','i18n/datos-i18n','i18n/pool-pt','i18n/pool-en','i18n/pool-extra','i18n/aplicar',
-  'nucleo','cancha','ui','club','momentos','zonas','temporada','seleccion','idea','vivo','vestuario','juego','ciclo','comunicacion','direccion','interiores','cine','recorrido','charlas','oficio','ajustes','v14','v14b','edicion','atmosfera','sonido','v16','v17','v18','v19','v20','v21','v21b','v22'];
+  'nucleo','cancha','ui','club','momentos','zonas','temporada','seleccion','idea','vivo','vestuario','juego','ciclo','comunicacion','direccion','interiores','cine','recorrido','charlas','oficio','ajustes','v14','v14b','edicion','atmosfera','sonido','v16','v17','v18','v19','v20','v21','v21b','v22','v23','v23b','v24','v24b'];
 function codigo(){
   return ORDEN.filter(f=>fs.existsSync(path.join(raiz,'js',f+'.js')))
     .map(f=>fs.readFileSync(path.join(raiz,'js',f+'.js'),'utf8')).join('\n')
