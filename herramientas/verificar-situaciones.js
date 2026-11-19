@@ -118,5 +118,26 @@ test('en el partido en vivo la postura pesa en cada tiempo y se puede cambiar en
  S.rng=mul32(9);tmp.vivo.post2='segura';let c=0;for(let i=0;i<800;i++)c+=jugarMitad(eq(true,'Posesion'),eq(false,'Contraataque / Directo'),true,46,90).ev.filter(e=>e.t==='gol'&&e.l==='a').length;
  tmp.vivo=null;S.rng=rng;patronesConfianzaPicardia=pcp;assert.ok(a>c*1.3,'la postura del entretiempo manda en el segundo tiempo: '+a+' vs '+c);
 });
+test('el mundo responde: cambian los DT, el rival te lee, sin ayudante paga más y el resultado se explica',()=>{
+ const once=['POR','DFC','DFC','LTD','LTI','MCD','MC','MC','EXD','EXI','DC'].map((rol,i)=>({rol,rt:60,jug:{nom:'Nombre Apellido'+i}}));
+ const club={n:'Club Prueba'},prevI=S.identR,prevD=S.dts,prevM=S.memoriaDT,prevN=S.noticiasDT,prevT=S.temp,prevS=S.sinAyudante,prevU=S.ultimaSituacion;
+ S.identR={'Club Prueba':{f:'4-4-2',e:'Bloque bajo / Repliegue'}};S.dts={};S.noticiasDT=[];S.temp={equipos:[{club,e:'Bloque bajo / Repliegue'}]};
+ const antes=perfilDT(club,modeloDeEstilo('Bloque bajo / Repliegue')),txt=cambiarDT(club,'echado'),despues=perfilDT(club,modeloDeEstilo('Posesion'));
+ assert.notEqual(antes,despues,'cambia la escuela');assert.equal(S.identR['Club Prueba'].e,ESTILO_DE_PERFIL[despues],'cambia cómo juega');assert.equal(S.temp.equipos[0].e,ESTILO_DE_PERFIL[despues]);
+ assert.ok(/Echaron/.test(txt)||/sacked/.test(txt)||/Demitiram/.test(txt));assert.equal(S.noticiasDT.length,1);
+ const c={yo:{f:'4-3-3',attrs:[60,60,60,60],once,m:{ofe:'posicional',def:'medio'}},el:{club,f:'4-4-2',attrs:[55,55,55,55],m:{ofe:'directo',def:'bajo',tdef:'repliegue',tofe:'contra'}},crack:null};
+ const s0=generarProgresion(c,'leo-base'),mem={id:s0.id,nom:nombreArquetipo(s0.A),t:s0.ops[0].t,trampa:true};
+ S.memoriaDT={'Club Prueba':mem};S.ultimaSituacion=null;let hallado=null;
+ for(let i=0;i<40&&!hallado;i++){const s=elegirSituacionPara(c,'leo|'+i);if(s&&s.recuerdo)hallado=s;}
+ assert.ok(hallado,'el DT vuelve a plantar la trampa');assert.equal(nombreArquetipo(hallado.A),mem.nom);
+ S.memoriaDT={};
+ S.sinAyudante=false;const a=resolverSituacion(s0,c,s0.ops.findIndex(o=>o.L===1),'premio|1');S.sinAyudante=true;const b=resolverSituacion(s0,c,s0.ops.findIndex(o=>o.L===1),'premio|1');
+ if(a.mult>1)assert.ok(b.mult>a.mult&&b.sinAyudante,'sin ayudante paga más');else assert.equal(a.mult,b.mult,'el castigo no cambia');
+ const jor=(gf,gc,lectura,sale)=>({k:3,sit:{lectura,sale,mult:lectura===1&&sale?1.06:.96,t:['Pausa','Pausa','Pause']},res:[{yo:true,A:{yo:true,club:{n:'Yo'}},B:{club:{n:'El'}},ga:gf,gb:gc}]});
+ assert.ok(/banco/.test(porQueResultado(jor(1,0,1,true)).txt)&&porQueResultado(jor(1,0,1,true)).clave==='gano');
+ assert.equal(porQueResultado(jor(0,1,0,false)).clave,'trampa');assert.equal(porQueResultado(jor(0,1,1,false)).clave,'ejecucion');assert.equal(porQueResultado(jor(2,1,0,true)).clave,'zafo');
+ assert.equal(porQueResultado({k:1,sit:{auto:true,mult:1.04},res:[]}),null);
+ S.identR=prevI;S.dts=prevD;S.memoriaDT=prevM;S.noticiasDT=prevN;S.temp=prevT;S.sinAyudante=prevS;S.ultimaSituacion=prevU;
+});
 console.log('REGRESIÓN SITUACIONES V16: '+n+' pruebas.');
 `);
